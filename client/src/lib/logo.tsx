@@ -1,9 +1,10 @@
-import { Shield } from "lucide-react";
-
-export default function ChironLogo({ size = 12 }: { size?: number }) {
+// The props allow you to still control the size, for example <ChironLogo size={48} />
+export default function ChironLogo({ size = 48 }: { size?: number }) {
   return (
-    <div className={`w-${size} h-${size} bg-chiron-blue rounded-lg flex items-center justify-center`}>
-      <Shield className="w-6 h-6 text-white" />
-    </div>
+    <img 
+      src="/attached_assets/logo.png" 
+      alt="ChironIQ Logo" 
+      style={{ width: size, height: 'auto' }} 
+    />
   );
 }
