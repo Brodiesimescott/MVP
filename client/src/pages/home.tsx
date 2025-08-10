@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4">
+      <header className="bg-white border-b border-slate-200 px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
@@ -49,7 +49,7 @@ export default function Home() {
 
           {/* Chiron AI Assistant */}
           <div className="lg:col-span-2">
-            <Card className="p-6 h-[600px] sticky top-8 flex flex-col">
+            <Card className="p-6 h-[605px] sticky top-8 flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-chiron-blue to-chiron-orange rounded-lg flex items-center justify-center mr-3">
                   <Bot className="w-5 h-5 text-white" />
