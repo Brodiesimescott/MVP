@@ -17,7 +17,7 @@ export default function Home() {
               <ChironLogo />
               <div>
                 <h1 className="text-2xl font-bold text-chiron-blue"></h1>
-                <p className="text-3xl font-bold italic text-chiron-blue">Focus On Patients</p>
+                <p className="text-3xl font-bold italic text-[05335b]">Focus On Patients</p>
               </div>
             </div>
           </div>
@@ -35,7 +35,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -80,7 +79,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 px-6 py-6 mt-auto">
         <div className="max-w-7xl mx-auto text-center">
