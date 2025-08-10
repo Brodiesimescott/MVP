@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import LLMGuide from "@/components/llm-guide";
+import ModuleLogo from "@/components/module-logo";
 import { useToast } from "@/hooks/use-toast";
 
 interface CQCDashboardMetrics {
@@ -105,9 +106,7 @@ export default function ChironCQC() {
             </Link>
             <div className="w-px h-6 bg-slate-200"></div>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-chiron-blue" />
-              </div>
+              <ModuleLogo moduleName="cqc" icon={ShieldCheck} />
               <h1 className="text-xl font-semibold text-slate-900">ChironCQC</h1>
             </div>
           </div>

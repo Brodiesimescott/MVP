@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import useWebSocket from "@/hooks/use-websocket";
+import ModuleLogo from "@/components/module-logo";
 import { useState, useEffect, useRef } from "react";
 
 interface User {
@@ -164,9 +165,7 @@ export default function ChironMessaging() {
             </Link>
             <div className="w-px h-6 bg-slate-200"></div>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-chiron-blue" />
-              </div>
+              <ModuleLogo moduleName="messaging" icon={MessageSquare} />
               <h1 className="text-xl font-semibold text-slate-900">ChironMessaging</h1>
             </div>
           </div>
