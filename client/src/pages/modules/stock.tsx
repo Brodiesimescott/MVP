@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import LLMGuide from "@/components/llm-guide";
+import ModuleLogo from "@/components/module-logo";
 
 export default function ChironStock() {
   return (
@@ -18,9 +19,7 @@ export default function ChironStock() {
             </Link>
             <div className="w-px h-6 bg-slate-200"></div>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-chiron-orange bg-opacity-10 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-chiron-orange" />
-              </div>
+              <ModuleLogo moduleName="stock" icon={Package} />
               <h1 className="text-xl font-semibold text-slate-900">ChironStock</h1>
             </div>
           </div>

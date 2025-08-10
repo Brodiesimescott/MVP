@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import LLMGuide from "@/components/llm-guide";
 import StaffManagement from "@/components/staff-management";
+import ModuleLogo from "@/components/module-logo";
 import { useState } from "react";
 
 interface HRMetrics {
@@ -38,9 +39,7 @@ export default function ChironHR() {
             </Link>
             <div className="w-px h-6 bg-slate-200"></div>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-chiron-blue" />
-              </div>
+              <ModuleLogo moduleName="hr" icon={Users} />
               <h1 className="text-xl font-semibold text-slate-900">ChironHR</h1>
             </div>
           </div>

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
+import ModuleLogo from "@/components/module-logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -179,9 +180,7 @@ export default function ChironMoney() {
             </Link>
             <div className="w-px h-6 bg-slate-200"></div>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-chiron-orange bg-opacity-10 rounded-lg flex items-center justify-center">
-                <PoundSterling className="w-5 h-5 text-chiron-orange" />
-              </div>
+              <ModuleLogo moduleName="money" icon={PoundSterling} />
               <h1 className="text-xl font-semibold text-slate-900">ChironMoney</h1>
             </div>
           </div>
