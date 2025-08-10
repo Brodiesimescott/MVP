@@ -49,7 +49,7 @@ export default function Home() {
 
           {/* Chiron AI Assistant */}
           <div className="lg:col-span-2">
-            <Card className="p-6 h-fit sticky top-8">
+            <Card className="p-6 h-[600px] sticky top-8 flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-chiron-blue to-chiron-orange rounded-lg flex items-center justify-center mr-3">
                   <Bot className="w-5 h-5 text-white" />
@@ -59,7 +59,7 @@ export default function Home() {
                   <p className="text-xs text-clinical-gray">Always here to help</p>
                 </div>
               </div>
-              <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+              <div className="space-y-3 mb-4 flex-1 overflow-y-auto">
                 <div className="flex">
                   <div className="w-6 h-6 bg-chiron-blue rounded-full flex-shrink-0 flex items-center justify-center mr-2">
                     <Bot className="w-3 h-3 text-white" />
