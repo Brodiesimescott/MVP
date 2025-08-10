@@ -16,6 +16,7 @@ import {
 import hrLogoPath from "@assets/HR_1754837463723.png";
 import cqcLogoPath from "@assets/cqc transparent_1754837827860.png";
 import messagingLogoPath from "@assets/Screenshot 2025-08-10 at 16.15.57_1754839009063.png";
+import moneyLogoPath from "@assets/Gemini_Generated_Image_ouh17aouh17aouh1_1754840637280.jpeg";
 
 interface Module {
   id: string;
@@ -109,6 +110,12 @@ export default function ModulesGrid() {
                     <img 
                       src={messagingLogoPath} 
                       alt="Messaging Logo" 
+                      className="w-12 h-12 object-contain"
+                    />
+                  ) : module.name === 'money' ? (
+                    <img 
+                      src={moneyLogoPath} 
+                      alt="Money Logo" 
                       className="w-12 h-12 object-contain"
                     />
                   ) : (
