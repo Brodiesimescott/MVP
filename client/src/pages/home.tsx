@@ -37,7 +37,7 @@ export default function Home() {
       </header>
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Practice Management Modules */}
           <div className="lg:col-span-3">
             <div className="mb-6">
@@ -48,7 +48,7 @@ export default function Home() {
           </div>
 
           {/* Chiron AI Assistant */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <Card className="p-6 h-fit sticky top-8">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-chiron-blue to-chiron-orange rounded-lg flex items-center justify-center mr-3">
