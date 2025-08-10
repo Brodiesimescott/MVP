@@ -14,6 +14,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import hrLogoPath from "@assets/HR_1754837463723.png";
+import cqcLogoPath from "@assets/CQC_logo.png";
 
 interface Module {
   id: string;
@@ -95,6 +96,12 @@ export default function ModulesGrid() {
                     <img 
                       src={hrLogoPath} 
                       alt="HR Logo" 
+                      className="w-12 h-12 object-contain"
+                    />
+                  ) : module.name === 'cqc' ? (
+                    <img 
+                      src={cqcLogoPath} 
+                      alt="CQC Logo" 
                       className="w-12 h-12 object-contain"
                     />
                   ) : (

@@ -17,7 +17,7 @@ export default function Home() {
               <ChironLogo />
               <div>
                 <h1 className="text-2xl font-bold text-chiron-blue"></h1>
-                <p className="text-3xl font-bold italic text-[05335b]">Focus On Patients</p>
+                <p className="text-3xl font-bold italic text-[#05335b]">Focus On Patients</p>
               </div>
             </div>
           </div>
