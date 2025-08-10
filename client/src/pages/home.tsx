@@ -16,8 +16,8 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <ChironLogo />
               <div>
-                <h1 className="text-2xl font-bold text-chiron-blue">ChironIQ</h1>
-                <p className="text-sm text-clinical-gray">Focus On Patients</p>
+                <h1 className="text-2xl font-bold text-chiron-blue"></h1>
+                <p className="text-3xl font-bold italic text-chiron-blue">Focus On Patients</p>
               </div>
             </div>
           </div>
@@ -84,8 +84,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 px-6 py-6 mt-auto">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-sm text-clinical-gray mb-2">© 2024 ChironIQ Healthcare Management Platform. All rights reserved.</p>
-          <p className="text-xs text-clinical-gray">CQC Registered Provider | Data Protection Act Compliant | ISO 27001 Certified</p>
+          <p className="text-sm text-clinical-gray mb-2">© 2025 ChironIQ Healthcare Management Platform. All rights reserved.</p>
+          <p className="text-xs text-clinical-gray"> | GDPR Compliant | </p>
         </div>
       </footer>
     </div>
