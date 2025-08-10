@@ -13,6 +13,7 @@ import {
   ArrowRight,
   LucideIcon
 } from "lucide-react";
+import hrLogoPath from "@assets/HR_1754837463723.png";
 
 interface Module {
   id: string;
@@ -91,8 +92,16 @@ export default function ModulesGrid() {
               <CardHeader className="p-0 mb-4">
                 <div className="flex items-center justify-between">
                   <div className={`w-12 h-12 ${moduleColor} bg-opacity-10 rounded-lg flex items-center justify-center`}>
-                    {IconComponent && (
-                      <IconComponent className={`w-6 h-6 ${moduleColor.replace('bg-', 'text-')}`} />
+                    {module.name === 'hr' ? (
+                      <img 
+                        src={hrLogoPath} 
+                        alt="HR Logo" 
+                        className="w-8 h-8 object-contain"
+                      />
+                    ) : (
+                      IconComponent && (
+                        <IconComponent className={`w-6 h-6 ${moduleColor.replace('bg-', 'text-')}`} />
+                      )
                     )}
                   </div>
                   <div className={`w-3 h-3 ${statusColor} rounded-full`}></div>
