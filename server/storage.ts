@@ -119,6 +119,8 @@ export class MemStorage implements IStorage {
       const cqcStandard: CqcStandard = {
         ...standard,
         id,
+        summary: standard.summary ?? null,
+        sourceUrl: standard.sourceUrl ?? null,
         lastCheckedForUpdate: new Date(),
         createdAt: new Date(),
       };
@@ -140,6 +142,7 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
+      role: insertUser.role ?? 'user',
       createdAt: new Date()
     };
     this.users.set(id, user);
@@ -160,6 +163,26 @@ export class MemStorage implements IStorage {
     const staffMember: Staff = {
       ...insertStaff,
       id,
+      title: insertStaff.title ?? null,
+      email: insertStaff.email ?? null,
+      phone: insertStaff.phone ?? null,
+      address: insertStaff.address ?? null,
+      dateOfBirth: insertStaff.dateOfBirth ?? null,
+      niNumber: insertStaff.niNumber ?? null,
+      salary: insertStaff.salary ?? null,
+      workingHours: insertStaff.workingHours ?? null,
+      annualLeave: insertStaff.annualLeave ?? 28,
+      studyLeave: insertStaff.studyLeave ?? 5,
+      otherLeave: insertStaff.otherLeave ?? 0,
+      professionalBody: insertStaff.professionalBody ?? null,
+      professionalBodyNumber: insertStaff.professionalBodyNumber ?? null,
+      appraisalDate: insertStaff.appraisalDate ?? null,
+      revalidationInfo: insertStaff.revalidationInfo ?? null,
+      dbsCheckExpiry: insertStaff.dbsCheckExpiry ?? null,
+      emergencyContactName: insertStaff.emergencyContactName ?? null,
+      emergencyContactPhone: insertStaff.emergencyContactPhone ?? null,
+      emergencyContactRelation: insertStaff.emergencyContactRelation ?? null,
+      status: insertStaff.status ?? 'active',
       createdAt: new Date()
     };
     this.staff.set(id, staffMember);
@@ -189,6 +212,8 @@ export class MemStorage implements IStorage {
     const standard: CqcStandard = {
       ...insertStandard,
       id,
+      summary: insertStandard.summary ?? null,
+      sourceUrl: insertStandard.sourceUrl ?? null,
       lastCheckedForUpdate: new Date(),
       createdAt: new Date()
     };
@@ -205,6 +230,9 @@ export class MemStorage implements IStorage {
     const evidence: PracticeEvidence = {
       ...insertEvidence,
       id,
+      description: insertEvidence.description ?? null,
+      reviewStatus: insertEvidence.reviewStatus ?? 'needs_review',
+      standardIds: insertEvidence.standardIds ?? null,
       uploadDate: new Date(),
       createdAt: new Date()
     };
@@ -234,6 +262,7 @@ export class MemStorage implements IStorage {
     const conversation: Conversation = {
       ...insertConversation,
       id,
+      title: insertConversation.title ?? null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -252,6 +281,8 @@ export class MemStorage implements IStorage {
     const message: Message = {
       ...insertMessage,
       id,
+      blocked: insertMessage.blocked ?? null,
+      blockReason: insertMessage.blockReason ?? null,
       createdAt: new Date()
     };
     this.messages.set(id, message);
@@ -268,6 +299,8 @@ export class MemStorage implements IStorage {
     const transaction: Transaction = {
       ...insertTransaction,
       id,
+      subcategory: insertTransaction.subcategory ?? null,
+      bankReference: insertTransaction.bankReference ?? null,
       createdAt: new Date()
     };
     this.transactions.set(id, transaction);
@@ -283,6 +316,11 @@ export class MemStorage implements IStorage {
     const invoice: Invoice = {
       ...insertInvoice,
       id,
+      status: insertInvoice.status ?? null,
+      clientEmail: insertInvoice.clientEmail ?? null,
+      vatAmount: insertInvoice.vatAmount ?? null,
+      dueDate: insertInvoice.dueDate ?? null,
+      paidDate: insertInvoice.paidDate ?? null,
       createdAt: new Date()
     };
     this.invoices.set(id, invoice);
@@ -307,6 +345,8 @@ export class MemStorage implements IStorage {
     const purchase: Purchase = {
       ...insertPurchase,
       id,
+      vatAmount: insertPurchase.vatAmount ?? null,
+      receiptUrl: insertPurchase.receiptUrl ?? null,
       createdAt: new Date()
     };
     this.purchases.set(id, purchase);
@@ -322,6 +362,8 @@ export class MemStorage implements IStorage {
     const vatReturn: VatReturn = {
       ...insertVatReturn,
       id,
+      status: insertVatReturn.status ?? null,
+      submittedAt: insertVatReturn.submittedAt ?? null,
       createdAt: new Date()
     };
     this.vatReturns.set(id, vatReturn);

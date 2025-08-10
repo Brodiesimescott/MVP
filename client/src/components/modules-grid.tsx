@@ -14,7 +14,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import hrLogoPath from "@assets/HR_1754837463723.png";
-import cqcLogoPath from "@assets/CQC_logo.png";
+import cqcLogoPath from "@assets/cqc transparent_1754837827860.png";
 
 interface Module {
   id: string;
