@@ -1,0 +1,59 @@
+Build a secure, real-time ChironMessaging module. The core purpose is to allow users within the same medical practice to communicate securely. The module's most critical features are strict data segregation between practices and an AI-powered safety net to prevent the accidental transmission of patient information.
+
+## 1. Technology Stack
+Front-End: React, TypeScript, Vite, wouter (routing), tailwindcss, shadcn/ui (components), lucide-react (icons).
+
+Back-End: Node.js, Express, and a WebSocket library (like ws or Socket.IO) for real-time communication.
+
+AI: An LLM for content analysis.
+
+## 2. Core Architectural Requirements
+Strict Multi-Tenancy: This is a mandatory security requirement. All data (users, messages, conversations) must be strictly partitioned by the user's "practice." A user from Practice A must never be able to see, search for, or message a user from Practice B. All API endpoints and WebSocket channels must enforce this segregation.
+
+AI Safety Net: Before any message is saved to the database or broadcast to recipients, it must be processed by a content moderation function. This function will use an AI model to analyze the message text for any signs of Patient-Identifiable Information (PII) or clinical details. If the AI flags the content, the message must be blocked, and an error returned to the sender.
+
+## 3. Backend - Data, API, & WebSockets
+Data Models:
+
+Conversation: Must contain a list of participantIds and, crucially, a practiceId to enforce tenancy.
+
+Message: Must contain a conversationId, senderId, content, and timestamp.
+
+API Endpoints:
+
+GET /api/messaging/contacts: Returns a list of all users within the logged-in user's practice only.
+
+GET /api/messaging/conversations: Returns a list of the user's current conversations.
+
+POST /api/messaging/messages: The endpoint for sending a new message.
+
+Receives the message content and conversation ID.
+
+Sends the content to the AI Safety Net for analysis.
+
+If approved, saves the message to the database and pushes it to the WebSocket server.
+
+If blocked, returns a 400 Bad Request error with a reason (e.g., "Message blocked due to potential patient data").
+
+WebSocket Server:
+
+Implement a WebSocket server that allows connected clients to subscribe to their conversations.
+
+When a new message is approved by the API, the server pushes the message in real-time to all other online participants in that conversation.
+
+## 4. Frontend - Components & Functionality
+Component: ChironMessaging.tsx
+
+Route: /modules/messaging
+
+Layout: Implement the three-column chat application layout seen in the video demo.
+
+Left Column: Fetches and displays the user's conversations and contacts from the API. Allows users to select a conversation or start a new one.
+
+Center Column: The main chat view. Displays the message history for the selected conversation and an input field for sending new messages. It must connect to the WebSocket server to receive and display new messages instantly.
+
+Right Column: A panel for practice-wide announcements and quick actions.
+
+User Experience for Safety Net:
+
+If a user's message is blocked by the API, the UI must display a clear, non-intrusive error next to the failed message (e.g., "Message not sent. Please remove any patient-related information and try again.").

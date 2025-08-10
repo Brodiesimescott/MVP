@@ -1,0 +1,70 @@
+Of course. Here is a full, functional prompt to build the foundational user management and permissions system.
+
+This prompt specifies the backend logic for authentication and the front-end components needed for a complete login and role-based access system.
+
+## AI Prompt: Build the Authentication & Authorization System
+Your Task:
+Build the foundational Authentication (login/logout) and Authorization (role-based permissions) system for the ChironIQ platform. This system must manage the three specified user roles: ChironIQ Staff, PowerUser, and User.
+
+## 1. Technology Stack
+Front-End: React, TypeScript, Vite, wouter, tailwindcss.
+
+Back-End: Node.js, Express.
+
+Authentication Libraries: Use passport with passport-local for authentication strategy, express-session for session management, and bcrypt for password hashing.
+
+## 2. Backend Requirements
+Data Model (User):
+Create a User model in the database. It must include:
+
+id, email, hashedPassword, salt.
+
+practiceId: To ensure users are linked to a specific practice (for multi-tenancy).
+
+role: A field that can store one of three values: 'staff', 'poweruser', or 'user'.
+
+Security:
+
+All user passwords must be securely hashed using bcrypt before being stored. Do not store plain-text passwords.
+
+Use express-session to create and manage secure login sessions for users.
+
+Authentication API Endpoints:
+Create the following API endpoints under /api/auth/:
+
+POST /login: Authenticates a user with email and password using passport. On success, it creates a user session.
+
+POST /logout: Destroys the current user session.
+
+GET /session: A protected endpoint that returns the current logged-in user's information (e.g., { email, role, practiceId }), allowing the front-end to verify an active session.
+
+Authorization Middleware:
+Create a reusable middleware function (e.g., checkRole). This function will be applied to protected API routes. It must be configurable to:
+
+Verify that a user is currently logged in.
+
+Verify that the logged-in user has a specific required role (e.g., 'poweruser'). If the user does not have the required role, the request should be rejected with a 403 Forbidden status.
+
+## 3. Frontend Requirements
+Login & Protected Routes:
+
+LoginPage.tsx: Create a new page component at the /login route with a form for email and password submission.
+
+ProtectedRoute Component: Create a wrapper component. Any route wrapped by ProtectedRoute (e.g., the entire /modules/* section) must check for an active user session by calling the /api/auth/session endpoint. If the user is not logged in, they must be redirected to /login.
+
+Role-Based UI (Conditional Rendering):
+
+The application's global state must contain the current user's role after they log in.
+
+All existing components must use this role to conditionally render UI elements. For example:
+
+In StaffManagement.tsx, the "Add Staff Member" and "Edit" buttons must only be visible if the user's role is 'poweruser' or 'staff'.
+
+In ChironMoney.tsx, features for submitting tax returns should only be visible to a 'poweruser'.
+
+## 4. Integration Example
+As a proof of concept, fully integrate this system with the "Add Staff" feature:
+
+Backend: Apply the checkRole('poweruser') middleware to the POST /api/hr/staff endpoint.
+
+Frontend: On the StaffManagement.tsx page, ensure the "Add Staff Member" button is only rendered if the logged-in user's role is 'poweruser' or 'staff'

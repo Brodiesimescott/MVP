@@ -1,0 +1,69 @@
+the ChironCQC Module
+Your Task:
+Build a comprehensive, functional ChironCQC module for the ChironIQ platform. The module's primary purpose is to provide continuous compliance monitoring for a healthcare practice by checking its procedures against the official UK Care Quality Commission (CQC) standards. The module must also feature an LLM assistant capable of guiding users through the CQC registration process.
+
+## 1. Technology Stack
+Front-End: React, TypeScript, Vite, wouter (routing), tailwindcss, shadcn/ui (components), lucide-react (icons), @tanstack/react-query (data fetching).
+
+Back-End: Node.js, Express.
+
+Architecture: Full-stack application in a single project, with the Vite server proxying /api requests to the Express backend.
+
+## 2. Backend - Data, Logic, & API
+Data Models:
+
+CQCStandard: A model to store individual CQC regulations. It should include fields like regulationId, title, summary, keyQuestion (e.g., Safe, Effective, Caring, Responsive, Well-led), sourceUrl, and lastCheckedForUpdate.
+
+PracticeEvidence: A model for the practice's uploaded compliance documents. It should include fields like evidenceId, fileName, description, uploadDate, reviewStatus (e.g., Compliant, Needs Review), and a link to the relevant CQCStandard(s).
+
+Core Backend Logic:
+
+Weekly Update Check: Implement a scheduled backend process (a cron job) that runs once per week. This process must check the official CQC guidance page (https://www.cqc.org.uk/guidance-regulation) for any changes or updates to the standards and flag them in the database for review.
+
+Required API Endpoints:
+
+GET /api/cqc/dashboard: Returns key metrics for the CQC dashboard (e.g., overall compliance score, number of open issues, status of the Five Key Questions).
+
+GET /api/cqc/standards: Returns the list of all CQC standards currently stored in the database.
+
+POST /api/cqc/evidence: Allows a user to upload a new piece of compliance evidence.
+
+GET /api/cqc/activity: Returns a log of recent compliance-related activities (e.g., "Policy X was updated," "New evidence uploaded for Standard Y").
+
+## 3. Frontend - Components & Functionality
+Component 1: ChironCQC.tsx (The Main CQC Dashboard)
+
+Route: /modules/cqc
+
+Layout: Must match the standard module layout seen in the video, including the persistent LLM Guide chat box on the right.
+
+Functionality:
+
+Fetches and displays key metrics from /api/cqc/dashboard.
+
+Contains a visual component representing the "CQC Five Key Questions" (Safe, Effective, Caring, Responsive, Well-led), showing the compliance status for each.
+
+Includes "Quick Actions" like "Upload New Evidence" and "Generate Compliance Report."
+
+Displays a feed of "Recent Compliance Activity" by fetching from /api/cqc/activity.
+
+Component 2: Placeholder Sub-Pages
+
+Create functional placeholders for the key sub-features:
+
+Standards Browser: A page to view all CQC standards from the database.
+
+Evidence Locker: A page where users can upload, view, and manage their PracticeEvidence documents and link them to specific standards.
+
+Audit & Reporting: A page for generating compliance reports.
+
+## 4. LLM Functional Requirements
+The persistent LLM Guide within this module has two primary responsibilities:
+
+Registration Guidance: The LLM must be equipped with the knowledge to provide users with a detailed, step-by-step guide through the entire CQC registration process.
+
+Continuous Monitoring Support: The LLM must be able to:
+
+Answer specific questions about any CQC standard (e.g., "What are the requirements for Regulation 17?").
+
+Perform a basic check-and-compare by analyzing a user's uploaded evidence against the relevant CQC standard text, highlighting potential gaps or areas for improvement.

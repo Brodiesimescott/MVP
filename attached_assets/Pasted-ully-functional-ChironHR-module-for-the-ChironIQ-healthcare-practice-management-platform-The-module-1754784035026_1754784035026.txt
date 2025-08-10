@@ -1,0 +1,89 @@
+ully functional ChironHR module for the ChironIQ healthcare practice management platform. The module must be a dynamic, data-driven application with a front-end built in React and a back-end in Node.js/Express. It should handle all aspects of staff management, scheduling, compliance, and policies as detailed below.
+
+## 1. Technology Stack
+Front-End: React, TypeScript, Vite, wouter (routing), tailwindcss, shadcn/ui (components), lucide-react (icons), @tanstack/react-query (data fetching), react-hook-form & zod (forms).
+
+Back-End: Node.js, Express.
+
+Architecture: The front-end and back-end should be able to run concurrently in a single Replit project, with the Vite server proxying /api requests to the Express server.
+
+## 2. Backend - Data Models & API
+First, define the core data structure for a staff member.
+
+Staff Data Model (Schema):
+A Staff record must include the following fields:
+
+id, employeeId, firstName, lastName, title, email, phone, address, dateOfBirth, niNumber.
+
+Employment: position, department, startDate, contractType, salary, workingHours.
+
+Leave Credits: annualLeave, studyLeave, otherLeave.
+
+Compliance: professionalBody (e.g., GMC, NMC), professionalBodyNumber, appraisalDate, revalidationInfo, dbsCheckExpiry.
+
+Emergency Contact: emergencyContactName, emergencyContactPhone, emergencyContactRelation.
+
+Required API Endpoints:
+Create the following RESTful API endpoints for the backend:
+
+GET /api/hr/metrics: Returns key statistics for the dashboard (e.g., { totalStaff: 12, onDuty: 8, pendingReviews: 3 }).
+
+GET /api/hr/staff: Returns a list of all staff members.
+
+POST /api/hr/staff: Creates a new staff member.
+
+GET /api/hr/staff/:id: Returns the full details for a single staff member.
+
+PUT /api/hr/staff/:id: Updates a staff member's details.
+
+DELETE /api/hr/staff/:id: Deletes a staff member.
+
+## 3. Frontend - Components & Functionality
+Build the following front-end components, which should interact with the API endpoints defined above.
+
+Component 1: ChironHR.tsx (The Main HR Dashboard)
+
+Route: /modules/hr
+
+Layout:
+
+A main header with a back button and the title "ChironHR".
+
+A row of key metric cards that fetch data from /api/hr/metrics.
+
+A "Quick Actions" section with buttons that link to the sub-pages (Staff Management, Rota, etc.).
+
+Sections for "Today's Rota" and "Compliance Alerts" (use static data for now).
+
+A persistent "LLM Guide" chat box component fixed to the right side of the page.
+
+Component 2: StaffManagement.tsx (Staff Management Page)
+
+Route: /modules/hr/staff
+
+Functionality: This must be a multi-view component (list, add/edit form, and profile view) as seen in the video demo.
+
+List View: The default view. Fetches all staff from /api/hr/staff and displays them in a searchable grid of cards. Each card must have "View" and "Edit" buttons. An "Add Staff Member" button should be present.
+
+Add/Edit View: A comprehensive form using react-hook-form and zod for validation, containing fields for the entire Staff Data Model. Submitting the form must call the POST or PUT API endpoints.
+
+Profile View: A detailed, read-only view of a single staff member, fetching data from /api/hr/staff/:id. It should be organized into logical sections like "Contact Information," "Employment Details," and "Compliance Status."
+
+Component 3: Placeholder Sub-Pages
+
+Create placeholder components for the other key features. Each should have a basic layout, a title, and the persistent LLM Guide chat box.
+
+Rota & Scheduling: (/modules/hr/rota)
+
+Leave Management: (/modules/hr/leave)
+
+Appraisals: (/modules/hr/appraisals)
+
+General Policies: (/modules/hr/policies)
+
+## 4. Core Functional Requirements
+Permissions: The UI must be built with permissions in mind. For example, "Edit" and "Add" buttons should only be rendered for users with a PowerUser or ChironIQ Staff role. Standard Users should have read-only access.
+
+Appraisal Frameworks: The appraisal system must be designed to eventually incorporate templates and guidance based on official UK standards (Medical Appraisal 2022, NMC, HCPC, NHS).
+
+Contract Generation: The "Generate Contract" feature should eventually be able to pull from approved NHS templates based on the staff member's role.

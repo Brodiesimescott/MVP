@@ -1,0 +1,71 @@
+Build the ChironMoney Module
+Your Task:
+Build a comprehensive, functional ChironMoney module for the ChironIQ platform. The module will serve as a core accounting and financial management tool for UK medical practices. It must connect to bank accounts via Open Banking, replicate the core functionality of a modern accounting platform like QuickFile, and be designed for future integration with UK tax authorities.
+
+## 1. Technology Stack & Security
+Front-End: React, TypeScript, Vite, wouter, tailwindcss, shadcn/ui, lucide-react.
+
+Back-End: Node.js, Express. The backend must be built with high-security standards for handling sensitive financial data.
+
+Architecture: Full-stack application with the Vite server proxying /api requests to the Express backend.
+
+## 2. Core Architectural & Regulatory Requirements
+Open Banking Integration: The module must integrate with a secure, regulated UK Open Banking API provider (e.g., Plaid, TrueLayer) to allow users to connect their business bank accounts and automatically import transaction data.
+
+HMRC MTD Integration: The system must be built to integrate with HMRC's Making Tax Digital (MTD) APIs. The initial focus should be on submitting VAT returns, with the architecture allowing for future Corporation Tax submissions.
+
+Jurisdictional Rules Engine: The logic for calculating taxes (Corporation Tax) and pension contributions must be built in a modular "rules engine." This engine should initially contain rules for UK law but be designed so that rules for different jurisdictions can be added in the future without a complete rewrite.
+
+## 3. Backend - Data Models & API
+Data Models:
+
+Transaction: To store all imported bank transactions.
+
+Invoice: For creating and tracking sales invoices.
+
+Purchase: For logging and managing business expenses.
+
+VATReturn: To model the data required for a VAT submission to HMRC.
+
+API Endpoints:
+
+/api/money/open-banking/connect: To handle the secure connection flow for linking a new bank account.
+
+/api/money/transactions: To fetch and categorize bank transactions.
+
+Full CRUD endpoints for /api/money/invoices and /api/money/purchases.
+
+/api/money/reports/profit-and-loss: To generate a P&L report.
+
+/api/money/calculations/corporation-tax: An endpoint that provides an estimated Corporation Tax liability based on the user's data.
+
+/api/money/mtd/vat-submit: An endpoint to submit a prepared VAT return to HMRC.
+
+## 4. Frontend - Components & Functionality
+Component 1: ChironMoney.tsx (Main Dashboard)
+
+Route: /modules/money
+
+Layout: Follow the standard module layout (header, key metrics, quick actions, alerts) and include the persistent LLM Guide on the right.
+
+Functionality:
+
+Display key financial metrics (e.g., "Monthly Revenue," "Profit/Loss," "Overdue Invoices").
+
+Include "Quick Actions" for "Create New Invoice," "Log Expense," and "Reconcile Bank."
+
+Show "Financial Alerts," such as upcoming tax deadlines.
+
+Component 2: Sub-Pages
+Create the core interfaces for a complete accounting loop:
+
+Banking: A page to view imported transactions and perform bank reconciliation (matching transactions to invoices and purchases).
+
+Invoicing: A full-featured section to create, send, track, and manage sales invoices.
+
+Purchases: A section to upload receipts and log business expenses.
+
+VAT Returns: A dedicated interface for reviewing VAT obligations and submitting returns directly to HMRC via the MTD API.
+
+Disclaimer:
+A clear, static disclaimer must be prominently displayed within the module, for example in the footer or on the main dashboard. The text should be similar to: "Disclaimer: ChironMoney provides financial estimates for informational purposes only and is not a substitute for professional accounting advice. Please consult with a qualified accountant for financial decisions."

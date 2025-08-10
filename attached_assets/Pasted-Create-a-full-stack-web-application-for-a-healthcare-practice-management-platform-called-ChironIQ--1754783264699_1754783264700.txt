@@ -1,0 +1,72 @@
+Create a full-stack web application for a healthcare practice management platform called "ChironIQ". The application will be built in a single Replit project using the React + Express template. The primary goal is to build the main dashboard page as shown in the provided screenshot, but with a specific new layout for the module grid.
+
+## 1. Technology Stack & Configuration
+Frontend: Use React with TypeScript and Vite.
+
+Backend: Use Node.js with Express.
+
+Styling: Use Tailwind CSS for layout and styling.
+
+UI Components: Use shadcn/ui for components like <Card>, <Button>, etc.
+
+Icons: Use the lucide-react library for all icons.
+
+Routing: Use the wouter library for all front-end routing.
+
+API Communication: Use @tanstack/react-query for fetching data on the front-end.
+
+Vite Configuration (vite.config.ts): Configure a server proxy to forward all requests starting with /api to the backend Express server running on http://localhost:3001.
+
+## 2. Backend Requirements
+Create a backend Express server with one API endpoint:
+
+Endpoint: GET /api/modules
+
+This endpoint must return a JSON array with exactly six module objects. The data for these modules should be:
+
+JSON
+
+[
+  { "id": "1", "title": "ChironCQC", "name": "cqc", "description": "CQC compliance tracking, regulatory checklists, and inspection preparation tools.", "icon": "shield-alt", "status": "good" },
+  { "id": "2", "title": "ChironHR", "name": "hr", "description": "Staff scheduling, rota management, and HR compliance tools for your practice team.", "icon": "users", "status": "good" },
+  { "id": "3", "title": "ChironMessaging", "name": "messaging", "description": "Secure internal communication system for staff collaboration and coordination.", "icon": "comments", "status": "good" },
+  { "id": "4", "title": "ChironMoney", "name": "finance", "description": "Financial management, billing automation, and revenue tracking for private services.", "icon": "pound-sign", "status": "attention" },
+  { "id": "5", "title": "ChironStock", "name": "stock", "description": "Inventory management, stock tracking, and automated reordering for medical supplies.", "icon": "boxes", "status": "attention" },
+  { "id": "6", "title": "ChironFacilities", "name": "facilities", "description": "Facility management, maintenance tracking, and asset management for your practice.", "icon": "building", "status": "good" }
+]
+## 3. Frontend Requirements
+App.tsx (Routing):
+Set up the main router using wouter. It should define routes for the homepage (/) and each of the six modules (e.g., /modules/hr, /modules/cqc, etc.).
+
+home.tsx (Homepage):
+This page should replicate the overall layout from the screenshot, containing:
+
+A header with the "ChironIQ" logo, the "Focus On Patients" tagline, and a "System Operational" status badge.
+
+A placeholder "Chiron AI Assistant" chat interface component.
+
+The main "Practice Management Modules" grid component.
+
+A footer with copyright and compliance information.
+
+ModulesGrid.tsx (Main Component):
+This is the most important component.
+
+It must use @tanstack/react-query to fetch data from the /api/modules endpoint.
+
+It must display a loading state while fetching.
+
+It must display the modules in a two-row grid.
+
+Layout Specification (Crucial):
+
+Top Row (from left to right): ChironCQC, ChironHR, ChironMessaging.
+
+Bottom Row (from left to right): ChironMoney, ChironStock, ChironFacilities.
+
+Each module in the grid should be a clickable <Card> component wrapped in a <Link> from wouter that navigates to its respective route (e.g., the ChironHR card links to /modules/hr).
+
+The styling of each card should closely match the screenshot, including the icon, title, description, status, and call-to-action link (e.g., "Manage Team →").
+
+Placeholder Module Pages:
+For each module route (e.g., /modules/hr), create a simple placeholder component that just displays its title (e.g., <h1>ChironHR Page</h1>).
