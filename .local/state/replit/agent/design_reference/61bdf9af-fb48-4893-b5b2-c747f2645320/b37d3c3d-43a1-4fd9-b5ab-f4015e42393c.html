@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChironIQ - Healthcare Practice Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        'chiron-blue': '#1e3a8a',
+                        'chiron-orange': '#d97706',
+                        'medical-green': '#059669',
+                        'clinical-gray': '#64748b',
+                        'alert-red': '#dc2626'
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="font-inter bg-slate-50 min-h-screen">
+    <!-- Main Dashboard View -->
+    <div id="mainDashboard" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <!-- ChironIQ Logo with Centaur Archer -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-chiron-blue rounded-lg flex items-center justify-center">
+                            <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-chiron-blue">ChironIQ</h1>
+                            <p class="text-sm text-clinical-gray">Focus On Patients</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-medical-green bg-opacity-10 px-3 py-2 rounded-lg">
+                        <div class="w-2 h-2 bg-medical-green rounded-full animate-pulse"></div>
+                        <span class="text-sm font-medium text-medical-green">System Operational</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-chiron-blue rounded-full flex items-center justify-center">
+                            <i data-lucide="user" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <span class="text-sm font-medium text-slate-700">Dr. Sarah Wilson</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-6 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Practice Management Modules -->
+                <div class="lg:col-span-3">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Practice Management Modules</h2>
+                        <p class="text-clinical-gray">Comprehensive tools to manage your healthcare practice efficiently</p>
+                    </div>
+
+                    <!-- Module Grid - 3x2 Layout -->
+                    <div class="grid grid-cols-3 gap-6">
+                        <!-- ChironCQC -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group" onclick="showModule('cqc')">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="shield-check" class="w-6 h-6 text-chiron-blue"></i>
+                                </div>
+                                <div class="w-3 h-3 bg-medical-green rounded-full"></div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">ChironCQC</h3>
+                            <p class="text-sm text-clinical-gray mb-4">CQC compliance tracking, regulatory checklists, and inspection preparation tools.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                <span>Manage Compliance</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironHR -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group" onclick="showModule('hr')">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="users" class="w-6 h-6 text-chiron-blue"></i>
+                                </div>
+                                <div class="w-3 h-3 bg-medical-green rounded-full"></div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">ChironHR</h3>
+                            <p class="text-sm text-clinical-gray mb-4">Staff scheduling, rota management, and HR compliance tools for your practice team.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                <span>Manage Team</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironMessaging -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group" onclick="showModule('messaging')">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="message-square" class="w-6 h-6 text-chiron-blue"></i>
+                                </div>
+                                <div class="w-3 h-3 bg-medical-green rounded-full"></div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">ChironMessaging</h3>
+                            <p class="text-sm text-clinical-gray mb-4">Secure internal communication system for staff collaboration and coordination.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                <span>Open Messages</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironMoney -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group" onclick="showModule('money')">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-chiron-orange bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="pound-sterling" class="w-6 h-6 text-chiron-orange"></i>
+                                </div>
+                                <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">ChironMoney</h3>
+                            <p class="text-sm text-clinical-gray mb-4">Financial management, billing automation, and revenue tracking for private services.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                <span>Manage Finances</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironStock -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group" onclick="showModule('stock')">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-chiron-orange bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="package" class="w-6 h-6 text-chiron-orange"></i>
+                                </div>
+                                <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">ChironStock</h3>
+                            <p class="text-sm text-clinical-gray mb-4">Inventory management, stock tracking, and automated reordering for medical supplies.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                <span>Manage Stock</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironFacilities -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group" onclick="showModule('facilities')">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="building" class="w-6 h-6 text-chiron-blue"></i>
+                                </div>
+                                <div class="w-3 h-3 bg-medical-green rounded-full"></div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">ChironFacilities</h3>
+                            <p class="text-sm text-clinical-gray mb-4">Facility management, maintenance tracking, and asset management for your practice.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                <span>Manage Facilities</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chiron AI Assistant -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 h-fit sticky top-8">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-chiron-blue to-chiron-orange rounded-lg flex items-center justify-center mr-3">
+                                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-900">Chiron AI Assistant</h3>
+                                <p class="text-xs text-clinical-gray">Always here to help</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <div class="flex">
+                                <div class="w-6 h-6 bg-chiron-blue rounded-full flex-shrink-0 flex items-center justify-center mr-2">
+                                    <i data-lucide="bot" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg p-3 text-sm">
+                                    <p>Good morning! Your CQC compliance score is at 98%. Would you like me to review the remaining items?</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Ask anything..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                            <button class="bg-chiron-blue text-white px-3 py-2 rounded-lg hover:bg-blue-800 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ChironHR Module -->
+    <div id="hrModule" class="min-h-screen hidden">
+        <header class="bg-white border-b border-slate-200 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="showDashboard()" class="flex items-center space-x-2 text-clinical-gray hover:text-chiron-blue">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <div class="w-px h-6 bg-slate-200"></div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                            <i data-lucide="users" class="w-5 h-5 text-chiron-blue"></i>
+                        </div>
+                        <h1 class="text-xl font-semibold text-slate-900">ChironHR</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-medical-green bg-opacity-10 px-3 py-2 rounded-lg">
+                    <div class="w-2 h-2 bg-medical-green rounded-full"></div>
+                    <span class="text-sm font-medium text-medical-green">All Systems Operational</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div class="lg:col-span-3">
+                    <!-- Key Metrics -->
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">Total Staff</h3>
+                                <i data-lucide="users" class="w-5 h-5 text-chiron-blue"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">24</p>
+                            <p class="text-sm text-medical-green">+2 this month</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">On Duty Today</h3>
+                                <i data-lucide="clock" class="w-5 h-5 text-chiron-blue"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">18</p>
+                            <p class="text-sm text-clinical-gray">75% capacity</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">Pending Reviews</h3>
+                                <i data-lucide="clipboard" class="w-5 h-5 text-chiron-orange"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">3</p>
+                            <p class="text-sm text-amber-600">Due this week</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">Leave Requests</h3>
+                                <i data-lucide="calendar" class="w-5 h-5 text-chiron-blue"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">7</p>
+                            <p class="text-sm text-clinical-gray">Awaiting approval</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button onclick="showStaffManagement()" class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="user-plus" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Manage Staff</span>
+                            </button>
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="calendar" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">View Rota</span>
+                            </button>
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="file-text" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Appraisals</span>
+                            </button>
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="book-open" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Policies</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Today's Rota -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Today's Rota</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-chiron-blue rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium text-sm">DW</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">Dr. Sarah Wilson</p>
+                                        <p class="text-sm text-clinical-gray">General Practitioner</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-slate-900">08:00 - 18:00</p>
+                                    <p class="text-xs text-medical-green">On duty</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium text-sm">SJ</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">Sister Jane Smith</p>
+                                        <p class="text-sm text-clinical-gray">Practice Nurse</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-slate-900">09:00 - 17:00</p>
+                                    <p class="text-xs text-medical-green">On duty</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-clinical-gray rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium text-sm">MB</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">Mark Brown</p>
+                                        <p class="text-sm text-clinical-gray">Receptionist</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-slate-900">08:30 - 16:30</p>
+                                    <p class="text-xs text-amber-600">Break 12:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLM Guide -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 h-fit sticky top-8">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-chiron-blue to-chiron-orange rounded-lg flex items-center justify-center mr-3">
+                                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-900">HR Assistant</h3>
+                                <p class="text-xs text-clinical-gray">Staff management guidance</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <div class="flex">
+                                <div class="w-6 h-6 bg-chiron-blue rounded-full flex-shrink-0 flex items-center justify-center mr-2">
+                                    <i data-lucide="bot" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg p-3 text-sm">
+                                    <p>I can help you with staff onboarding, rota management, and compliance tracking. What would you like to know?</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Ask about HR..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                            <button class="bg-chiron-blue text-white px-3 py-2 rounded-lg hover:bg-blue-800 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Staff Management Interface -->
+    <div id="staffManagement" class="min-h-screen hidden">
+        <header class="bg-white border-b border-slate-200 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="showModule('hr')" class="flex items-center space-x-2 text-clinical-gray hover:text-chiron-blue">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to HR</span>
+                    </button>
+                    <div class="w-px h-6 bg-slate-200"></div>
+                    <h1 class="text-xl font-semibold text-slate-900">Staff Management</h1>
+                </div>
+                <button onclick="showAddStaff()" class="bg-chiron-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors flex items-center space-x-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Add Staff Member</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div class="lg:col-span-3">
+                    <!-- Search and Filters -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <input type="text" placeholder="Search staff members..." class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                            </div>
+                            <select class="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue">
+                                <option>All Departments</option>
+                                <option>Clinical</option>
+                                <option>Administration</option>
+                                <option>Management</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Staff Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Staff Member Card -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">DW</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-slate-900">Dr. Sarah Wilson</h3>
+                                    <p class="text-sm text-clinical-gray">General Practitioner</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Employee ID:</span>
+                                    <span class="text-slate-900">EMP001</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Department:</span>
+                                    <span class="text-slate-900">Clinical</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Status:</span>
+                                    <span class="text-medical-green">Active</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 bg-slate-100 text-slate-700 py-2 px-3 rounded-lg text-sm hover:bg-slate-200 transition-colors">View</button>
+                                <button class="flex-1 bg-chiron-blue text-white py-2 px-3 rounded-lg text-sm hover:bg-blue-800 transition-colors">Edit</button>
+                            </div>
+                        </div>
+
+                        <!-- Additional Staff Cards -->
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="w-12 h-12 bg-medical-green rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">SJ</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-slate-900">Sister Jane Smith</h3>
+                                    <p class="text-sm text-clinical-gray">Practice Nurse</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Employee ID:</span>
+                                    <span class="text-slate-900">EMP002</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Department:</span>
+                                    <span class="text-slate-900">Clinical</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Status:</span>
+                                    <span class="text-medical-green">Active</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 bg-slate-100 text-slate-700 py-2 px-3 rounded-lg text-sm hover:bg-slate-200 transition-colors">View</button>
+                                <button class="flex-1 bg-chiron-blue text-white py-2 px-3 rounded-lg text-sm hover:bg-blue-800 transition-colors">Edit</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="w-12 h-12 bg-chiron-orange rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">MB</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-slate-900">Mark Brown</h3>
+                                    <p class="text-sm text-clinical-gray">Practice Manager</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Employee ID:</span>
+                                    <span class="text-slate-900">EMP003</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Department:</span>
+                                    <span class="text-slate-900">Administration</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-clinical-gray">Status:</span>
+                                    <span class="text-amber-600">Review Due</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 bg-slate-100 text-slate-700 py-2 px-3 rounded-lg text-sm hover:bg-slate-200 transition-colors">View</button>
+                                <button class="flex-1 bg-chiron-blue text-white py-2 px-3 rounded-lg text-sm hover:bg-blue-800 transition-colors">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLM Guide -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 h-fit sticky top-8">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-chiron-blue to-chiron-orange rounded-lg flex items-center justify-center mr-3">
+                                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-900">Staff Guide</h3>
+                                <p class="text-xs text-clinical-gray">Management assistance</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <div class="flex">
+                                <div class="w-6 h-6 bg-chiron-blue rounded-full flex-shrink-0 flex items-center justify-center mr-2">
+                                    <i data-lucide="bot" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg p-3 text-sm">
+                                    <p>I can help you with onboarding new staff, managing contracts, and ensuring compliance. What would you like to know?</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Ask about staff..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                            <button class="bg-chiron-blue text-white px-3 py-2 rounded-lg hover:bg-blue-800 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ChironMessaging Module -->
+    <div id="messagingModule" class="min-h-screen hidden">
+        <header class="bg-white border-b border-slate-200 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="showDashboard()" class="flex items-center space-x-2 text-clinical-gray hover:text-chiron-blue">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <div class="w-px h-6 bg-slate-200"></div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                            <i data-lucide="message-square" class="w-5 h-5 text-chiron-blue"></i>
+                        </div>
+                        <h1 class="text-xl font-semibold text-slate-900">ChironMessaging</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-medical-green bg-opacity-10 px-3 py-2 rounded-lg">
+                    <div class="w-2 h-2 bg-medical-green rounded-full"></div>
+                    <span class="text-sm font-medium text-medical-green">Secure Connection Active</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-6">
+            <div class="grid grid-cols-12 gap-6 h-[calc(100vh-140px)]">
+                <!-- Left Column - Conversations -->
+                <div class="col-span-3 bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-semibold text-slate-900 mb-3">Messages</h3>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Search conversations..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                            <button class="bg-chiron-blue text-white px-3 py-2 rounded-lg">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-y-auto h-full">
+                        <div class="p-2 space-y-1">
+                            <div class="p-3 hover:bg-slate-50 rounded-lg cursor-pointer border-l-4 border-chiron-blue bg-blue-50">
+                                <div class="flex items-center space-x-3 mb-1">
+                                    <div class="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium text-xs">SJ</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-slate-900 truncate">Sister Jane Smith</p>
+                                        <p class="text-xs text-clinical-gray">2 mins ago</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-clinical-gray truncate ml-11">Patient Johnson's test results are ready...</p>
+                            </div>
+                            <div class="p-3 hover:bg-slate-50 rounded-lg cursor-pointer">
+                                <div class="flex items-center space-x-3 mb-1">
+                                    <div class="w-8 h-8 bg-chiron-orange rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium text-xs">MB</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-slate-900 truncate">Mark Brown</p>
+                                        <p class="text-xs text-clinical-gray">1 hour ago</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-clinical-gray truncate ml-11">Can we schedule a team meeting for Friday?</p>
+                            </div>
+                            <div class="p-3 hover:bg-slate-50 rounded-lg cursor-pointer">
+                                <div class="flex items-center space-x-3 mb-1">
+                                    <div class="w-8 h-8 bg-clinical-gray rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium text-xs">TC</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-slate-900 truncate">Team Chat</p>
+                                        <p class="text-xs text-clinical-gray">Yesterday</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-clinical-gray truncate ml-11">Don't forget about the CQC inspection prep...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Column - Chat -->
+                <div class="col-span-6 bg-white rounded-xl border border-slate-200 flex flex-col">
+                    <div class="p-4 border-b border-slate-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold text-sm">SJ</span>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-900">Sister Jane Smith</h3>
+                                <p class="text-sm text-medical-green flex items-center">
+                                    <span class="w-2 h-2 bg-medical-green rounded-full mr-2"></span>
+                                    Online
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div class="flex">
+                            <div class="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <span class="text-white font-medium text-xs">SJ</span>
+                            </div>
+                            <div class="bg-slate-100 rounded-lg p-3 max-w-xs">
+                                <p class="text-sm text-slate-900">Hi Dr. Wilson, the test results for the morning appointments are ready for review.</p>
+                                <p class="text-xs text-clinical-gray mt-1">10:15 AM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <div class="bg-chiron-blue text-white rounded-lg p-3 max-w-xs">
+                                <p class="text-sm">Perfect timing! I'll review them now. Any urgent cases?</p>
+                                <p class="text-xs text-blue-200 mt-1">10:17 AM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex">
+                            <div class="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <span class="text-white font-medium text-xs">SJ</span>
+                            </div>
+                            <div class="bg-slate-100 rounded-lg p-3 max-w-xs">
+                                <p class="text-sm text-slate-900">Mrs. Thompson's blood work shows elevated levels - might want to schedule a follow-up.</p>
+                                <p class="text-xs text-clinical-gray mt-1">10:18 AM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-amber-600"></i>
+                                    <span class="text-sm text-amber-800">Message scanned and approved by AI safety system</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-t border-slate-200">
+                        <div class="flex space-x-3">
+                            <input type="text" placeholder="Type a secure message..." class="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                            <button class="bg-chiron-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-clinical-gray mt-2">Messages are encrypted and monitored for patient data protection</p>
+                    </div>
+                </div>
+
+                <!-- Right Column - Announcements -->
+                <div class="col-span-3 bg-white rounded-xl border border-slate-200">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-semibold text-slate-900">Practice Updates</h3>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div class="flex items-start space-x-2">
+                                <i data-lucide="bell" class="w-4 h-4 text-chiron-blue mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-chiron-blue">System Maintenance</p>
+                                    <p class="text-xs text-blue-700 mt-1">Scheduled downtime Sunday 2-4 AM</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            <div class="flex items-start space-x-2">
+                                <i data-lucide="calendar" class="w-4 h-4 text-amber-600 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-amber-800">CQC Inspection</p>
+                                    <p class="text-xs text-amber-700 mt-1">Preparation meeting tomorrow 3 PM</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div class="flex items-start space-x-2">
+                                <i data-lucide="users" class="w-4 h-4 text-medical-green mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-green-800">New Staff Member</p>
+                                    <p class="text-xs text-green-700 mt-1">Welcome Dr. Emily Chen starting Monday</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-200">
+                            <h4 class="font-medium text-slate-900 mb-3">Quick Actions</h4>
+                            <div class="space-y-2">
+                                <button class="w-full text-left p-2 text-sm text-clinical-gray hover:bg-slate-50 rounded">
+                                    <i data-lucide="broadcast" class="w-4 h-4 inline mr-2"></i>
+                                    Send Announcement
+                                </button>
+                                <button class="w-full text-left p-2 text-sm text-clinical-gray hover:bg-slate-50 rounded">
+                                    <i data-lucide="users" class="w-4 h-4 inline mr-2"></i>
+                                    View All Staff
+                                </button>
+                                <button class="w-full text-left p-2 text-sm text-clinical-gray hover:bg-slate-50 rounded">
+                                    <i data-lucide="settings" class="w-4 h-4 inline mr-2"></i>
+                                    Message Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ChironMoney Module -->
+    <div id="moneyModule" class="min-h-screen hidden">
+        <header class="bg-white border-b border-slate-200 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="showDashboard()" class="flex items-center space-x-2 text-clinical-gray hover:text-chiron-blue">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <div class="w-px h-6 bg-slate-200"></div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-chiron-orange bg-opacity-10 rounded-lg flex items-center justify-center">
+                            <i data-lucide="pound-sterling" class="w-5 h-5 text-chiron-orange"></i>
+                        </div>
+                        <h1 class="text-xl font-semibold text-slate-900">ChironMoney</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-amber-100 px-3 py-2 rounded-lg">
+                    <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                    <span class="text-sm font-medium text-amber-700">Bank Connection Required</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-6 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div class="lg:col-span-3">
+                    <!-- Financial Disclaimer -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="info" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <p class="text-sm text-amber-800">
+                                    <strong>Disclaimer:</strong> ChironMoney provides financial estimates for informational purposes only and is not a substitute for professional accounting advice. Please consult with a qualified accountant for financial decisions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Financial Metrics -->
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">Monthly Revenue</h3>
+                                <i data-lucide="trending-up" class="w-5 h-5 text-medical-green"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">£24,580</p>
+                            <p class="text-sm text-medical-green">+12% vs last month</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">Expenses</h3>
+                                <i data-lucide="credit-card" class="w-5 h-5 text-chiron-orange"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">£8,420</p>
+                            <p class="text-sm text-clinical-gray">This month</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">Profit/Loss</h3>
+                                <i data-lucide="bar-chart-3" class="w-5 h-5 text-chiron-blue"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">£16,160</p>
+                            <p class="text-sm text-medical-green">65.7% margin</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-slate-200 p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-clinical-gray">VAT Due</h3>
+                                <i data-lucide="file-text" class="w-5 h-5 text-alert-red"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">£4,916</p>
+                            <p class="text-sm text-alert-red">Due in 12 days</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="file-plus" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Create Invoice</span>
+                            </button>
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="receipt" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Log Expense</span>
+                            </button>
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="building-2" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Connect Bank</span>
+                            </button>
+                            <button class="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <i data-lucide="calculator" class="w-8 h-8 text-chiron-blue mb-2"></i>
+                                <span class="text-sm font-medium text-slate-700">Tax Calculator</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-slate-900">Recent Transactions</h3>
+                            <button class="text-chiron-blue text-sm font-medium hover:text-chiron-orange transition-colors">View All</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-left">
+                                        <th class="py-2 font-medium text-clinical-gray">Date</th>
+                                        <th class="py-2 font-medium text-clinical-gray">Description</th>
+                                        <th class="py-2 font-medium text-clinical-gray">Category</th>
+                                        <th class="py-2 font-medium text-clinical-gray text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr>
+                                        <td class="py-3 text-slate-900">Dec 15</td>
+                                        <td class="py-3 text-slate-900">Patient Consultation Fee</td>
+                                        <td class="py-3">
+                                            <span class="bg-medical-green bg-opacity-10 text-medical-green px-2 py-1 rounded text-xs">Income</span>
+                                        </td>
+                                        <td class="py-3 text-right text-medical-green font-medium">+£180.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-slate-900">Dec 14</td>
+                                        <td class="py-3 text-slate-900">Medical Supplies Purchase</td>
+                                        <td class="py-3">
+                                            <span class="bg-chiron-orange bg-opacity-10 text-chiron-orange px-2 py-1 rounded text-xs">Expense</span>
+                                        </td>
+                                        <td class="py-3 text-right text-slate-900 font-medium">-£245.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-slate-900">Dec 14</td>
+                                        <td class="py-3 text-slate-900">Private Health Check</td>
+                                        <td class="py-3">
+                                            <span class="bg-medical-green bg-opacity-10 text-medical-green px-2 py-1 rounded text-xs">Income</span>
+                                        </td>
+                                        <td class="py-3 text-right text-medical-green font-medium">+£350.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-slate-900">Dec 13</td>
+                                        <td class="py-3 text-slate-900">Office Rent</td>
+                                        <td class="py-3">
+                                            <span class="bg-chiron-orange bg-opacity-10 text-chiron-orange px-2 py-1 rounded text-xs">Expense</span>
+                                        </td>
+                                        <td class="py-3 text-right text-slate-900 font-medium">-£1,200.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tax & Compliance Alerts -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <h3 class="text-lg font-semibold text-slate-900 mb-4">Tax & Compliance Alerts</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <i data-lucide="alert-circle" class="w-5 h-5 text-alert-red mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-red-800">VAT Return Due Soon</p>
+                                    <p class="text-xs text-red-600">VAT return for Q4 due on 31st December (12 days remaining)</p>
+                                </div>
+                                <button class="text-alert-red text-sm font-medium hover:text-red-800">Submit</button>
+                            </div>
+                            <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <i data-lucide="clock" class="w-5 h-5 text-amber-600 mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-amber-800">Corporation Tax Estimation</p>
+                                    <p class="text-xs text-amber-600">Estimated liability for this period: £3,232</p>
+                                </div>
+                                <button class="text-amber-600 text-sm font-medium hover:text-amber-800">Calculate</button>
+                            </div>
+                            <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <i data-lucide="info" class="w-5 h-5 text-chiron-blue mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-blue-800">Open Banking Integration</p>
+                                    <p class="text-xs text-blue-600">Connect your business bank account for automatic transaction imports</p>
+                                </div>
+                                <button class="text-chiron-blue text-sm font-medium hover:text-blue-800">Connect</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLM Financial Guide -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl border border-slate-200 p-6 h-fit sticky top-8">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-chiron-orange to-chiron-blue rounded-lg flex items-center justify-center mr-3">
+                                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-900">Financial Assistant</h3>
+                                <p class="text-xs text-clinical-gray">Tax & accounting guidance</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <div class="flex">
+                                <div class="w-6 h-6 bg-chiron-orange rounded-full flex-shrink-0 flex items-center justify-center mr-2">
+                                    <i data-lucide="bot" class="w-3 h-3 text-white"></i>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg p-3 text-sm">
+                                    <p>I can help you with VAT submissions, corporation tax calculations, and expense categorization. Your VAT return is due soon - shall I help you prepare it?</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Ask about finances..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-chiron-orange focus:border-transparent">
+                            <button class="bg-chiron-orange text-white px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 px-6 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm text-clinical-gray mb-2">© 2024 ChironIQ Healthcare Management Platform. All rights reserved.</p>
+            <p class="text-xs text-clinical-gray">CQC Registered Provider | Data Protection Act Compliant | ISO 27001 Certified</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Navigation Functions
+        function showDashboard() {
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('hrModule').classList.add('hidden');
+            document.getElementById('staffManagement').classList.add('hidden');
+            document.getElementById('messagingModule').classList.add('hidden');
+            document.getElementById('moneyModule').classList.add('hidden');
+        }
+
+        function showModule(moduleId) {
+            // Hide all views
+            document.getElementById('mainDashboard').classList.add('hidden');
+            document.getElementById('hrModule').classList.add('hidden');
+            document.getElementById('staffManagement').classList.add('hidden');
+            document.getElementById('messagingModule').classList.add('hidden');
+            document.getElementById('moneyModule').classList.add('hidden');
+            
+            // Show selected module
+            switch(moduleId) {
+                case 'hr':
+                    document.getElementById('hrModule').classList.remove('hidden');
+                    break;
+                case 'messaging':
+                    document.getElementById('messagingModule').classList.remove('hidden');
+                    break;
+                case 'money':
+                    document.getElementById('moneyModule').classList.remove('hidden');
+                    break;
+                case 'cqc':
+                case 'stock':
+                case 'facilities':
+                    // Placeholder modules - show alert for now
+                    alert(`${moduleId.charAt(0).toUpperCase() + moduleId.slice(1)} module is under development. Full functionality coming soon!`);
+                    break;
+                default:
+                    showDashboard();
+            }
+        }
+
+        function showStaffManagement() {
+            document.getElementById('hrModule').classList.add('hidden');
+            document.getElementById('staffManagement').classList.remove('hidden');
+        }
+
+        function showAddStaff() {
+            // TODO: Implement staff addition form modal
+            alert('Add Staff Member form would open here. This would include comprehensive fields for all staff data as specified in the requirements.');
+        }
+
+        // Simulate real-time messaging updates
+        (function() {
+            const messageIndicators = document.querySelectorAll('.animate-pulse');
+            setInterval(() => {
+                messageIndicators.forEach(indicator => {
+                    indicator.style.opacity = indicator.style.opacity === '0.5' ? '1' : '0.5';
+                });
+            }, 2000);
+        })();
+
+        // Initialize the dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Re-initialize Lucide icons after any dynamic content changes
+            lucide.createIcons();
+            
+            // Show main dashboard by default
+            showDashboard();
+        });
+    </script>
+</body>
+</html>

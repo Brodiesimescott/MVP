@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChironIQ - Healthcare Practice Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'chiron-blue': '#1E3A8A',
+                        'chiron-orange': '#B45309',
+                        'chiron-success': '#059669',
+                        'chiron-warning': '#DC2626',
+                        'chiron-gray': '#64748B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        };
+    </script>
+</head>
+<body class="font-inter bg-gray-50 min-h-screen">
+    
+    <!-- @COMPONENT: MainApp -->
+    <div id="app" class="min-h-screen">
+        
+        <!-- Main Dashboard View -->
+        <div id="dashboard-view" class="block">
+            <!-- @COMPONENT: Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center py-4">
+                        <div class="flex items-center space-x-4">
+                            <!-- ChironIQ Logo with Centaur Archer -->
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 relative">
+                                    <!-- Centaur archer silhouette in brand colors -->
+                                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                                        <path d="M30 70c0-5 2-8 5-10l8-5c3-2 7-2 10 0l5 3c2 1 4 1 6 0l3-2c4-3 9-3 13 0l4 3c2 2 5 2 7 0l2-2c3-3 8-3 11 0 2 2 3 5 2 8l-2 6c-1 3 0 6 3 8l4 3c3 2 4 6 2 10l-2 4c-1 2-1 5 1 7l3 4c2 3 1 7-2 9l-5 3c-2 1-3 4-2 6l2 5c1 3-1 7-4 8l-6 2c-3 1-5 4-4 7l1 6c0 4-3 7-7 7h-6c-3 0-6 2-7 5l-2 6c-1 3-5 5-8 4l-6-2c-3-1-6 1-7 4l-3 5c-2 3-6 4-9 2l-5-3c-2-1-5-1-7 1l-4 4c-2 2-6 2-8 0l-4-4c-2-2-5-2-7-1l-5 3c-3 2-7 1-9-2l-3-5c-1-3-4-5-7-4l-6 2c-3 1-7-1-8-4l-2-6c-1-3-4-5-7-5h-6c-4 0-7-3-7-7l1-6c1-3-1-6-4-7l-6-2c-3-1-5-5-4-8l2-5c1-2 0-5-2-6l-5-3c-3-2-4-6-2-9l3-4c2-2 2-5 1-7l-2-4c-2-4-1-8 2-10l4-3c3-2 4-5 3-8l-2-6c-1-3 0-6 2-8 3-3 8-3 11 0l2 2c2 2 5 2 7 0l4-3c4-3 9-3 13 0l3 2c2 1 4 1 6 0l5-3c3-2 7-2 10 0l8 5c3 2 5 5 5 10z" fill="#1E3A8A"/>
+                                        <path d="M35 45c0-2 1-4 3-5l5-3c2-1 4-1 6 0l3 2c1 0 2 0 3 0l2-1c2-2 5-2 7 0l2 2c1 1 3 1 4 0l1-1c2-2 4-2 6 0 1 1 2 3 1 4l-1 3c0 2 0 3 2 4l2 2c2 1 2 3 1 5l-1 2c0 1 0 3 1 4l2 2c1 2 0 4-1 5l-3 2c-1 0-2 2-1 3l1 3c0 2-1 4-2 4l-3 1c-2 0-3 2-2 4l1 3c0 2-2 4-4 4h-3c-2 0-3 1-4 3l-1 3c-1 2-3 3-4 2l-3-1c-2-1-3 0-4 2l-2 3c-1 2-3 2-5 1l-3-2c-1-1-3-1-4 0l-2 2c-1 1-3 1-4 0l-2-2c-1-1-3-1-4 0l-3 2c-2 1-4-1-5-1l-2-3c-1-2-2-3-4-2l-3 1c-1 1-3 0-4-2l-1-3c-1-2-2-3-4-3h-3c-2 0-4-2-4-4l1-3c0-2-1-4-2-4l-3-1c-1 0-2-2-2-4l1-3c0-1-1-3-1-3l-3-2c-1-1-2-3-1-5l2-2c1-1 1-3 1-4l-1-2c-1-2-1-4 1-5l2-2c2-1 2-2 2-4l-1-3c-1-1 0-3 1-4 2-2 4-2 6 0l1 1c1 1 3 1 4 0l2-2c2-2 5-2 7 0l2 1c1 0 2 0 3 0l3-2c2-1 4-1 6 0l5 3c2 1 3 3 3 5z" fill="#B45309"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl font-bold text-chiron-blue">ChironIQ</h1>
+                                    <p class="text-sm text-chiron-gray">Focus On Patients</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- System Status -->
+                            <div class="flex items-center space-x-2 bg-emerald-50 text-chiron-success px-3 py-1 rounded-full text-sm font-medium">
+                                <div class="w-2 h-2 bg-chiron-success rounded-full animate-pulse"></div>
+                                <span>System Operational</span>
+                            </div>
+                            
+                            <!-- User Menu -->
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-chiron-blue rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                    <span data-bind="user.initials">JS</span>
+                                </div>
+                                <span class="text-sm text-gray-700" data-bind="user.name">Dr. Jane Smith</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                
+                <!-- @COMPONENT: ChironAIAssistant -->
+                <div class="mb-8">
+                    <div class="bg-gradient-to-r from-chiron-blue to-blue-700 rounded-xl p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="bot" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-semibold">Chiron AI Assistant</h2>
+                                    <p class="text-blue-100">How can I help you manage your practice today?</p>
+                                </div>
+                            </div>
+                            <button class="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg flex items-center space-x-2">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                <span>Start Chat</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ChironAIAssistant -->
+
+                <!-- @COMPONENT: ModulesGrid -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Practice Management Modules</h2>
+                    
+                    <!-- Loading State -->
+                    <div id="modules-loading" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- @MAP: Array(6).fill().map((_, i) => ( -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 animate-pulse">
+                                <div class="w-12 h-12 bg-gray-200 rounded-xl mb-4"></div>
+                                <div class="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded w-full mb-1"></div>
+                                <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+                    </div>
+
+                    <!-- Modules Grid -->
+                    <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- ChironCQC Module -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" data-module="cqc">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-chiron-blue">
+                                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-chiron-success rounded-full"></div>
+                                    <span class="text-xs text-chiron-success font-medium">Good</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironCQC</h3>
+                            <p class="text-sm text-gray-600 mb-4">CQC compliance tracking, regulatory checklists, and inspection preparation tools.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-blue-700">
+                                <span>Manage Compliance</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironHR Module -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" data-module="hr">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-chiron-success">
+                                    <i data-lucide="users" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-chiron-success rounded-full"></div>
+                                    <span class="text-xs text-chiron-success font-medium">Good</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironHR</h3>
+                            <p class="text-sm text-gray-600 mb-4">Staff scheduling, rota management, and HR compliance tools for your practice team.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-blue-700">
+                                <span>Manage Team</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironMessaging Module -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" data-module="messaging">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+                                    <i data-lucide="message-square" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-chiron-success rounded-full"></div>
+                                    <span class="text-xs text-chiron-success font-medium">Good</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironMessaging</h3>
+                            <p class="text-sm text-gray-600 mb-4">Secure internal communication system for staff collaboration and coordination.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-blue-700">
+                                <span>View Messages</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironMoney Module -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" data-module="finance">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+                                    <i data-lucide="pound-sterling" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                    <span class="text-xs text-amber-600 font-medium">Attention</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironMoney</h3>
+                            <p class="text-sm text-gray-600 mb-4">Financial management, billing automation, and revenue tracking for private services.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-blue-700">
+                                <span>View Finances</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironStock Module -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" data-module="stock">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
+                                    <i data-lucide="package" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                    <span class="text-xs text-amber-600 font-medium">Attention</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironStock</h3>
+                            <p class="text-sm text-gray-600 mb-4">Inventory management, stock tracking, and automated reordering for medical supplies.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-blue-700">
+                                <span>Manage Stock</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironFacilities Module -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" data-module="facilities">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center text-teal-600">
+                                    <i data-lucide="building" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-chiron-success rounded-full"></div>
+                                    <span class="text-xs text-chiron-success font-medium">Good</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironFacilities</h3>
+                            <p class="text-sm text-gray-600 mb-4">Facility management, maintenance tracking, and asset management for your practice.</p>
+                            <div class="flex items-center text-chiron-blue text-sm font-medium group-hover:text-blue-700">
+                                <span>Manage Facilities</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ModulesGrid -->
+
+                <!-- @COMPONENT: Footer -->
+                <footer class="bg-gray-50 rounded-xl p-6 mt-8">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                        <div class="text-sm text-gray-600">
+                            <p>&copy; 2024 ChironIQ Ltd. All rights reserved.</p>
+                            <p>NHS Digital Compliant | Data Protection Act 2018 | GDPR Compliant</p>
+                        </div>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                            <span>v2.1.4</span>
+                            <span>Last updated: Today</span>
+                        </div>
+                    </div>
+                </footer>
+                <!-- @END_COMPONENT: Footer -->
+
+            </main>
+        </div>
+
+        <!-- ChironHR Module View -->
+        <div id="hr-module-view" class="hidden">
+            
+            <!-- HR Dashboard -->
+            <div id="hr-dashboard" class="block">
+                
+                <!-- @COMPONENT: HRHeader -->
+                <header class="bg-white shadow-sm border-b border-gray-200">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-center py-4">
+                            <div class="flex items-center space-x-4">
+                                <button class="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors" data-event="click:goBack">
+                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                </button>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-chiron-success">
+                                        <i data-lucide="users" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h1 class="text-xl font-bold text-gray-900">ChironHR</h1>
+                                        <p class="text-sm text-gray-600">Human Resources Management</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <!-- Permission-based buttons - PowerUser only -->
+                                <div data-permission="PowerUser" class="flex items-center space-x-2">
+                                    <button class="bg-chiron-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                        <span>Add Staff</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-chiron-blue rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                        <span data-bind="user.initials">JS</span>
+                                    </div>
+                                    <span class="text-sm text-gray-700" data-bind="user.name">Dr. Jane Smith</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- @END_COMPONENT: HRHeader -->
+
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div class="flex gap-8">
+                        
+                        <!-- Main Content -->
+                        <div class="flex-1">
+                            
+                            <!-- @COMPONENT: HRMetrics -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Total Staff</p>
+                                            <p class="text-2xl font-bold text-gray-900" data-bind="metrics.totalStaff">12</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-chiron-blue">
+                                            <i data-lucide="users" class="w-5 h-5"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">On Duty Today</p>
+                                            <p class="text-2xl font-bold text-chiron-success" data-bind="metrics.onDuty">8</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-chiron-success">
+                                            <i data-lucide="clock" class="w-5 h-5"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Pending Reviews</p>
+                                            <p class="text-2xl font-bold text-amber-600" data-bind="metrics.pendingReviews">3</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+                                            <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Leave Requests</p>
+                                            <p class="text-2xl font-bold text-purple-600" data-bind="metrics.leaveRequests">2</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+                                            <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: HRMetrics -->
+
+                            <!-- @COMPONENT: QuickActions -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-center" data-route="/modules/hr/staff">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-chiron-blue mb-2">
+                                            <i data-lucide="user-check" class="w-5 h-5"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">Staff Management</span>
+                                    </button>
+                                    
+                                    <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-center" data-route="/modules/hr/rota">
+                                        <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-chiron-success mb-2">
+                                            <i data-lucide="calendar" class="w-5 h-5"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">Rota & Scheduling</span>
+                                    </button>
+                                    
+                                    <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-center" data-route="/modules/hr/leave">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-2">
+                                            <i data-lucide="plane" class="w-5 h-5"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">Leave Management</span>
+                                    </button>
+                                    
+                                    <button class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-center" data-route="/modules/hr/appraisals">
+                                        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 mb-2">
+                                            <i data-lucide="star" class="w-5 h-5"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">Appraisals</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: QuickActions -->
+
+                            <!-- @COMPONENT: TodaysRota -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Today's Rota</h2>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                JS
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900" data-mock="true">Dr. Jane Smith</p>
+                                                <p class="text-sm text-gray-600">General Practitioner</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium text-gray-900">08:00 - 18:00</p>
+                                            <p class="text-sm text-green-600">On Duty</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                MJ
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900" data-mock="true">Mary Johnson</p>
+                                                <p class="text-sm text-gray-600">Practice Nurse</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium text-gray-900">09:00 - 17:00</p>
+                                            <p class="text-sm text-green-600">On Duty</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                RB
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900" data-mock="true">Robert Brown</p>
+                                                <p class="text-sm text-gray-600">Healthcare Assistant</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium text-gray-900">12:00 - 20:00</p>
+                                            <p class="text-sm text-yellow-600">Starting Soon</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: TodaysRota -->
+
+                            <!-- @COMPONENT: ComplianceAlerts -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Compliance Alerts</h2>
+                                <div class="space-y-3">
+                                    <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-red-100 rounded-xl flex items-center justify-center text-red-600 mt-0.5">
+                                            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">DBS Check Expiry</p>
+                                            <p class="text-sm text-gray-600" data-mock="true">Sarah Wilson's DBS check expires in 15 days</p>
+                                            <p class="text-xs text-red-600 mt-1">Action Required</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start space-x-3 p-3 bg-amber-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 mt-0.5">
+                                            <i data-lucide="clock" class="w-4 h-4"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">Appraisal Due</p>
+                                            <p class="text-sm text-gray-600" data-mock="true">3 staff members have appraisals due this month</p>
+                                            <p class="text-xs text-amber-600 mt-1">Reminder</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center text-chiron-blue mt-0.5">
+                                            <i data-lucide="info" class="w-4 h-4"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">Training Update</p>
+                                            <p class="text-sm text-gray-600">New safeguarding training available for all clinical staff</p>
+                                            <p class="text-xs text-chiron-blue mt-1">Information</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: ComplianceAlerts -->
+                        </div>
+
+                        <!-- @COMPONENT: LLMGuide -->
+                        <div class="w-80 flex-shrink-0">
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 sticky top-8">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-chiron-blue to-blue-700 rounded-xl flex items-center justify-center text-white">
+                                        <i data-lucide="bot" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">LLM Guide</h3>
+                                        <p class="text-xs text-gray-600">HR Assistant</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-4 mb-4">
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <p class="text-sm text-gray-700">How can I help you with HR management today?</p>
+                                    </div>
+                                    
+                                    <div class="bg-blue-50 rounded-lg p-3">
+                                        <p class="text-sm text-chiron-blue">I can assist with:</p>
+                                        <ul class="text-xs text-chiron-blue mt-2 space-y-1">
+                                            <li>• Staff compliance checks</li>
+                                            <li>• Rota planning</li>
+                                            <li>• Leave policies</li>
+                                            <li>• Appraisal frameworks</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="relative">
+                                        <input type="text" placeholder="Type your question..." 
+                                               class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                        <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-chiron-blue hover:text-blue-700">
+                                            <i data-lucide="send" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap gap-2">
+                                        <button class="bg-gray-100 hover:bg-gray-200 text-xs text-gray-700 px-3 py-1 rounded-full transition-colors">
+                                            Staff policies
+                                        </button>
+                                        <button class="bg-gray-100 hover:bg-gray-200 text-xs text-gray-700 px-3 py-1 rounded-full transition-colors">
+                                            Leave calculation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: LLMGuide -->
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Management Page -->
+            <div id="staff-management" class="hidden">
+                
+                <header class="bg-white shadow-sm border-b border-gray-200">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-center py-4">
+                            <div class="flex items-center space-x-4">
+                                <button class="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors" data-event="click:goBackToHR">
+                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                </button>
+                                <div>
+                                    <h1 class="text-xl font-bold text-gray-900">Staff Management</h1>
+                                    <p class="text-sm text-gray-600">Manage your practice team</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <!-- Search Bar -->
+                                <div class="relative">
+                                    <input type="text" placeholder="Search staff..." 
+                                           class="w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                                </div>
+                                
+                                <!-- Permission-based Add Button -->
+                                <div data-permission="PowerUser">
+                                    <button class="bg-chiron-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2" data-event="click:showAddStaffForm">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                        <span>Add Staff Member</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div class="flex gap-8">
+                        
+                        <!-- Main Content -->
+                        <div class="flex-1">
+                            
+                            <!-- Staff List View -->
+                            <div id="staff-list-view" class="block">
+                                
+                                <!-- Filters -->
+                                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 mb-6">
+                                    <div class="flex items-center space-x-4">
+                                        <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                            <option>All Departments</option>
+                                            <option>Clinical</option>
+                                            <option>Administrative</option>
+                                            <option>Management</option>
+                                        </select>
+                                        
+                                        <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                            <option>All Positions</option>
+                                            <option>General Practitioner</option>
+                                            <option>Practice Nurse</option>
+                                            <option>Healthcare Assistant</option>
+                                            <option>Receptionist</option>
+                                        </select>
+                                        
+                                        <select class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                            <option>All Status</option>
+                                            <option>Active</option>
+                                            <option>On Leave</option>
+                                            <option>Inactive</option>
+                                        </select>
+                                        
+                                        <button class="text-chiron-blue hover:text-blue-700 text-sm font-medium">
+                                            Clear Filters
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Staff Cards Grid -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    
+                                    <!-- @MAP: staff.map(member => ( -->
+                                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow" data-mock="true">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-12 h-12 bg-chiron-blue rounded-xl flex items-center justify-center text-white text-sm font-medium">
+                                                    JS
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-semibold text-gray-900">Dr. Jane Smith</h3>
+                                                    <p class="text-sm text-gray-600">General Practitioner</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-1">
+                                                <div class="w-2 h-2 bg-chiron-success rounded-full"></div>
+                                                <span class="text-xs text-chiron-success font-medium">Active</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="space-y-2 mb-4">
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
+                                                <span>j.smith@clinic.nhs.uk</span>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="phone" class="w-4 h-4 mr-2"></i>
+                                                <span>+44 7700 123456</span>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                                <span>Started: Jan 2020</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <button class="text-chiron-blue hover:text-blue-700 text-sm font-medium" data-event="click:viewStaffProfile">
+                                                View Profile
+                                            </button>
+                                            <div data-permission="PowerUser" class="flex items-center space-x-2">
+                                                <button class="text-gray-500 hover:text-gray-700 text-sm font-medium" data-event="click:editStaff">
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow" data-mock="true">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-sm font-medium">
+                                                    MJ
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-semibold text-gray-900">Mary Johnson</h3>
+                                                    <p class="text-sm text-gray-600">Practice Nurse</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-1">
+                                                <div class="w-2 h-2 bg-chiron-success rounded-full"></div>
+                                                <span class="text-xs text-chiron-success font-medium">Active</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="space-y-2 mb-4">
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
+                                                <span>m.johnson@clinic.nhs.uk</span>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="phone" class="w-4 h-4 mr-2"></i>
+                                                <span>+44 7700 234567</span>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                                <span>Started: Mar 2019</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <button class="text-chiron-blue hover:text-blue-700 text-sm font-medium" data-event="click:viewStaffProfile">
+                                                View Profile
+                                            </button>
+                                            <div data-permission="PowerUser" class="flex items-center space-x-2">
+                                                <button class="text-gray-500 hover:text-gray-700 text-sm font-medium" data-event="click:editStaff">
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow" data-mock="true">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white text-sm font-medium">
+                                                    RB
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-semibold text-gray-900">Robert Brown</h3>
+                                                    <p class="text-sm text-gray-600">Healthcare Assistant</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-1">
+                                                <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                                <span class="text-xs text-amber-600 font-medium">On Leave</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="space-y-2 mb-4">
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
+                                                <span>r.brown@clinic.nhs.uk</span>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="phone" class="w-4 h-4 mr-2"></i>
+                                                <span>+44 7700 345678</span>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                                <span>Started: Aug 2021</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <button class="text-chiron-blue hover:text-blue-700 text-sm font-medium" data-event="click:viewStaffProfile">
+                                                View Profile
+                                            </button>
+                                            <div data-permission="PowerUser" class="flex items-center space-x-2">
+                                                <button class="text-gray-500 hover:text-gray-700 text-sm font-medium" data-event="click:editStaff">
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP -->
+
+                                </div>
+                            </div>
+
+                            <!-- Add/Edit Staff Form -->
+                            <div id="staff-form-view" class="hidden">
+                                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                                    <div class="px-6 py-4 border-b border-gray-200">
+                                        <h2 class="text-lg font-semibold text-gray-900">Add New Staff Member</h2>
+                                        <p class="text-sm text-gray-600">Complete the form below to add a new team member</p>
+                                    </div>
+                                    
+                                    <form class="p-6 space-y-8" data-implementation="Use react-hook-form with zod validation">
+                                        
+                                        <!-- Personal Information -->
+                                        <div>
+                                            <h3 class="text-base font-semibold text-gray-900 mb-4">Personal Information</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+                                                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="EMP001">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                        <option>Select Title</option>
+                                                        <option>Dr.</option>
+                                                        <option>Mr.</option>
+                                                        <option>Ms.</option>
+                                                        <option>Mrs.</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                                                    <input type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="First Name">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                                                    <input type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="Last Name">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                                                    <input type="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="email@clinic.nhs.uk">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                                    <input type="tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="+44 7700 123456">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">National Insurance Number</label>
+                                                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="AB123456C">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                                <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="Full Address"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Employment Details -->
+                                        <div>
+                                            <h3 class="text-base font-semibold text-gray-900 mb-4">Employment Details</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Position *</label>
+                                                    <select required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                        <option>Select Position</option>
+                                                        <option>General Practitioner</option>
+                                                        <option>Practice Nurse</option>
+                                                        <option>Healthcare Assistant</option>
+                                                        <option>Practice Manager</option>
+                                                        <option>Receptionist</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                        <option>Clinical</option>
+                                                        <option>Administrative</option>
+                                                        <option>Management</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                                                    <input type="date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Contract Type</label>
+                                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                        <option>Permanent</option>
+                                                        <option>Fixed Term</option>
+                                                        <option>Locum</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Annual Salary (£)</label>
+                                                    <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="45000">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Working Hours per Week</label>
+                                                    <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="37.5">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Professional & Compliance -->
+                                        <div>
+                                            <h3 class="text-base font-semibold text-gray-900 mb-4">Professional & Compliance</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Professional Body</label>
+                                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                        <option>None</option>
+                                                        <option>GMC</option>
+                                                        <option>NMC</option>
+                                                        <option>HCPC</option>
+                                                        <option>Other</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Professional Body Number</label>
+                                                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="Professional Registration Number">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Appraisal Date</label>
+                                                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">DBS Check Expiry</label>
+                                                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Revalidation Information</label>
+                                                <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="Details about professional revalidation status"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Emergency Contact -->
+                                        <div>
+                                            <h3 class="text-base font-semibold text-gray-900 mb-4">Emergency Contact</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+                                                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="Emergency Contact Name">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+                                                    <input type="tel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent" placeholder="+44 7700 123456">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
+                                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                                        <option>Spouse/Partner</option>
+                                                        <option>Parent</option>
+                                                        <option>Child</option>
+                                                        <option>Sibling</option>
+                                                        <option>Friend</option>
+                                                        <option>Other</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Form Actions -->
+                                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                                            <button type="button" class="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:cancelAddStaff">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="px-6 py-2 bg-chiron-blue text-white rounded-lg hover:bg-blue-700 transition-colors" data-event="submit:addStaff">
+                                                Add Staff Member
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Staff Profile View -->
+                            <div id="staff-profile-view" class="hidden">
+                                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                                    <div class="px-6 py-4 border-b border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-4">
+                                                <div class="w-16 h-16 bg-chiron-blue rounded-xl flex items-center justify-center text-white text-xl font-medium">
+                                                    JS
+                                                </div>
+                                                <div>
+                                                    <h2 class="text-xl font-bold text-gray-900" data-bind="staff.fullName">Dr. Jane Smith</h2>
+                                                    <p class="text-gray-600" data-bind="staff.position">General Practitioner</p>
+                                                    <div class="flex items-center mt-1">
+                                                        <div class="w-2 h-2 bg-chiron-success rounded-full mr-2"></div>
+                                                        <span class="text-sm text-chiron-success font-medium">Active</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div data-permission="PowerUser" class="flex items-center space-x-2">
+                                                <button class="px-4 py-2 text-chiron-blue border border-chiron-blue rounded-lg hover:bg-blue-50 transition-colors" data-event="click:editStaffProfile">
+                                                    Edit Profile
+                                                </button>
+                                                <button class="px-4 py-2 bg-chiron-blue text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                                    Generate Contract
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-6 space-y-8" data-mock="true">
+                                        
+                                        <!-- Contact Information -->
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+                                                    <p class="text-gray-900">EMP001</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                                    <p class="text-gray-900">j.smith@clinic.nhs.uk</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                                    <p class="text-gray-900">+44 7700 123456</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                                    <p class="text-gray-900">15/08/1985</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">National Insurance</label>
+                                                    <p class="text-gray-900">AB123456C</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                                    <p class="text-gray-900">123 Medical Centre Drive<br>London, W1A 0AA</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Employment Details -->
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                                                    <p class="text-gray-900">Clinical</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                                    <p class="text-gray-900">15th January 2020</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Contract Type</label>
+                                                    <p class="text-gray-900">Permanent</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Working Hours</label>
+                                                    <p class="text-gray-900">37.5 hours/week</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Annual Leave Entitlement</label>
+                                                    <p class="text-gray-900">27 days</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Study Leave</label>
+                                                    <p class="text-gray-900">10 days</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Compliance Status -->
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Compliance Status</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Professional Body</label>
+                                                    <p class="text-gray-900">GMC (General Medical Council)</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
+                                                    <p class="text-gray-900">GMC1234567</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Appraisal</label>
+                                                    <p class="text-gray-900 flex items-center">
+                                                        15th March 2024
+                                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            Current
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">DBS Check Expiry</label>
+                                                    <p class="text-gray-900 flex items-center">
+                                                        15th August 2025
+                                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            Valid
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Emergency Contact -->
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Emergency Contact</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+                                                    <p class="text-gray-900">Michael Smith</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                                    <p class="text-gray-900">+44 7700 987654</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
+                                                    <p class="text-gray-900">Spouse</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- LLM Guide (Persistent Right Panel) -->
+                        <div class="w-80 flex-shrink-0">
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 sticky top-8">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-chiron-blue to-blue-700 rounded-xl flex items-center justify-center text-white">
+                                        <i data-lucide="bot" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">LLM Guide</h3>
+                                        <p class="text-xs text-gray-600">Staff Management</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-4 mb-4">
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <p class="text-sm text-gray-700">I can help you with staff management tasks and NHS compliance requirements.</p>
+                                    </div>
+                                    
+                                    <div class="bg-blue-50 rounded-lg p-3">
+                                        <p class="text-sm text-chiron-blue">Available assistance:</p>
+                                        <ul class="text-xs text-chiron-blue mt-2 space-y-1">
+                                            <li>• Professional body requirements</li>
+                                            <li>• NHS contract templates</li>
+                                            <li>• Appraisal guidelines</li>
+                                            <li>• Compliance tracking</li>
+                                            <li>• Leave calculations</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="relative">
+                                        <input type="text" placeholder="Ask about staff management..." 
+                                               class="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-chiron-blue focus:border-transparent">
+                                        <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-chiron-blue hover:text-blue-700">
+                                            <i data-lucide="send" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap gap-2">
+                                        <button class="bg-gray-100 hover:bg-gray-200 text-xs text-gray-700 px-3 py-1 rounded-full transition-colors">
+                                            GMC requirements
+                                        </button>
+                                        <button class="bg-gray-100 hover:bg-gray-200 text-xs text-gray-700 px-3 py-1 rounded-full transition-colors">
+                                            Contract templates
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- @END_COMPONENT: MainApp -->
+
+    <script>
+        // Initialize Lucide icons
+        (function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })();
+
+        // Basic navigation and view management
+        (function() {
+            const views = {
+                dashboard: document.getElementById('dashboard-view'),
+                hrModule: document.getElementById('hr-module-view'),
+                hrDashboard: document.getElementById('hr-dashboard'),
+                staffManagement: document.getElementById('staff-management'),
+                staffListView: document.getElementById('staff-list-view'),
+                staffFormView: document.getElementById('staff-form-view'),
+                staffProfileView: document.getElementById('staff-profile-view')
+            };
+
+            // TODO: Implement proper routing with wouter
+            // TODO: Implement React Query for data fetching
+            // TODO: Implement form validation with react-hook-form and zod
+
+            // Module card click handlers
+            document.addEventListener('click', function(e) {
+                const moduleCard = e.target.closest('[data-module]');
+                if (moduleCard) {
+                    const moduleName = moduleCard.dataset.module;
+                    if (moduleName === 'hr') {
+                        showView('hrModule');
+                        showView('hrDashboard');
+                    }
+                    // TODO: Handle other modules
+                }
+
+                // Quick action buttons
+                const quickAction = e.target.closest('[data-route]');
+                if (quickAction) {
+                    const route = quickAction.dataset.route;
+                    if (route === '/modules/hr/staff') {
+                        showView('staffManagement');
+                        showView('staffListView');
+                    }
+                    // TODO: Handle other routes
+                }
+
+                // Staff management actions
+                if (e.target.closest('[data-event="click:showAddStaffForm"]')) {
+                    showView('staffFormView');
+                    hideView('staffListView');
+                    hideView('staffProfileView');
+                }
+
+                if (e.target.closest('[data-event="click:viewStaffProfile"]')) {
+                    showView('staffProfileView');
+                    hideView('staffListView');
+                    hideView('staffFormView');
+                }
+
+                if (e.target.closest('[data-event="click:cancelAddStaff"]')) {
+                    showView('staffListView');
+                    hideView('staffFormView');
+                }
+
+                // Back buttons
+                if (e.target.closest('[data-event="click:goBack"]')) {
+                    showView('dashboard');
+                    hideView('hrModule');
+                }
+
+                if (e.target.closest('[data-event="click:goBackToHR"]')) {
+                    showView('hrDashboard');
+                    hideView('staffManagement');
+                }
+            });
+
+            function showView(viewName) {
+                if (views[viewName]) {
+                    views[viewName].style.display = 'block';
+                    views[viewName].classList.remove('hidden');
+                }
+            }
+
+            function hideView(viewName) {
+                if (views[viewName]) {
+                    views[viewName].style.display = 'none';
+                    views[viewName].classList.add('hidden');
+                }
+            }
+
+            // Initialize with dashboard view
+            showView('dashboard');
+        })();
+
+        // Permission-based UI rendering simulation
+        (function() {
+            const userRole = 'PowerUser'; // This would come from authentication context
+            
+            document.querySelectorAll('[data-permission]').forEach(element => {
+                const requiredPermission = element.dataset.permission;
+                if (userRole !== requiredPermission && requiredPermission === 'PowerUser') {
+                    element.style.display = 'none';
+                }
+            });
+        })();
+
+        // Form submission handlers (placeholder)
+        document.addEventListener('submit', function(e) {
+            const form = e.target.closest('form');
+            if (form) {
+                e.preventDefault();
+                // TODO: Implement actual form submission with API calls
+                console.log('Form submission intercepted - implement with React Hook Form');
+            }
+        });
+    </script>
+
+</body>
+</html>

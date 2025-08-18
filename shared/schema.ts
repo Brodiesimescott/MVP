@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, decimal, integer, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { extendZod } from "@zodyac/zod-mongoose";
 
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['staff', 'poweruser', 'user']);
