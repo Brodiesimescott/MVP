@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChironIQ - Healthcare Practice Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        },
+                        chiron: {
+                            orange: '#ea580c',
+                            blue: '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Main Container -->
+    <div class="min-h-screen flex">
+        <!-- Main Content Area -->
+        <div class="flex-1 pr-80"> <!-- Right padding for LLM chat -->
+            
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <!-- ChironIQ Logo -->
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-chiron-blue rounded-lg flex items-center justify-center">
+                                    <i data-lucide="target" class="w-7 h-7 text-white"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl font-bold">
+                                        <span class="text-chiron-orange">Chiron</span><span class="text-chiron-blue">IQ</span>
+                                    </h1>
+                                    <p class="text-sm text-gray-600">Focus On Patients</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2 bg-green-50 text-green-700 px-3 py-2 rounded-full text-sm font-medium">
+                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                System Operational
+                            </div>
+                            <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i data-lucide="bell" class="w-6 h-6"></i>
+                            </button>
+                            <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i data-lucide="user" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <main class="p-6">
+                <!-- AI Assistant Section -->
+                <div class="mb-8">
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Chiron AI Assistant</h3>
+                                <p class="text-sm text-gray-600">Your intelligent healthcare practice companion</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2">
+                                <input type="text" placeholder="Ask about compliance, staff management, or practice operations..." class="w-full outline-none text-sm" />
+                            </div>
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                                Ask AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Practice Management Modules Grid -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Practice Management Modules</h2>
+                    
+                    <!-- @COMPONENT: ModulesGrid -->
+                    <div class="grid grid-cols-3 gap-6">
+                        <!-- Top Row -->
+                        <!-- ChironCQC Module -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                                    <i data-lucide="shield-check" class="w-7 h-7 text-green-600"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-xs text-green-600 font-medium">COMPLIANT</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironCQC</h3>
+                            <p class="text-sm text-gray-600 mb-4">CQC compliance tracking, regulatory checklists, and inspection preparation tools.</p>
+                            <div class="flex items-center text-blue-600 text-sm font-medium">
+                                <span>Manage Compliance</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironHR Module -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                    <i data-lucide="users" class="w-7 h-7 text-blue-600"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-xs text-green-600 font-medium">ACTIVE</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironHR</h3>
+                            <p class="text-sm text-gray-600 mb-4">Staff scheduling, rota management, and HR compliance tools for your practice team.</p>
+                            <div class="flex items-center text-blue-600 text-sm font-medium">
+                                <span>Manage Team</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironMessaging Module -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                    <i data-lucide="message-circle" class="w-7 h-7 text-purple-600"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-xs text-green-600 font-medium">ONLINE</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironMessaging</h3>
+                            <p class="text-sm text-gray-600 mb-4">Secure internal communication system for staff collaboration and coordination.</p>
+                            <div class="flex items-center text-blue-600 text-sm font-medium">
+                                <span>Open Messages</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Row -->
+                        <!-- ChironMoney Module -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                                    <i data-lucide="pound-sterling" class="w-7 h-7 text-amber-600"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                    <span class="text-xs text-amber-600 font-medium">ATTENTION</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironMoney</h3>
+                            <p class="text-sm text-gray-600 mb-4">Financial management, billing automation, and revenue tracking for private services.</p>
+                            <div class="flex items-center text-blue-600 text-sm font-medium">
+                                <span>View Finances</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironStock Module -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                    <i data-lucide="package" class="w-7 h-7 text-orange-600"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                    <span class="text-xs text-amber-600 font-medium">REORDER</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironStock</h3>
+                            <p class="text-sm text-gray-600 mb-4">Inventory management, stock tracking, and automated reordering for medical supplies.</p>
+                            <div class="flex items-center text-blue-600 text-sm font-medium">
+                                <span>Manage Stock</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- ChironFacilities Module -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                                    <i data-lucide="building" class="w-7 h-7 text-gray-600"></i>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-xs text-green-600 font-medium">OPTIMAL</span>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironFacilities</h3>
+                            <p class="text-sm text-gray-600 mb-4">Facility management, maintenance tracking, and asset management for your practice.</p>
+                            <div class="flex items-center text-blue-600 text-sm font-medium">
+                                <span>View Facilities</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: ModulesGrid -->
+                </div>
+
+                <!-- ChironHR Module Demo -->
+                <div class="mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                        <i data-lucide="users" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-white">ChironHR Dashboard</h3>
+                                </div>
+                                <button class="text-white hover:text-blue-200 transition-colors">
+                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- HR Metrics -->
+                            <div class="grid grid-cols-4 gap-4 mb-6">
+                                <div class="bg-blue-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-blue-600 font-medium">Total Staff</p>
+                                            <p class="text-2xl font-bold text-blue-900" data-bind="metrics.totalStaff">24</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-green-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-green-600 font-medium">On Duty Today</p>
+                                            <p class="text-2xl font-bold text-green-900" data-bind="metrics.onDuty">16</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="clock" class="w-5 h-5 text-green-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-amber-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-amber-600 font-medium">Pending Reviews</p>
+                                            <p class="text-2xl font-bold text-amber-900" data-bind="metrics.pendingReviews">3</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="clipboard-check" class="w-5 h-5 text-amber-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-purple-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-purple-600 font-medium">Leave Requests</p>
+                                            <p class="text-2xl font-bold text-purple-900" data-bind="metrics.leaveRequests">2</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="calendar" class="w-5 h-5 text-purple-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="mb-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-3">Quick Actions</h4>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <button class="bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                        <span>Add Staff</span>
+                                    </button>
+                                    <button class="bg-gray-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors flex items-center space-x-2">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        <span>View Rota</span>
+                                    </button>
+                                    <button class="bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center space-x-2">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                        <span>Generate Report</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Staff Management Demo -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h5 class="text-md font-semibold text-gray-900">Recent Staff Activity</h5>
+                                    <button class="text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors">View All</button>
+                                </div>
+                                <div class="space-y-3">
+                                    <!-- @MAP: staffActivity.map(activity => ( -->
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <i data-lucide="user-plus" class="w-4 h-4 text-blue-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900" data-mock="true">Dr. Sarah Johnson joined the practice</p>
+                                            <p class="text-xs text-gray-500" data-mock="true">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900" data-mock="true">Annual appraisal completed for Nurse Emma Clark</p>
+                                            <p class="text-xs text-gray-500" data-mock="true">1 day ago</p>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ChironCQC Module Demo -->
+                <div class="mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                        <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-white">ChironCQC Compliance Dashboard</h3>
+                                </div>
+                                <button class="text-white hover:text-green-200 transition-colors">
+                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- CQC Five Key Questions -->
+                            <div class="mb-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">CQC Five Key Questions</h4>
+                                <div class="grid grid-cols-5 gap-4">
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i data-lucide="shield" class="w-8 h-8 text-green-600"></i>
+                                        </div>
+                                        <h5 class="text-sm font-semibold text-gray-900">Safe</h5>
+                                        <div class="mt-1 flex items-center justify-center">
+                                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        </div>
+                                        <p class="text-xs text-green-600 mt-1" data-bind="cqc.safe.status">Compliant</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i data-lucide="target" class="w-8 h-8 text-green-600"></i>
+                                        </div>
+                                        <h5 class="text-sm font-semibold text-gray-900">Effective</h5>
+                                        <div class="mt-1 flex items-center justify-center">
+                                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        </div>
+                                        <p class="text-xs text-green-600 mt-1" data-bind="cqc.effective.status">Compliant</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i data-lucide="heart" class="w-8 h-8 text-green-600"></i>
+                                        </div>
+                                        <h5 class="text-sm font-semibold text-gray-900">Caring</h5>
+                                        <div class="mt-1 flex items-center justify-center">
+                                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        </div>
+                                        <p class="text-xs text-green-600 mt-1" data-bind="cqc.caring.status">Compliant</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i data-lucide="zap" class="w-8 h-8 text-amber-600"></i>
+                                        </div>
+                                        <h5 class="text-sm font-semibold text-gray-900">Responsive</h5>
+                                        <div class="mt-1 flex items-center justify-center">
+                                            <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
+                                        </div>
+                                        <p class="text-xs text-amber-600 mt-1" data-bind="cqc.responsive.status">Review Needed</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i data-lucide="crown" class="w-8 h-8 text-green-600"></i>
+                                        </div>
+                                        <h5 class="text-sm font-semibold text-gray-900">Well-led</h5>
+                                        <div class="mt-1 flex items-center justify-center">
+                                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        </div>
+                                        <p class="text-xs text-green-600 mt-1" data-bind="cqc.wellLed.status">Compliant</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Compliance Overview -->
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="bg-green-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-green-600 font-medium">Overall Score</p>
+                                            <p class="text-2xl font-bold text-green-900" data-bind="cqc.overallScore">92%</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="award" class="w-5 h-5 text-green-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-amber-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-amber-600 font-medium">Open Issues</p>
+                                            <p class="text-2xl font-bold text-amber-900" data-bind="cqc.openIssues">2</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm text-blue-600 font-medium">Evidence Files</p>
+                                            <p class="text-2xl font-bold text-blue-900" data-bind="cqc.evidenceCount">47</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evidence Locker Demo -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h5 class="text-md font-semibold text-gray-900">Recent Evidence Activity</h5>
+                                    <button class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center space-x-2">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                        <span>Upload Evidence</span>
+                                    </button>
+                                </div>
+                                <div class="space-y-3">
+                                    <!-- @MAP: evidenceActivity.map(evidence => ( -->
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <i data-lucide="file-check" class="w-4 h-4 text-green-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900" data-mock="true">Infection Control Policy updated</p>
+                                            <p class="text-xs text-gray-500" data-mock="true">Linked to Regulation 12 - Safe Care</p>
+                                        </div>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full" data-mock="true">Compliant</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                                            <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900" data-mock="true">Staff Training Records require review</p>
+                                            <p class="text-xs text-gray-500" data-mock="true">Regulation 18 - Staffing</p>
+                                        </div>
+                                        <span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full" data-mock="true">Review Due</span>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer class="text-center py-6 text-sm text-gray-500">
+                    <p>&copy; 2024 ChironIQ Healthcare Solutions. All rights reserved. | CQC Registered | ISO 27001 Certified</p>
+                </footer>
+            </main>
+        </div>
+
+        <!-- Right Sidebar - LLM Guide Chat Box -->
+        <div class="fixed right-0 top-0 w-80 h-full bg-white border-l border-gray-200 shadow-lg">
+            <div class="flex flex-col h-full">
+                <!-- Chat Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-white">LLM Guide</h3>
+                            <p class="text-xs text-blue-100">Healthcare Assistant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="flex-1 p-4 overflow-y-auto space-y-4">
+                    <!-- Assistant Welcome Message -->
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-3 max-w-sm">
+                            <p class="text-sm text-gray-800" data-mock="true">Welcome to ChironIQ! I'm here to help you with CQC compliance, staff management, and practice operations. What would you like to know?</p>
+                        </div>
+                    </div>
+
+                    <!-- Sample User Message -->
+                    <div class="flex items-start space-x-3 justify-end">
+                        <div class="bg-blue-600 rounded-lg p-3 max-w-sm">
+                            <p class="text-sm text-white" data-mock="true">What are the key requirements for CQC Regulation 17?</p>
+                        </div>
+                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="w-4 h-4 text-gray-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- Assistant Response -->
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-4 h-4 text-blue-600"></i>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-3 max-w-sm">
+                            <p class="text-sm text-gray-800" data-mock="true">CQC Regulation 17 focuses on Good Governance. Key requirements include:</p>
+                            <ul class="text-sm text-gray-800 mt-2 space-y-1 pl-4 list-disc" data-mock="true">
+                                <li>Systems to assess quality and safety</li>
+                                <li>Risk management processes</li>
+                                <li>Record keeping and information governance</li>
+                                <li>Duty of candour compliance</li>
+                            </ul>
+                            <p class="text-sm text-gray-800 mt-2" data-mock="true">Would you like me to help you review your current compliance status?</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="space-y-2">
+                        <p class="text-xs text-gray-500 font-medium">Quick Actions:</p>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button class="bg-green-100 text-green-700 px-3 py-2 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors text-left">
+                                CQC Registration Guide
+                            </button>
+                            <button class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-xs font-medium hover:bg-blue-200 transition-colors text-left">
+                                Staff Management Help
+                            </button>
+                            <button class="bg-purple-100 text-purple-700 px-3 py-2 rounded-lg text-xs font-medium hover:bg-purple-200 transition-colors text-left">
+                                Compliance Check
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex space-x-2">
+                        <div class="flex-1 bg-gray-100 rounded-lg px-3 py-2">
+                            <input type="text" placeholder="Ask about compliance..." class="w-full bg-transparent outline-none text-sm" />
+                        </div>
+                        <button class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors" data-event="click:sendMessage">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        (function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })();
+
+        // TODO: Implement React components and API integration
+        // TODO: Implement wouter routing for module navigation
+        // TODO: Implement @tanstack/react-query for data fetching
+        // TODO: Implement form validation with react-hook-form and zod
+        // TODO: Implement real-time chat functionality for LLM guide
+        // TODO: Implement file upload for evidence management
+        // TODO: Implement CQC standards database and weekly update checks
+        // TODO: Implement staff CRUD operations and compliance tracking
+    </script>
+</body>
+</html>

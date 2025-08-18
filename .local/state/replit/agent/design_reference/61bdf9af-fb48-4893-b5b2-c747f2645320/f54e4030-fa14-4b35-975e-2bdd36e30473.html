@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChironIQ - Healthcare Practice Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    colors: {
+                        'chiron-navy': '#1e3a8a',
+                        'chiron-orange': '#ea580c',
+                        'chiron-light': '#f8fafc',
+                        'chiron-gray': '#64748b',
+                        'status-good': '#059669',
+                        'status-attention': '#d97706'
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-chiron-light font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- ChironIQ Logo with centaur archer -->
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=60" 
+                             alt="ChironIQ Logo" 
+                             class="h-8 w-auto" 
+                             data-mock="true" 
+                             data-implementation="Replace with actual ChironIQ logo asset">
+                        <div>
+                            <h1 class="text-2xl font-bold">
+                                <span class="text-chiron-orange">Chiron</span><span class="text-chiron-navy">IQ</span>
+                            </h1>
+                            <p class="text-xs text-chiron-gray font-medium">Focus On Patients</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 bg-green-50 px-3 py-1 rounded-full">
+                        <div class="w-2 h-2 bg-status-good rounded-full"></div>
+                        <span class="text-sm font-medium text-status-good">System Operational</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: AIAssistant -->
+        <div class="mb-8">
+            <div class="bg-white rounded-lg shadow-sm border p-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-gradient-to-r from-chiron-navy to-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Chiron AI Assistant</h2>
+                        <p class="text-sm text-chiron-gray">Your intelligent healthcare management companion</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div class="flex space-x-3">
+                        <div class="w-8 h-8 bg-chiron-navy rounded-full flex items-center justify-center">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-700 mb-2">Good morning! I can help you with:</p>
+                            <ul class="text-sm text-chiron-gray space-y-1">
+                                <li>• CQC compliance checks and reporting</li>
+                                <li>• Staff scheduling and HR management</li>
+                                <li>• Financial insights and billing queries</li>
+                                <li>• Inventory tracking and reordering</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        placeholder="Ask me anything about your practice..."
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-chiron-navy focus:border-transparent"
+                        data-mock="true"
+                        data-implementation="Connect to AI chat backend">
+                    <button 
+                        class="px-4 py-2 bg-chiron-navy text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        data-event="click:sendMessage"
+                        data-implementation="Handle AI chat submission">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AIAssistant -->
+
+        <!-- @COMPONENT: ModulesGrid -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Practice Management Modules</h2>
+                    <p class="text-chiron-gray mt-1">Comprehensive tools for managing your healthcare practice</p>
+                </div>
+                <div class="text-sm text-chiron-gray">
+                    Last updated: <span class="font-medium" data-bind="lastUpdated">2 minutes ago</span>
+                </div>
+            </div>
+
+            <!-- Loading State (hidden by default) -->
+            <div id="loading-state" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- @MAP: Array(6).fill(0).map((_, i) => ( -->
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 animate-pulse">
+                        <div class="h-12 w-12 bg-gray-200 rounded-lg mb-4"></div>
+                        <div class="h-6 bg-gray-200 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-200 rounded mb-4"></div>
+                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+
+            <!-- Modules Grid -->
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Top Row -->
+                <!-- @COMPONENT: ModuleCard [ChironCQC] -->
+                <a href="/modules/cqc" class="group" data-implementation="Use wouter Link component">
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-chiron-navy rounded-lg flex items-center justify-center">
+                                <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-status-good rounded-full"></div>
+                                <span class="text-xs font-medium text-status-good">Good</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironCQC</h3>
+                        <p class="text-sm text-chiron-gray mb-4 leading-relaxed">CQC compliance tracking, regulatory checklists, and inspection preparation tools.</p>
+                        
+                        <div class="mt-auto">
+                            <span class="text-chiron-navy text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                Manage Compliance →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <!-- @END_COMPONENT: ModuleCard [ChironCQC] -->
+
+                <!-- @COMPONENT: ModuleCard [ChironHR] -->
+                <a href="/modules/hr" class="group" data-implementation="Use wouter Link component">
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-chiron-navy rounded-lg flex items-center justify-center">
+                                <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-status-good rounded-full"></div>
+                                <span class="text-xs font-medium text-status-good">Good</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironHR</h3>
+                        <p class="text-sm text-chiron-gray mb-4 leading-relaxed">Staff scheduling, rota management, and HR compliance tools for your practice team.</p>
+                        
+                        <div class="mt-auto">
+                            <span class="text-chiron-navy text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                Manage Team →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <!-- @END_COMPONENT: ModuleCard [ChironHR] -->
+
+                <!-- @COMPONENT: ModuleCard [ChironMessaging] -->
+                <a href="/modules/messaging" class="group" data-implementation="Use wouter Link component">
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-chiron-navy rounded-lg flex items-center justify-center">
+                                <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-status-good rounded-full"></div>
+                                <span class="text-xs font-medium text-status-good">Good</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironMessaging</h3>
+                        <p class="text-sm text-chiron-gray mb-4 leading-relaxed">Secure internal communication system for staff collaboration and coordination.</p>
+                        
+                        <div class="mt-auto">
+                            <span class="text-chiron-navy text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                Open Messages →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <!-- @END_COMPONENT: ModuleCard [ChironMessaging] -->
+
+                <!-- Bottom Row -->
+                <!-- @COMPONENT: ModuleCard [ChironMoney] -->
+                <a href="/modules/finance" class="group" data-implementation="Use wouter Link component">
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-chiron-orange rounded-lg flex items-center justify-center">
+                                <i data-lucide="pound-sterling" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-status-attention rounded-full"></div>
+                                <span class="text-xs font-medium text-status-attention">Attention</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironMoney</h3>
+                        <p class="text-sm text-chiron-gray mb-4 leading-relaxed">Financial management, billing automation, and revenue tracking for private services.</p>
+                        
+                        <div class="mt-auto">
+                            <span class="text-chiron-navy text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                Manage Finance →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <!-- @END_COMPONENT: ModuleCard [ChironMoney] -->
+
+                <!-- @COMPONENT: ModuleCard [ChironStock] -->
+                <a href="/modules/stock" class="group" data-implementation="Use wouter Link component">
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-chiron-orange rounded-lg flex items-center justify-center">
+                                <i data-lucide="package" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-status-attention rounded-full"></div>
+                                <span class="text-xs font-medium text-status-attention">Attention</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironStock</h3>
+                        <p class="text-sm text-chiron-gray mb-4 leading-relaxed">Inventory management, stock tracking, and automated reordering for medical supplies.</p>
+                        
+                        <div class="mt-auto">
+                            <span class="text-chiron-navy text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                Manage Inventory →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <!-- @END_COMPONENT: ModuleCard [ChironStock] -->
+
+                <!-- @COMPONENT: ModuleCard [ChironFacilities] -->
+                <a href="/modules/facilities" class="group" data-implementation="Use wouter Link component">
+                    <div class="bg-white rounded-xl shadow-sm border aspect-square p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-chiron-navy rounded-lg flex items-center justify-center">
+                                <i data-lucide="building" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-status-good rounded-full"></div>
+                                <span class="text-xs font-medium text-status-good">Good</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">ChironFacilities</h3>
+                        <p class="text-sm text-chiron-gray mb-4 leading-relaxed">Facility management, maintenance tracking, and asset management for your practice.</p>
+                        
+                        <div class="mt-auto">
+                            <span class="text-chiron-navy text-sm font-medium group-hover:text-chiron-orange transition-colors">
+                                Manage Facilities →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <!-- @END_COMPONENT: ModuleCard [ChironFacilities] -->
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ModulesGrid -->
+
+        <!-- @COMPONENT: QuickStats -->
+        <div class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-lg shadow-sm border p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="calendar-check" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-chiron-gray">Today's Appointments</p>
+                            <p class="text-2xl font-bold text-gray-900" data-bind="todayAppointments">24</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="users-2" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-chiron-gray">Active Staff</p>
+                            <p class="text-2xl font-bold text-gray-900" data-bind="activeStaff">12</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-chiron-gray">Pending Tasks</p>
+                            <p class="text-2xl font-bold text-gray-900" data-bind="pendingTasks">3</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-chiron-gray">Monthly Revenue</p>
+                            <p class="text-2xl font-bold text-gray-900" data-bind="monthlyRevenue">£45.2k</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: QuickStats -->
+    </main>
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=60&h=40" 
+                             alt="ChironIQ Logo" 
+                             class="h-6 w-auto"
+                             data-mock="true">
+                        <h3 class="text-lg font-bold">
+                            <span class="text-chiron-orange">Chiron</span><span class="text-chiron-navy">IQ</span>
+                        </h3>
+                    </div>
+                    <p class="text-sm text-chiron-gray mb-4">
+                        Comprehensive healthcare practice management platform designed to help medical professionals focus on what matters most - their patients.
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-xs text-chiron-gray">CQC Registered</span>
+                        <span class="text-xs text-chiron-gray">ISO 27001 Certified</span>
+                        <span class="text-xs text-chiron-gray">GDPR Compliant</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">Support</h4>
+                    <ul class="space-y-2 text-sm text-chiron-gray">
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Contact Support</a></li>
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">System Status</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">Compliance</h4>
+                    <ul class="space-y-2 text-sm text-chiron-gray">
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Data Protection</a></li>
+                        <li><a href="#" class="hover:text-chiron-navy transition-colors">Audit Reports</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t pt-6 mt-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-xs text-chiron-gray">
+                        © 2024 ChironIQ Healthcare Solutions. All rights reserved.
+                    </p>
+                    <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                        <span class="text-xs text-chiron-gray">Version 2.1.4</span>
+                        <div class="flex items-center space-x-1">
+                            <div class="w-2 h-2 bg-status-good rounded-full"></div>
+                            <span class="text-xs text-status-good font-medium">All Systems Operational</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // Initialize Lucide icons
+        (function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })();
+
+        // Simulate loading state for demonstration
+        // TODO: Replace with actual React Query implementation
+        (function() {
+            const loadingState = document.getElementById('loading-state');
+            const modulesGrid = document.getElementById('modules-grid');
+            
+            // Simulate initial loading
+            // loadingState.classList.remove('hidden');
+            // modulesGrid.classList.add('hidden');
+            
+            // setTimeout(() => {
+            //     loadingState.classList.add('hidden');
+            //     modulesGrid.classList.remove('hidden');
+            // }, 2000);
+        })();
+
+        // TODO: Implement actual functionality with React components
+        // - wouter routing for navigation
+        // - @tanstack/react-query for data fetching
+        // - shadcn/ui components integration
+        // - Express backend API integration
+    </script>
+</body>
+</html>

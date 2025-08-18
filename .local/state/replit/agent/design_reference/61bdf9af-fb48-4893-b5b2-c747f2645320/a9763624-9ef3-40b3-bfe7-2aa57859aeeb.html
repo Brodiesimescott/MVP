@@ -1,0 +1,459 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChironIQ - Healthcare Practice Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'medical-blue': '#0369A1',
+                        'clinical-green': '#065F46',
+                        'alert-red': '#DC2626',
+                        'attention-amber': '#F59E0B',
+                        'operational-green': '#10B981'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-medical-blue rounded-lg flex items-center justify-center">
+                            <i class="fas fa-stethoscope text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-800">ChironIQ</h1>
+                            <p class="text-sm text-slate-600 font-medium">Focus On Patients</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200">
+                        <div class="w-2 h-2 bg-operational-green rounded-full animate-pulse"></div>
+                        <span class="text-sm font-medium text-emerald-800">System Operational</span>
+                    </div>
+                    <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-slate-600 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- @COMPONENT: MainContent -->
+            <div class="lg:col-span-3 space-y-8">
+                
+                <!-- @COMPONENT: ModulesGrid -->
+                <section>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-semibold text-slate-800">Practice Management Modules</h2>
+                        <div class="text-sm text-slate-500" data-mock="true">
+                            <!-- @STATE: loadingState:boolean = false -->
+                            Last updated: <span data-bind="lastUpdated">2 minutes ago</span>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loading-state" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- @MAP: Array(6).fill(null).map((_, index) => ( -->
+                            <div class="bg-white rounded-xl border border-slate-200 p-6 animate-pulse">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-slate-200 rounded-lg"></div>
+                                    <div class="h-4 bg-slate-200 rounded w-24"></div>
+                                </div>
+                                <div class="space-y-2 mb-4">
+                                    <div class="h-3 bg-slate-200 rounded w-full"></div>
+                                    <div class="h-3 bg-slate-200 rounded w-3/4"></div>
+                                </div>
+                                <div class="h-6 bg-slate-200 rounded w-20"></div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Modules Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-implementation="Should fetch from /api/modules endpoint using React Query">
+                        
+                        <!-- Top Row: ChironCQC, ChironHR, ChironMessaging -->
+                        
+                        <!-- @COMPONENT: ModuleCard - ChironCQC -->
+                        <div class="bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group" data-event="click:navigateToModule" data-module="cqc">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-medical-blue/10 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-shield-alt text-medical-blue text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-800">ChironCQC</h3>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-emerald-50 px-2 py-1 rounded-full">
+                                        <div class="w-2 h-2 bg-operational-green rounded-full"></div>
+                                        <span class="text-xs font-medium text-emerald-800">Good</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-4" data-mock="true">CQC compliance tracking, regulatory checklists, and inspection preparation tools.</p>
+                                <div class="flex items-center text-medical-blue text-sm font-medium group-hover:text-medical-blue/80 transition-colors">
+                                    <span>Manage Compliance</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ModuleCard -->
+
+                        <!-- @COMPONENT: ModuleCard - ChironHR -->
+                        <div class="bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group" data-event="click:navigateToModule" data-module="hr">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-clinical-green/10 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-users text-clinical-green text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-800">ChironHR</h3>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-emerald-50 px-2 py-1 rounded-full">
+                                        <div class="w-2 h-2 bg-operational-green rounded-full"></div>
+                                        <span class="text-xs font-medium text-emerald-800">Good</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-4" data-mock="true">Staff scheduling, rota management, and HR compliance tools for your practice team.</p>
+                                <div class="flex items-center text-clinical-green text-sm font-medium group-hover:text-clinical-green/80 transition-colors">
+                                    <span>Manage Team</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ModuleCard -->
+
+                        <!-- @COMPONENT: ModuleCard - ChironMessaging -->
+                        <div class="bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group" data-event="click:navigateToModule" data-module="messaging">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-comments text-indigo-600 text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-800">ChironMessaging</h3>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-emerald-50 px-2 py-1 rounded-full">
+                                        <div class="w-2 h-2 bg-operational-green rounded-full"></div>
+                                        <span class="text-xs font-medium text-emerald-800">Good</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-4" data-mock="true">Secure internal communication system for staff collaboration and coordination.</p>
+                                <div class="flex items-center text-indigo-600 text-sm font-medium group-hover:text-indigo-600/80 transition-colors">
+                                    <span>View Messages</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ModuleCard -->
+
+                        <!-- Bottom Row: ChironMoney, ChironStock, ChironFacilities -->
+                        
+                        <!-- @COMPONENT: ModuleCard - ChironMoney -->
+                        <div class="bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group" data-event="click:navigateToModule" data-module="finance">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-pound-sign text-green-600 text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-800">ChironMoney</h3>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-amber-50 px-2 py-1 rounded-full">
+                                        <div class="w-2 h-2 bg-attention-amber rounded-full"></div>
+                                        <span class="text-xs font-medium text-amber-800">Attention</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-4" data-mock="true">Financial management, billing automation, and revenue tracking for private services.</p>
+                                <div class="flex items-center text-green-600 text-sm font-medium group-hover:text-green-600/80 transition-colors">
+                                    <span>Manage Finances</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ModuleCard -->
+
+                        <!-- @COMPONENT: ModuleCard - ChironStock -->
+                        <div class="bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group" data-event="click:navigateToModule" data-module="stock">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-boxes text-purple-600 text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-800">ChironStock</h3>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-amber-50 px-2 py-1 rounded-full">
+                                        <div class="w-2 h-2 bg-attention-amber rounded-full"></div>
+                                        <span class="text-xs font-medium text-amber-800">Attention</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-4" data-mock="true">Inventory management, stock tracking, and automated reordering for medical supplies.</p>
+                                <div class="flex items-center text-purple-600 text-sm font-medium group-hover:text-purple-600/80 transition-colors">
+                                    <span>Manage Inventory</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ModuleCard -->
+
+                        <!-- @COMPONENT: ModuleCard - ChironFacilities -->
+                        <div class="bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group" data-event="click:navigateToModule" data-module="facilities">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-building text-slate-600 text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-slate-800">ChironFacilities</h3>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-1 bg-emerald-50 px-2 py-1 rounded-full">
+                                        <div class="w-2 h-2 bg-operational-green rounded-full"></div>
+                                        <span class="text-xs font-medium text-emerald-800">Good</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-slate-600 mb-4" data-mock="true">Facility management, maintenance tracking, and asset management for your practice.</p>
+                                <div class="flex items-center text-slate-600 text-sm font-medium group-hover:text-slate-600/80 transition-colors">
+                                    <span>Manage Facilities</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: ModuleCard -->
+
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: ModulesGrid -->
+
+            </div>
+            <!-- @END_COMPONENT: MainContent -->
+
+            <!-- @COMPONENT: Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- @COMPONENT: ChironAIAssistant -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="p-4 border-b border-slate-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-r from-medical-blue to-clinical-green rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800">Chiron AI Assistant</h3>
+                                <p class="text-xs text-slate-500">Ready to help</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 h-80 flex flex-col">
+                        <div class="flex-1 space-y-3 mb-4">
+                            <!-- @FUNCTIONALITY: This chat interface should implement real-time messaging with AI assistant -->
+                            <div class="bg-slate-50 rounded-lg p-3">
+                                <p class="text-sm text-slate-700" data-mock="true">Hello! I'm here to help you manage your practice. What would you like to know?</p>
+                                <span class="text-xs text-slate-500 mt-1 block">AI Assistant • now</span>
+                            </div>
+                            
+                            <div class="bg-medical-blue text-white rounded-lg p-3 ml-8">
+                                <p class="text-sm" data-mock="true">Show me today's compliance status</p>
+                                <span class="text-xs text-medical-blue/70 mt-1 block">You • 2 min ago</span>
+                            </div>
+                            
+                            <div class="bg-slate-50 rounded-lg p-3">
+                                <p class="text-sm text-slate-700" data-mock="true">Your CQC compliance is up to date. All mandatory training completed. Next inspection due in 6 months.</p>
+                                <span class="text-xs text-slate-500 mt-1 block">AI Assistant • 2 min ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                placeholder="Ask me anything..." 
+                                class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-medical-blue/20 focus:border-medical-blue outline-none"
+                                data-implementation="Should handle AI chat input with real-time responses"
+                            >
+                            <button class="px-3 py-2 bg-medical-blue text-white rounded-lg hover:bg-medical-blue/90 transition-colors" data-event="click:sendMessage">
+                                <i class="fas fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ChironAIAssistant -->
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm mt-6">
+                    <div class="p-4 border-b border-slate-100">
+                        <h3 class="font-semibold text-slate-800">Quick Actions</h3>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <button class="w-full text-left p-3 hover:bg-slate-50 rounded-lg transition-colors flex items-center space-x-3" data-event="click:quickAction" data-action="emergency">
+                            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">Emergency Protocol</p>
+                                <p class="text-xs text-slate-500">Activate emergency procedures</p>
+                            </div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 hover:bg-slate-50 rounded-lg transition-colors flex items-center space-x-3" data-event="click:quickAction" data-action="backup">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-database text-blue-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">System Backup</p>
+                                <p class="text-xs text-slate-500">Backup practice data</p>
+                            </div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 hover:bg-slate-50 rounded-lg transition-colors flex items-center space-x-3" data-event="click:quickAction" data-action="reports">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-green-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">Generate Reports</p>
+                                <p class="text-xs text-slate-500">Monthly practice reports</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Sidebar -->
+
+        </div>
+    </main>
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-6 h-6 bg-medical-blue rounded flex items-center justify-center">
+                            <i class="fas fa-stethoscope text-white text-xs"></i>
+                        </div>
+                        <span class="font-semibold text-slate-800">ChironIQ</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">Comprehensive healthcare practice management platform designed to help you focus on what matters most - your patients.</p>
+                    <p class="text-xs text-slate-500">© 2024 ChironIQ. All rights reserved.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-3">Compliance</h4>
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <p>✓ CQC Registered</p>
+                        <p>✓ GDPR Compliant</p>
+                        <p>✓ NHS IG Toolkit</p>
+                        <p>✓ ISO 27001 Certified</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-3">Support</h4>
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <p>24/7 Technical Support</p>
+                        <p>Clinical Implementation Team</p>
+                        <p>Training & Onboarding</p>
+                        <p>Regulatory Updates</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement React Query data fetching, routing with wouter, and state management
+        
+        // Mock demonstration of loading states and interactions
+        (function() {
+            // Simulate loading state toggle for demonstration
+            let isLoading = false;
+            
+            function toggleLoadingState() {
+                const loadingEl = document.getElementById('loading-state');
+                const modulesGrid = document.querySelector('[data-implementation*="Should fetch from /api/modules"]');
+                
+                if (isLoading) {
+                    loadingEl.classList.add('hidden');
+                    modulesGrid.classList.remove('hidden');
+                } else {
+                    loadingEl.classList.remove('hidden');
+                    modulesGrid.classList.add('hidden');
+                }
+                isLoading = !isLoading;
+            }
+            
+            // Demo: Toggle loading state every 10 seconds
+            // setInterval(toggleLoadingState, 10000);
+            
+            // Mock module card click handlers
+            document.querySelectorAll('[data-event*="click:navigateToModule"]').forEach(card => {
+                card.addEventListener('click', function() {
+                    const module = this.getAttribute('data-module');
+                    console.log(`Navigating to /modules/${module}`);
+                    // TODO: Implement actual navigation with wouter
+                });
+            });
+            
+            // Mock AI chat functionality
+            const chatInput = document.querySelector('input[placeholder="Ask me anything..."]');
+            const sendButton = document.querySelector('[data-event*="click:sendMessage"]');
+            
+            if (chatInput && sendButton) {
+                sendButton.addEventListener('click', function() {
+                    console.log('Sending message:', chatInput.value);
+                    // TODO: Implement actual AI chat functionality
+                    chatInput.value = '';
+                });
+                
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendButton.click();
+                    }
+                });
+            }
+            
+            // Mock quick actions
+            document.querySelectorAll('[data-event*="click:quickAction"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    console.log(`Quick action triggered: ${action}`);
+                    // TODO: Implement actual quick action functionality
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
