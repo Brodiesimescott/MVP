@@ -1,24 +1,51 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, decimal, integer, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  decimal,
+  integer,
+  boolean,
+  jsonb,
+  pgEnum,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { extendZod } from "@zodyac/zod-mongoose";
 
 // Enums
-export const userRoleEnum = pgEnum('user_role', ['staff', 'poweruser', 'user']);
-export const moduleStatusEnum = pgEnum('module_status', ['good', 'attention', 'critical']);
-export const staffContractTypeEnum = pgEnum('contract_type', ['permanent', 'temporary', 'locum', 'contractor']);
-export const reviewStatusEnum = pgEnum('review_status', ['compliant', 'needs_review', 'non_compliant']);
-export const transactionCategoryEnum = pgEnum('transaction_category', ['income', 'expense']);
+export const userRoleEnum = pgEnum("user_role", ["staff", "poweruser", "user"]);
+export const moduleStatusEnum = pgEnum("module_status", [
+  "good",
+  "attention",
+  "critical",
+]);
+export const staffContractTypeEnum = pgEnum("contract_type", [
+  "permanent",
+  "temporary",
+  "locum",
+  "contractor",
+]);
+export const reviewStatusEnum = pgEnum("review_status", [
+  "compliant",
+  "needs_review",
+  "non_compliant",
+]);
+export const transactionCategoryEnum = pgEnum("transaction_category", [
+  "income",
+  "expense",
+]);
 
 // Users table
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   hashedPassword: text("hashed_password").notNull(),
   salt: text("salt").notNull(),
   practiceId: varchar("practice_id").notNull(),
-  role: userRoleEnum("role").notNull().default('user'),
+  role: userRoleEnum("role").notNull().default("user"),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -26,7 +53,9 @@ export const users = pgTable("users", {
 
 // Practices table
 export const practices = pgTable("practices", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   address: text("address"),
   phone: text("phone"),
@@ -37,7 +66,9 @@ export const practices = pgTable("practices", {
 
 // Staff table
 export const staff = pgTable("staff", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   employeeId: text("employee_id").notNull(),
   firstName: text("first_name").notNull(),
@@ -65,13 +96,15 @@ export const staff = pgTable("staff", {
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   emergencyContactRelation: text("emergency_contact_relation"),
-  status: text("status").default('active'),
+  status: text("status").default("active"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // CQC Standards table
 export const cqcStandards = pgTable("cqc_standards", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   regulationId: text("regulation_id").notNull().unique(),
   title: text("title").notNull(),
   summary: text("summary"),
@@ -83,19 +116,25 @@ export const cqcStandards = pgTable("cqc_standards", {
 
 // Practice Evidence table
 export const practiceEvidence = pgTable("practice_evidence", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   fileName: text("file_name").notNull(),
   description: text("description"),
   uploadDate: timestamp("upload_date").defaultNow(),
-  reviewStatus: reviewStatusEnum("review_status").notNull().default('needs_review'),
+  reviewStatus: reviewStatusEnum("review_status")
+    .notNull()
+    .default("needs_review"),
   standardIds: text("standard_ids").array(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Conversations table
 export const conversations = pgTable("conversations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   participantIds: text("participant_ids").array().notNull(),
   title: text("title"),
@@ -105,7 +144,9 @@ export const conversations = pgTable("conversations", {
 
 // Messages table
 export const messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   conversationId: varchar("conversation_id").notNull(),
   senderId: varchar("sender_id").notNull(),
   content: text("content").notNull(),
@@ -116,7 +157,9 @@ export const messages = pgTable("messages", {
 
 // Transactions table
 export const transactions = pgTable("transactions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
@@ -129,7 +172,9 @@ export const transactions = pgTable("transactions", {
 
 // Invoices table
 export const invoices = pgTable("invoices", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   invoiceNumber: text("invoice_number").notNull(),
   clientName: text("client_name").notNull(),
@@ -138,7 +183,7 @@ export const invoices = pgTable("invoices", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  status: text("status").default('draft'),
+  status: text("status").default("draft"),
   dueDate: text("due_date"),
   paidDate: text("paid_date"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -146,7 +191,9 @@ export const invoices = pgTable("invoices", {
 
 // Purchases table
 export const purchases = pgTable("purchases", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   description: text("description").notNull(),
   supplier: text("supplier").notNull(),
@@ -161,14 +208,16 @@ export const purchases = pgTable("purchases", {
 
 // VAT Returns table
 export const vatReturns = pgTable("vat_returns", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   periodStart: text("period_start").notNull(),
   periodEnd: text("period_end").notNull(),
   vatDue: decimal("vat_due", { precision: 10, scale: 2 }).notNull(),
   vatReclaimed: decimal("vat_reclaimed", { precision: 10, scale: 2 }).notNull(),
   netVat: decimal("net_vat", { precision: 10, scale: 2 }).notNull(),
-  status: text("status").default('draft'),
+  status: text("status").default("draft"),
   submittedAt: timestamp("submitted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -190,7 +239,9 @@ export const insertCqcStandardSchema = createInsertSchema(cqcStandards).omit({
   lastCheckedForUpdate: true,
 });
 
-export const insertPracticeEvidenceSchema = createInsertSchema(practiceEvidence).omit({
+export const insertPracticeEvidenceSchema = createInsertSchema(
+  practiceEvidence,
+).omit({
   id: true,
   createdAt: true,
   uploadDate: true,
@@ -240,7 +291,9 @@ export type CqcStandard = typeof cqcStandards.$inferSelect;
 export type InsertCqcStandard = z.infer<typeof insertCqcStandardSchema>;
 
 export type PracticeEvidence = typeof practiceEvidence.$inferSelect;
-export type InsertPracticeEvidence = z.infer<typeof insertPracticeEvidenceSchema>;
+export type InsertPracticeEvidence = z.infer<
+  typeof insertPracticeEvidenceSchema
+>;
 
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
