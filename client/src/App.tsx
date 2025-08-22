@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import ChironHR from "@/pages/modules/hr";
 import ChironCQC from "@/pages/modules/cqc";
 import ChironMessaging from "@/pages/modules/messaging";
@@ -16,6 +18,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/modules/hr" component={ChironHR} />
       <Route path="/modules/cqc" component={ChironCQC} />
       <Route path="/modules/messaging" component={ChironMessaging} />
