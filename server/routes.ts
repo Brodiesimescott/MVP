@@ -1,4 +1,5 @@
-import type { Express } from "express";
+import { response, type Express } from "express";
+import { pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto'
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
@@ -104,7 +105,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
 
-  app.get("", async (req, res) => {})
+  function dohash(password: string, salt: string): Buffer {
+      return pbkdf2Sync(password, salt, 310000, 32, 'sha256')
+  }
+
+  // Login endpoint
+  app.post("/api/login", async (req, res) => {
+    const { username, password } = req.body;
+    try {
+      const user = await storage.getUserByEmail(username);
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      } 
+      
+      const hashedPassword = dohash(password, user.salt);
+
+      const isPasswordCorrect = timingSafeEqual(Buffer.from(user.hashedPassword, 'base64'), hashedPassword);
+      
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      } 
+
+      // For now, just return success - token generation can be added later
+      res.status(200).json({ 
+        message: "Login successful", 
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          firstName: user.firstName, 
+          lastName: user.lastName 
+        } 
+      });
+    } catch (error) {
+      console.log("Error in login controller", error instanceof Error ? error.message : String(error));
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
   
   // Modules endpoint
   app.get("/api/modules", async (req, res) => {
