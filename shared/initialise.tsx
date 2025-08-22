@@ -63,9 +63,7 @@ export async function getPracticeData(practice_id: string) {
     .from(vatReturns)
     .where(eq(vatReturns.practiceId, practice_id));
 
-  if (practice.length > 0) {
-    storage.insertDBpractice(practice[0]);
-  }
+  storage.insertDBpractice(practice[0]);
   storage.insertDBstafflist(stafflist);
   storage.insertDBCQC(cqcStandardsList);
   storage.insertDBEvidence(practiceEvidenceList);
@@ -74,15 +72,6 @@ export async function getPracticeData(practice_id: string) {
   storage.insertDBinvoices(invoicesList);
   storage.insertDBpurchases(purchasesList);
   storage.insertDBvatReturn(vatReturnsList);
-}
-
-export async function getConversationData(user_id: string) {
-  const conversationsList = await db
-    .select()
-    .from(conversations)
-    .where(arrayContains(conversations.participantIds, [user_id]));
-
-  storage.insertDBConversations(conversationsList);
 }
 
 export async function getMessageData(conversation_Id: string) {

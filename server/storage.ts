@@ -22,7 +22,6 @@ import {
   type Practice,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { PgVarchar } from "drizzle-orm/pg-core";
 
 export interface IStorage {
   // User methods
@@ -79,6 +78,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private practices: Map<string, Practice>;
   private staff: Map<string, Staff>;
   private cqcStandards: Map<string, CqcStandard>;
   private practiceEvidence: Map<string, PracticeEvidence>;
@@ -91,6 +91,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.practices = new Map();
     this.staff = new Map();
     this.cqcStandards = new Map();
     this.practiceEvidence = new Map();
@@ -427,72 +428,57 @@ export class MemStorage implements IStorage {
     return vatReturn;
   }
 
-  // Database import methods
-  async insertDBUsers(users: User[]) {
-    users.forEach(user => {
+  async insertDBUsers(usersReg: User[]) {
+    usersReg.forEach((user) => {
       this.users.set(user.id, user);
     });
   }
-
-  async insertDBpractice(practice: Practice) {
-    // Add practice storage if needed - currently practices are not stored in MemStorage
+  async insertDBpractice(practiceReg: Practice) {
+    this.practices.set(practiceReg.id, practiceReg);
   }
-
-  async insertDBstafflist(staffList: Staff[]) {
-    staffList.forEach(staff => {
-      this.staff.set(staff.id, staff);
+  async insertDBstafflist(staffReg: Staff[]) {
+    staffReg.forEach((staffMember) => {
+      this.staff.set(staffMember.id, staffMember);
     });
   }
-
-  async insertDBCQC(standards: CqcStandard[]) {
-    standards.forEach(standard => {
-      this.cqcStandards.set(standard.id, standard);
+  async insertDBCQC(cqcReg: CqcStandard[]) {
+    cqcReg.forEach((cqc) => {
+      this.cqcStandards.set(cqc.id, cqc);
     });
   }
-
   async insertDBEvidence(evidenceList: PracticeEvidence[]) {
-    evidenceList.forEach(evidence => {
+    evidenceList.forEach((evidence) => {
       this.practiceEvidence.set(evidence.id, evidence);
     });
   }
-
   async insertDBconversations(conversationsList: Conversation[]) {
-    conversationsList.forEach(conversation => {
+    conversationsList.forEach((conversation) => {
       this.conversations.set(conversation.id, conversation);
     });
   }
-
-  async insertDBtransactions(transactionsList: Transaction[]) {
-    transactionsList.forEach(transaction => {
+  async insertDBtransactions(transactionsRec: Transaction[]) {
+    transactionsRec.forEach((transaction) => {
       this.transactions.set(transaction.id, transaction);
     });
   }
-
-  async insertDBinvoices(invoicesList: Invoice[]) {
-    invoicesList.forEach(invoice => {
+  async insertDBinvoices(invoicesRec: Invoice[]) {
+    invoicesRec.forEach((invoice) => {
       this.invoices.set(invoice.id, invoice);
     });
   }
-
-  async insertDBpurchases(purchasesList: Purchase[]) {
-    purchasesList.forEach(purchase => {
+  async insertDBpurchases(purchasesRec: Purchase[]) {
+    purchasesRec.forEach((purchase) => {
       this.purchases.set(purchase.id, purchase);
     });
   }
-
-  async insertDBvatReturn(vatReturnsList: VatReturn[]) {
-    vatReturnsList.forEach(vatReturn => {
+  async insertDBvatReturn(vatReturnRec: VatReturn[]) {
+    vatReturnRec.forEach((vatReturn) => {
       this.vatReturns.set(vatReturn.id, vatReturn);
     });
   }
 
-  async insertDBConversations(conversationsList: Conversation[]) {
-    // Alias for insertDBconversations for consistency
-    return this.insertDBconversations(conversationsList);
-  }
-
-  async insertMessages(messagesList: Message[]) {
-    messagesList.forEach(message => {
+  async insertMessages(messagelist: Message[]) {
+    messagelist.forEach((message) => {
       this.messages.set(message.id, message);
     });
   }

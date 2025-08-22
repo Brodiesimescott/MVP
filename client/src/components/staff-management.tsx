@@ -4,10 +4,29 @@ import { ArrowLeft, Plus, Search, Eye, Edit, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
@@ -20,7 +39,7 @@ import { useState } from "react";
 import type { Staff } from "@shared/schema";
 
 const staffFormSchema = insertStaffSchema.extend({
-  practiceId: z.string().optional()
+  practiceId: z.string().optional(),
 });
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
@@ -32,53 +51,53 @@ interface StaffManagementProps {
 export default function StaffManagement({ onBack }: StaffManagementProps) {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'view' | 'edit'>('list');
+  const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const { toast } = useToast();
 
   const { data: staff, isLoading } = useQuery<Staff[]>({
-    queryKey: ['/api/hr/staff']
+    queryKey: ["/api/hr/staff"],
   });
 
   const form = useForm<StaffFormData>({
     resolver: zodResolver(staffFormSchema),
     defaultValues: {
-      employeeId: '',
-      firstName: '',
-      lastName: '',
-      title: '',
-      email: '',
-      phone: '',
-      address: '',
-      dateOfBirth: '',
-      niNumber: '',
-      position: '',
-      department: '',
-      startDate: '',
-      contractType: 'permanent',
-      salary: '0',
-      workingHours: '',
-      professionalBody: '',
-      professionalBodyNumber: '',
-      appraisalDate: '',
-      revalidationInfo: '',
-      dbsCheckExpiry: '',
-      emergencyContactName: '',
-      emergencyContactPhone: '',
-      emergencyContactRelation: ''
-    }
+      employeeId: "",
+      firstName: "",
+      lastName: "",
+      title: "",
+      email: "",
+      phone: "",
+      address: "",
+      dateOfBirth: "",
+      niNumber: "",
+      position: "",
+      department: "",
+      startDate: "",
+      contractType: "permanent",
+      salary: "0",
+      workingHours: "",
+      professionalBody: "",
+      professionalBodyNumber: "",
+      appraisalDate: "",
+      revalidationInfo: "",
+      dbsCheckExpiry: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelation: "",
+    },
   });
 
   const createStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {
-      const response = await apiRequest('POST', '/api/hr/staff', data);
+      const response = await apiRequest("POST", "/api/hr/staff", data);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/hr/staff'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/hr/metrics'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/metrics"] });
       toast({
         title: "Success",
-        description: "Staff member added successfully"
+        description: "Staff member added successfully",
       });
       setShowAddDialog(false);
       form.reset();
@@ -87,58 +106,64 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       toast({
         title: "Error",
         description: "Failed to add staff member",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const updateStaffMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<StaffFormData> }) => {
-      const response = await apiRequest('PUT', `/api/hr/staff/${id}`, data);
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<StaffFormData>;
+    }) => {
+      const response = await apiRequest("PUT", `/api/hr/staff/${id}`, data);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/hr/staff'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
       toast({
         title: "Success",
-        description: "Staff member updated successfully"
+        description: "Staff member updated successfully",
       });
-      setViewMode('view');
+      setViewMode("view");
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: "Failed to update staff member",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const deleteStaffMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest('DELETE', `/api/hr/staff/${id}`);
+      await apiRequest("DELETE", `/api/hr/staff/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/hr/staff'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/hr/metrics'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/metrics"] });
       toast({
         title: "Success",
-        description: "Staff member deleted successfully"
+        description: "Staff member deleted successfully",
       });
-      setViewMode('list');
+      setViewMode("list");
       setSelectedStaff(null);
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: "Failed to delete staff member",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const onSubmit = (data: StaffFormData) => {
-    if (viewMode === 'edit' && selectedStaff) {
+    if (viewMode === "edit" && selectedStaff) {
       updateStaffMutation.mutate({ id: selectedStaff.id, data });
     } else {
       createStaffMutation.mutate(data);
@@ -147,36 +172,45 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const handleViewStaff = (staffMember: Staff) => {
     setSelectedStaff(staffMember);
-    setViewMode('view');
+    setViewMode("view");
   };
 
   const handleEditStaff = (staffMember: Staff) => {
     setSelectedStaff(staffMember);
-    setViewMode('edit');
+    setViewMode("edit");
     // Populate form with staff data
     form.reset(staffMember);
   };
 
-  if (viewMode === 'view' && selectedStaff) {
+  if (viewMode === "view" && selectedStaff) {
     return (
       <div className="min-h-screen bg-slate-50">
         <header className="bg-white border-b border-slate-200 px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => setViewMode('list')} className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => setViewMode("list")}
+                className="flex items-center space-x-2"
+              >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Staff List</span>
               </Button>
               <div className="w-px h-6 bg-slate-200"></div>
-              <h1 className="text-xl font-semibold text-slate-900">Staff Profile</h1>
+              <h1 className="text-xl font-semibold text-slate-900">
+                Staff Profile
+              </h1>
             </div>
             <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => handleEditStaff(selectedStaff)}>
+              <Button
+                variant="outline"
+                onClick={() => handleEditStaff(selectedStaff)}
+              >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={() => deleteStaffMutation.mutate(selectedStaff.id)}
                 disabled={deleteStaffMutation.isPending}
               >
@@ -193,33 +227,45 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contact Information */}
                 <Card className="p-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">Contact Information</h3>
+                  <h3 className="font-semibold text-slate-900 mb-4">
+                    Contact Information
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-chiron-blue rounded-full flex items-center justify-center">
                         <span className="text-white font-semibold text-lg">
-                          {selectedStaff.firstName[0]}{selectedStaff.lastName[0]}
+                          {selectedStaff.firstName[0]}
+                          {selectedStaff.lastName[0]}
                         </span>
                       </div>
                       <div>
                         <h4 className="text-lg font-semibold text-slate-900">
-                          {selectedStaff.title} {selectedStaff.firstName} {selectedStaff.lastName}
+                          {selectedStaff.title} {selectedStaff.firstName}{" "}
+                          {selectedStaff.lastName}
                         </h4>
-                        <p className="text-clinical-gray">{selectedStaff.position}</p>
+                        <p className="text-clinical-gray">
+                          {selectedStaff.position}
+                        </p>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 gap-3 mt-4">
                       <div className="flex justify-between text-sm">
                         <span className="text-clinical-gray">Email:</span>
-                        <span className="text-slate-900">{selectedStaff.email || 'Not provided'}</span>
+                        <span className="text-slate-900">
+                          {selectedStaff.email || "Not provided"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-clinical-gray">Phone:</span>
-                        <span className="text-slate-900">{selectedStaff.phone || 'Not provided'}</span>
+                        <span className="text-slate-900">
+                          {selectedStaff.phone || "Not provided"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-clinical-gray">Address:</span>
-                        <span className="text-slate-900">{selectedStaff.address || 'Not provided'}</span>
+                        <span className="text-slate-900">
+                          {selectedStaff.address || "Not provided"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -227,69 +273,109 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
                 {/* Employment Details */}
                 <Card className="p-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">Employment Details</h3>
+                  <h3 className="font-semibold text-slate-900 mb-4">
+                    Employment Details
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Employee ID:</span>
-                      <span className="text-slate-900">{selectedStaff.employeeId}</span>
+                      <span className="text-slate-900">
+                        {selectedStaff.employeeId}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Department:</span>
-                      <span className="text-slate-900">{selectedStaff.department}</span>
+                      <span className="text-slate-900">
+                        {selectedStaff.department}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Start Date:</span>
-                      <span className="text-slate-900">{selectedStaff.startDate}</span>
+                      <span className="text-slate-900">
+                        {selectedStaff.startDate}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Contract Type:</span>
-                      <Badge variant="secondary">{selectedStaff.contractType}</Badge>
+                      <Badge variant="secondary">
+                        {selectedStaff.contractType}
+                      </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Status:</span>
-                      <Badge className="bg-medical-green text-white">{selectedStaff.status || 'Active'}</Badge>
+                      <Badge className="bg-medical-green text-white">
+                        {selectedStaff.status || "Active"}
+                      </Badge>
                     </div>
                   </div>
                 </Card>
 
                 {/* Professional Details */}
                 <Card className="p-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">Professional Compliance</h3>
+                  <h3 className="font-semibold text-slate-900 mb-4">
+                    Professional Compliance
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">Professional Body:</span>
-                      <span className="text-slate-900">{selectedStaff.professionalBody || 'Not applicable'}</span>
+                      <span className="text-clinical-gray">
+                        Professional Body:
+                      </span>
+                      <span className="text-slate-900">
+                        {selectedStaff.professionalBody || "Not applicable"}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">Registration Number:</span>
-                      <span className="text-slate-900">{selectedStaff.professionalBodyNumber || 'Not applicable'}</span>
+                      <span className="text-clinical-gray">
+                        Registration Number:
+                      </span>
+                      <span className="text-slate-900">
+                        {selectedStaff.professionalBodyNumber ||
+                          "Not applicable"}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">Next Appraisal:</span>
-                      <span className="text-slate-900">{selectedStaff.appraisalDate || 'Not scheduled'}</span>
+                      <span className="text-clinical-gray">
+                        Next Appraisal:
+                      </span>
+                      <span className="text-slate-900">
+                        {selectedStaff.appraisalDate || "Not scheduled"}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">DBS Check Expiry:</span>
-                      <span className="text-slate-900">{selectedStaff.dbsCheckExpiry || 'Not provided'}</span>
+                      <span className="text-clinical-gray">
+                        DBS Check Expiry:
+                      </span>
+                      <span className="text-slate-900">
+                        {selectedStaff.dbsCheckExpiry || "Not provided"}
+                      </span>
                     </div>
                   </div>
                 </Card>
 
                 {/* Emergency Contact */}
                 <Card className="p-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">Emergency Contact</h3>
+                  <h3 className="font-semibold text-slate-900 mb-4">
+                    Emergency Contact
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Name:</span>
-                      <span className="text-slate-900">{selectedStaff.emergencyContactName || 'Not provided'}</span>
+                      <span className="text-slate-900">
+                        {selectedStaff.emergencyContactName || "Not provided"}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Phone:</span>
-                      <span className="text-slate-900">{selectedStaff.emergencyContactPhone || 'Not provided'}</span>
+                      <span className="text-slate-900">
+                        {selectedStaff.emergencyContactPhone || "Not provided"}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Relation:</span>
-                      <span className="text-slate-900">{selectedStaff.emergencyContactRelation || 'Not provided'}</span>
+                      <span className="text-slate-900">
+                        {selectedStaff.emergencyContactRelation ||
+                          "Not provided"}
+                      </span>
                     </div>
                   </div>
                 </Card>
@@ -310,18 +396,24 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
     );
   }
 
-  if (viewMode === 'edit' && selectedStaff) {
+  if (viewMode === "edit" && selectedStaff) {
     return (
       <div className="min-h-screen bg-slate-50">
         <header className="bg-white border-b border-slate-200 px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => setViewMode('view')} className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => setViewMode("view")}
+                className="flex items-center space-x-2"
+              >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Profile</span>
               </Button>
               <div className="w-px h-6 bg-slate-200"></div>
-              <h1 className="text-xl font-semibold text-slate-900">Edit Staff Member</h1>
+              <h1 className="text-xl font-semibold text-slate-900">
+                Edit Staff Member
+              </h1>
             </div>
           </div>
         </header>
@@ -331,7 +423,10 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
             <div className="lg:col-span-3">
               <Card className="p-6">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -353,7 +448,10 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           <FormItem>
                             <FormLabel>Title</FormLabel>
                             <FormControl>
-                              <Input placeholder="Dr., Mr., Ms., etc." {...field} />
+                              <Input
+                                placeholder="Dr., Mr., Ms., etc."
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -449,11 +547,20 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                     </div>
 
                     <div className="flex justify-end space-x-4">
-                      <Button type="button" variant="outline" onClick={() => setViewMode('view')}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setViewMode("view")}
+                      >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={updateStaffMutation.isPending}>
-                        {updateStaffMutation.isPending ? 'Updating...' : 'Update Staff Member'}
+                      <Button
+                        type="submit"
+                        disabled={updateStaffMutation.isPending}
+                      >
+                        {updateStaffMutation.isPending
+                          ? "Updating..."
+                          : "Update Staff Member"}
                       </Button>
                     </div>
                   </form>
@@ -480,12 +587,18 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       <header className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={onBack} className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center space-x-2"
+            >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to HR</span>
             </Button>
             <div className="w-px h-6 bg-slate-200"></div>
-            <h1 className="text-xl font-semibold text-slate-900">Staff Management</h1>
+            <h1 className="text-xl font-semibold text-slate-900">
+              Staff Management
+            </h1>
           </div>
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
@@ -499,7 +612,10 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                 <DialogTitle>Add New Staff Member</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -521,7 +637,10 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                         <FormItem>
                           <FormLabel>Title</FormLabel>
                           <FormControl>
-                            <Input placeholder="Dr., Mr., Ms., etc." {...field} />
+                            <Input
+                              placeholder="Dr., Mr., Ms., etc."
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -588,11 +707,20 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                   </div>
 
                   <div className="flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowAddDialog(false)}
+                    >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={createStaffMutation.isPending}>
-                      {createStaffMutation.isPending ? 'Adding...' : 'Add Staff Member'}
+                    <Button
+                      type="submit"
+                      disabled={createStaffMutation.isPending}
+                    >
+                      {createStaffMutation.isPending
+                        ? "Adding..."
+                        : "Add Staff Member"}
                     </Button>
                   </div>
                 </form>
@@ -610,7 +738,10 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               <div className="flex space-x-4">
                 <div className="flex-1 relative">
                   <Search className="w-4 h-4 absolute left-3 top-3 text-clinical-gray" />
-                  <Input placeholder="Search staff members..." className="pl-10" />
+                  <Input
+                    placeholder="Search staff members..."
+                    className="pl-10"
+                  />
                 </div>
                 <Select>
                   <SelectTrigger className="w-48">
@@ -619,7 +750,9 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                   <SelectContent>
                     <SelectItem value="all">All Departments</SelectItem>
                     <SelectItem value="clinical">Clinical</SelectItem>
-                    <SelectItem value="administration">Administration</SelectItem>
+                    <SelectItem value="administration">
+                      Administration
+                    </SelectItem>
                     <SelectItem value="management">Management</SelectItem>
                   </SelectContent>
                 </Select>
@@ -633,8 +766,13 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               </div>
             ) : !staff || staff.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-clinical-gray mb-4">No staff members found</p>
-                <Button onClick={() => setShowAddDialog(true)} className="bg-chiron-blue hover:bg-blue-800">
+                <p className="text-clinical-gray mb-4">
+                  No staff members found
+                </p>
+                <Button
+                  onClick={() => setShowAddDialog(true)}
+                  className="bg-chiron-blue hover:bg-blue-800"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add First Staff Member
                 </Button>
@@ -647,42 +785,56 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                       <div className="flex items-center space-x-4 mb-4">
                         <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
                           <span className="text-white font-semibold">
-                            {staffMember.firstName[0]}{staffMember.lastName[0]}
+                            {staffMember.firstName[0]}
+                            {staffMember.lastName[0]}
                           </span>
                         </div>
                         <div>
                           <h3 className="font-semibold text-slate-900">
-                            {staffMember.title} {staffMember.firstName} {staffMember.lastName}
+                            {staffMember.title} {staffMember.firstName}{" "}
+                            {staffMember.lastName}
                           </h3>
-                          <p className="text-sm text-clinical-gray">{staffMember.position}</p>
+                          <p className="text-sm text-clinical-gray">
+                            {staffMember.position}
+                          </p>
                         </div>
                       </div>
                       <div className="space-y-2 mb-4">
                         <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">Employee ID:</span>
-                          <span className="text-slate-900">{staffMember.employeeId}</span>
+                          <span className="text-clinical-gray">
+                            Employee ID:
+                          </span>
+                          <span className="text-slate-900">
+                            {staffMember.employeeId}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">Department:</span>
-                          <span className="text-slate-900">{staffMember.department}</span>
+                          <span className="text-clinical-gray">
+                            Department:
+                          </span>
+                          <span className="text-slate-900">
+                            {staffMember.department}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-clinical-gray">Status:</span>
-                          <Badge className="bg-medical-green text-white">{staffMember.status || 'Active'}</Badge>
+                          <Badge className="bg-medical-green text-white">
+                            {staffMember.status || "Active"}
+                          </Badge>
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="flex-1"
                           onClick={() => handleViewStaff(staffMember)}
                         >
                           <Eye className="w-3 h-3 mr-1" />
                           View
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="flex-1 bg-chiron-blue hover:bg-blue-800"
                           onClick={() => handleEditStaff(staffMember)}
                         >
