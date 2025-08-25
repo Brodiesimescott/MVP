@@ -5,8 +5,35 @@ import { Input } from "@/components/ui/input";
 import ModulesGrid from "@/components/modules-grid";
 import ChironLogo from "@/lib/logo";
 import { Bot, Send, User } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const userSchema = z.object({
+  id: z.string(),
+  practiceId: z.string(),
+  role: z.enum(["staff", "powerUser", "user"]),
+  email: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+});
+
+type UserData = z.infer<typeof userSchema>;
 
 export default function Home() {
+  const [, setLocation] = useLocation();
+
+  const usercheck = async () => {
+    const response = await apiRequest("GET", "/api/home");
+    if (!response.ok) {
+      setLocation("/login");
+    }
+    return response.json;
+  };
+
+  const user: UserData = usercheck();
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -17,12 +44,17 @@ export default function Home() {
               <ChironLogo />
               <div>
                 <h1 className="text-2xl font-bold text-chiron-blue"></h1>
-                <p className="text-3xl font-bold italic text-[#05335b]">Focus On Patients</p>
+                <p className="text-3xl font-bold italic text-[#05335b]">
+                  Focus On Patients
+                </p>
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Badge variant="secondary" className="bg-green-50 text-medical-green border-green-200 hover:bg-green-50">
+            <Badge
+              variant="secondary"
+              className="bg-green-50 text-medical-green border-green-200 hover:bg-green-50"
+            >
               <div className="w-2 h-2 bg-medical-green rounded-full animate-pulse mr-2"></div>
               System Operational
             </Badge>
@@ -30,7 +62,9 @@ export default function Home() {
               <div className="w-8 h-8 bg-chiron-blue rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
-              <span className="text-sm font-medium text-slate-700">Dr. Sarah Wilson</span>
+              <span className="text-sm font-medium text-slate-700">
+                {user.firstName}
+              </span>
             </div>
           </div>
         </div>
@@ -41,8 +75,13 @@ export default function Home() {
           {/* Practice Management Modules */}
           <div className="lg:col-span-3">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Practice Management Modules</h2>
-              <p className="text-clinical-gray">Comprehensive tools to manage your healthcare practice efficiently</p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                Practice Management Modules
+              </h2>
+              <p className="text-clinical-gray">
+                Comprehensive tools to manage your healthcare practice
+                efficiently
+              </p>
             </div>
             <ModulesGrid />
           </div>
@@ -55,8 +94,12 @@ export default function Home() {
                   <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900">Chiron AI Assistant</h3>
-                  <p className="text-xs text-clinical-gray">Always here to help</p>
+                  <h3 className="font-semibold text-slate-900">
+                    Chiron AI Assistant
+                  </h3>
+                  <p className="text-xs text-clinical-gray">
+                    Always here to help
+                  </p>
                 </div>
               </div>
               <div className="space-y-3 mb-4 flex-1 overflow-y-auto">
@@ -65,12 +108,18 @@ export default function Home() {
                     <Bot className="w-3 h-3 text-white" />
                   </div>
                   <div className="bg-slate-50 rounded-lg p-3 text-sm">
-                    <p>Good morning! Your CQC compliance score is at 98%. Would you like me to review the remaining items?</p>
+                    <p>
+                      Good morning! Your CQC compliance score is at 98%. Would
+                      you like me to review the remaining items?
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Input placeholder="Ask anything..." className="flex-1 text-sm" />
+                <Input
+                  placeholder="Ask anything..."
+                  className="flex-1 text-sm"
+                />
                 <Button size="sm" className="bg-chiron-blue hover:bg-blue-800">
                   <Send className="w-4 h-4" />
                 </Button>
@@ -82,7 +131,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 px-6 py-6 mt-auto">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-sm text-clinical-gray mb-2">© 2025 ChironIQ Healthcare Management Platform. All rights reserved.</p>
+          <p className="text-sm text-clinical-gray mb-2">
+            © 2025 ChironIQ Healthcare Management Platform. All rights
+            reserved.
+          </p>
           <p className="text-xs text-clinical-gray"> | GDPR Compliant | </p>
         </div>
       </footer>
