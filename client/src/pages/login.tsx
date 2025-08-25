@@ -112,18 +112,18 @@ const Login = () => {
             </Button>
           </form>
         </Form>
-      </div>
-      <div className="text-center">
-        <p className="text-base-content/60">
-          Don&apos;t have an account?{" "}
-          <button 
-            type="button" 
-            onClick={() => setLocation("/register")}
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            Sign up
-          </button>
-        </p>
+        <div className="text-center">
+          <p className="text-base-content/60">
+            Don&apos;t have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setLocation("/register")}
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Sign up
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

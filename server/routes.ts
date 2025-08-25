@@ -58,7 +58,7 @@ const getCurrentUser = () => ({
   practiceId: "practice1",
   role: "poweruser" as const,
   email: "user@example.com",
-  firstName: "Dr. Sarah",
+  firstName: "Dr. John",
   lastName: "Wilson",
 });
 

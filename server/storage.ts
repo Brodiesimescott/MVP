@@ -20,7 +20,9 @@ import {
   type VatReturn,
   type InsertVatReturn,
   type Practice,
+  users,
 } from "@shared/schema";
+import { db } from "@shared/index";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -169,6 +171,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.users.set(id, user);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(users).values(user);
     return user;
   }
 

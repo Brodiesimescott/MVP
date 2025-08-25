@@ -210,6 +210,18 @@ const SignUp = () => {
             </Button>
           </form>
         </Form>
+        <div className="text-center">
+          <p className="text-base-content/60">
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setLocation("/login")}
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Login
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
