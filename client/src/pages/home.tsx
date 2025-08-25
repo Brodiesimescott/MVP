@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 
 const userSchema = z.object({
   id: z.string(),
@@ -24,15 +25,25 @@ type UserData = z.infer<typeof userSchema>;
 export default function Home() {
   const [, setLocation] = useLocation();
 
-  const usercheck = async () => {
-    const response = await apiRequest("GET", "/api/home");
-    if (!response.ok) {
-      setLocation("/login");
-    }
-    return response.json;
-  };
+  const { data: user, isLoading, error } = useQuery({
+    queryKey: ["/api/home"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/home");
+      if (!response.ok) {
+        setLocation("/login");
+        throw new Error("Authentication failed");
+      }
+      return await response.json() as UserData;
+    },
+  });
 
-  const user: UserData = usercheck();
+  if (isLoading) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
+  }
+
+  if (error || !user) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Error loading user data</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
