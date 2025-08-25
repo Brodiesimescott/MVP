@@ -50,7 +50,9 @@ export default function Home() {
   }
 
   if (error || !user) {
-    // Use useEffect to avoid calling setLocation during render
+    // Use u
+    setLocation("/login");
+  ocation during render
     React.useEffect(() => {
       setLocation("/login");
     }, [setLocation]);
@@ -64,7 +66,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 pt-[0px] pb-[0px]">
+    x items-center space-x-3">
+              rder-slate-200 px-6 py-4 pt-[0px] pb-[0px]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">

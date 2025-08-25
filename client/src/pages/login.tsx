@@ -16,6 +16,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest } from "@/lib/queryClient";
+import ChironLogo from "@/lib/logo";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -74,7 +75,9 @@ const Login = () => {
   return (
     <div className="container mx-auto">
       <div className="max-w-md mx-auto mt-10 bg-white p-8 border border-gray-200 rounded-md shadow-sm">
+        
         <h1 className="text-2xl font-semibold mb-6 text-center">Login</h1>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
