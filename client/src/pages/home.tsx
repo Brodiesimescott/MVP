@@ -50,20 +50,14 @@ export default function Home() {
   }
 
   if (error || !user) {
-    !user) {
-    return setLocation("/login");
+    setLocation("/login");
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 pt-[0px] pb-[0px]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <ChironLogo />
-              <div>
-       ">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
@@ -89,7 +83,7 @@ export default function Home() {
                 <User className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-slate-700">
-                {user.firstName} {user.lastName}
+                {user?.firstName} {user?.lastName}
               </span>
             </div>
           </div>
