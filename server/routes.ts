@@ -1,14 +1,17 @@
 import { response, type Express } from "express";
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto'
+import { pbkdf2Sync, randomBytes, timingSafeEqual } from "crypto";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import {
+  User,
   insertStaffSchema,
   insertMessageSchema,
   insertTransactionSchema,
   insertInvoiceSchema,
   insertPurchaseSchema,
+  InsertUser,
+  insertUserSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -105,44 +108,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
 
+  //handling hash
   function dohash(password: string, salt: string): Buffer {
-      return pbkdf2Sync(password, salt, 310000, 32, 'sha256')
+    return pbkdf2Sync(password, salt, 310000, 32, "sha256");
   }
 
-  // Login endpoint
-  app.post("/api/login", async (req, res) => {
-    const { username, password } = req.body;
+  function makeSalt(): string {
+      return randomBytes(128).toString('base64')
+  }
+
+  //sign up endpoint
+  app.post("/api/signup", async (req, res) => {
+    const user = req.body();
     try {
-      const user = await storage.getUserByEmail(username);
+    if ((await storage.getUserByEmail(user.email) == null) {
+      return res.status(400).json({ message: "Email in use by other user" });
+    }
+      
+    const salt = makeSalt(),
+      
+    const userTemplate : InsertUser = {
+      email: user.email,
+      hashedPassword : dohash(user.password, salt).toString('base64'),
+      salt :  salt,
+      practiceId: user.practiceId,
+      firstName: user.firstname,
+      lastName: user.lastname,
+      role?: user.role,
+    }
+      storage.createUser(userTemplate);
+
+      const newuser = await storage.getUserByEmail(user.email);
+      
+      generateToken(newuser.id, res);
+
+      res.status(200);
+    } catch (error: any) {
+      console.log("Error in login controller", error.message);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  
+  });
+
+  //login endpoint
+  app.post("/api/login", async (req, res) => {
+    const { email, password } = req.body();
+    try {
+      const user = await storage.getUserByEmail(email);
 
       if (!user) {
-        return res.status(400).json({ message: "Invalid credentials" });
-      } 
-      
+        return res.status(400).json({ message: "Invalid   credentials" });
+      }
+
       const hashedPassword = dohash(password, user.salt);
 
-      const isPasswordCorrect = timingSafeEqual(Buffer.from(user.hashedPassword, 'base64'), hashedPassword);
-      
+      const isPasswordCorrect = timingSafeEqual(
+        Buffer.from(user.hashedPassword, "base64"),
+        hashedPassword,
+      );
+
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Invalid credentials" });
-      } 
+      }
+      generateToken(user.id, res);
 
-      // For now, just return success - token generation can be added later
-      res.status(200).json({ 
-        message: "Login successful", 
-        user: { 
-          id: user.id, 
-          email: user.email, 
-          firstName: user.firstName, 
-          lastName: user.lastName 
-        } 
-      });
-    } catch (error) {
-      console.log("Error in login controller", error instanceof Error ? error.message : String(error));
+      res.status(200);
+    } catch (error: any) {
+      console.log("Error in login controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });
     }
   });
-  
+
   // Modules endpoint
   app.get("/api/modules", async (req, res) => {
     const modules = [
