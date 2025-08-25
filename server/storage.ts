@@ -21,6 +21,7 @@ import {
   type InsertVatReturn,
   type Practice,
   users,
+  staff,
 } from "@shared/schema";
 import { db } from "@shared/index";
 import { randomUUID } from "crypto";
@@ -215,6 +216,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.staff.set(id, staffMember);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(staff).values(staffMember);
     return staffMember;
   }
 
@@ -252,6 +255,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.cqcStandards.set(id, standard);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(cqcStandards).values(standard);
     return standard;
   }
 
@@ -275,6 +280,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.practiceEvidence.set(id, evidence);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(practiceEvidence).values(evidence);
     return evidence;
   }
 
@@ -316,6 +323,8 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
     this.conversations.set(id, conversation);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(conversations).values(conversation);
     return conversation;
   }
 
@@ -335,6 +344,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.messages.set(id, message);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(messages).values(message);
     return message;
   }
 
@@ -357,6 +368,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.transactions.set(id, transaction);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(transactions).values(transaction);
     return transaction;
   }
 
@@ -379,6 +392,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.invoices.set(id, invoice);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(invoices).values(invoice);
     return invoice;
   }
 
@@ -410,6 +425,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.purchases.set(id, purchase);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(purchases).values(purchase);
     return purchase;
   }
 
@@ -429,6 +446,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.vatReturns.set(id, vatReturn);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(VatReturns).values(vatReturn);
     return vatReturn;
   }
 
