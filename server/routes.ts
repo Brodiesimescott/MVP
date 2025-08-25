@@ -13,6 +13,7 @@ import {
   InsertUser,
   insertUserSchema,
 } from "@shared/schema";
+import { generateToken } from "@/lib/utils";
 import { z } from "zod";
 
 // AI Safety Net - Mock implementation for MVP
@@ -114,42 +115,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   function makeSalt(): string {
-      return randomBytes(128).toString('base64')
+    return randomBytes(128).toString("base64");
   }
+
+  //Home api
+  app.get("/api/home", async (req, res) => {
+    const currentUser = getCurrentUser();
+    res.status(200).json(currentUser);
+  });
 
   //sign up endpoint
   app.post("/api/signup", async (req, res) => {
     const user = req.body;
     try {
-      if ((await storage.getUserByEmail(user.email)) == null) {
+      if (!(await storage.getUserByEmail(user.email)) == null) {
         return res.status(400).json({ message: "Email in use by other user" });
       }
-      
+
       const salt = makeSalt();
-      
-      const userTemplate : InsertUser = {
+
+      const userTemplate: InsertUser = {
         email: user.email,
-        hashedPassword : dohash(user.password, salt).toString('base64'),
-        salt :  salt,
+        hashedPassword: dohash(user.password, salt).toString("base64"),
+        salt: salt,
         practiceId: user.practiceId,
         firstName: user.firstname,
         lastName: user.lastname,
         role: user.role,
-      }
+      };
       await storage.createUser(userTemplate);
 
       const newuser = await storage.getUserByEmail(user.email);
-      
+
       if (!newuser) {
         return res.status(500).json({ message: "User creation failed" });
       }
 
-      res.status(201).json({ message: "User created successfully", userId: newuser.id });
+      //empty
+      generateToken(newuser.id);
+
+      res
+        .status(201)
+        .json({ message: "User created successfully", userId: newuser.id });
     } catch (error: any) {
       console.log("Error in login controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });
     }
-  
   });
 
   //login endpoint
@@ -172,6 +183,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
+
+      // empty
+      generateToken(user.id);
+
       res.status(200).json({ message: "Login successful", userId: user.id });
     } catch (error: any) {
       console.log("Error in login controller", error.message);

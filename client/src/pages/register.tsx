@@ -12,6 +12,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -34,7 +41,7 @@ const formSchema = z.object({
   lastname: z.string().min(1, {
     message: "Enter last name.",
   }),
-  role: z.number(),
+  role: z.enum(["staff", "poweruser", "user"]),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -51,7 +58,7 @@ const SignUp = () => {
       practiceId: "",
       firstname: "",
       lastname: "",
-      role: 2,
+      role: "user",
     },
   });
 
@@ -179,15 +186,18 @@ const SignUp = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <FormControl>
-                    <select {...field} className="border rounded p-2">
-                      {["staff", "poweruser", "user"].map((role, index) => (
-                        <option key={role} value={index}>
-                          {role}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="staff">Staff</SelectItem>
+                      <SelectItem value="poweruser">Power User</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
