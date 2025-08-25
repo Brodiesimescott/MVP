@@ -12,7 +12,7 @@ import {
   vatReturns,
   messages,
 } from "./schema";
-import { eq, arrayContains } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { storage } from "server/storage";
 
 export async function getUsers() {
