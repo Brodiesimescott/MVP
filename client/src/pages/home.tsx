@@ -25,7 +25,11 @@ type UserData = z.infer<typeof userSchema>;
 export default function Home() {
   const [, setLocation] = useLocation();
 
-  const { data: user, isLoading, error } = useQuery({
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["/api/home"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/home");
@@ -33,16 +37,24 @@ export default function Home() {
         setLocation("/login");
         throw new Error("Authentication failed");
       }
-      return await response.json() as UserData;
+      return (await response.json()) as UserData;
     },
   });
 
   if (isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (error || !user) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Error loading user data</div>;
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        Error loading user data
+      </div>
+    );
   }
 
   return (
@@ -74,7 +86,7 @@ export default function Home() {
                 <User className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-slate-700">
-                {user.firstName}
+                {user.firstName} {user.lastName}
               </span>
             </div>
           </div>
