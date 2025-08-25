@@ -34,11 +34,11 @@ export default function Home() {
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/home");
       if (!response.ok) {
-        setLocation("/login");
         throw new Error("Authentication failed");
       }
       return (await response.json()) as UserData;
     },
+    retry: false,
   });
 
   if (isLoading) {
@@ -50,9 +50,13 @@ export default function Home() {
   }
 
   if (error || !user) {
+    // Use useEffect to avoid calling setLocation during render
+    React.useEffect(() => {
+      setLocation("/login");
+    }, [setLocation]);
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        Error loading user data
+        Redirecting to login...
       </div>
     );
   }
