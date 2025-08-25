@@ -119,30 +119,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //sign up endpoint
   app.post("/api/signup", async (req, res) => {
-    const user = req.body();
+    const user = req.body;
     try {
-    if ((await storage.getUserByEmail(user.email) == null) {
-      return res.status(400).json({ message: "Email in use by other user" });
-    }
+      if ((await storage.getUserByEmail(user.email)) == null) {
+        return res.status(400).json({ message: "Email in use by other user" });
+      }
       
-    const salt = makeSalt(),
+      const salt = makeSalt();
       
-    const userTemplate : InsertUser = {
-      email: user.email,
-      hashedPassword : dohash(user.password, salt).toString('base64'),
-      salt :  salt,
-      practiceId: user.practiceId,
-      firstName: user.firstname,
-      lastName: user.lastname,
-      role?: user.role,
-    }
-      storage.createUser(userTemplate);
+      const userTemplate : InsertUser = {
+        email: user.email,
+        hashedPassword : dohash(user.password, salt).toString('base64'),
+        salt :  salt,
+        practiceId: user.practiceId,
+        firstName: user.firstname,
+        lastName: user.lastname,
+        role: user.role,
+      }
+      await storage.createUser(userTemplate);
 
       const newuser = await storage.getUserByEmail(user.email);
       
-      generateToken(newuser.id, res);
+      if (!newuser) {
+        return res.status(500).json({ message: "User creation failed" });
+      }
 
-      res.status(200);
+      res.status(201).json({ message: "User created successfully", userId: newuser.id });
     } catch (error: any) {
       console.log("Error in login controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });
@@ -152,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //login endpoint
   app.post("/api/login", async (req, res) => {
-    const { email, password } = req.body();
+    const { email, password } = req.body;
     try {
       const user = await storage.getUserByEmail(email);
 
@@ -170,9 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
-      generateToken(user.id, res);
-
-      res.status(200);
+      res.status(200).json({ message: "Login successful", userId: user.id });
     } catch (error: any) {
       console.log("Error in login controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });

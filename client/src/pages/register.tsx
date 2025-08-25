@@ -181,9 +181,9 @@ const SignUp = () => {
                   <FormLabel>Role</FormLabel>
                   <FormControl>
                     <select {...field} className="border rounded p-2">
-                      {Object.values(userRoleEnum).map((role) => (
-                        <option key={role} value={role}>
-                          {userRoleEnum[role]}
+                      {["staff", "poweruser", "user"].map((role, index) => (
+                        <option key={role} value={index}>
+                          {role}
                         </option>
                       ))}
                     </select>
