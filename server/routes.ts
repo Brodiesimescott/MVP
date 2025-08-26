@@ -12,6 +12,7 @@ import {
   insertPurchaseSchema,
   InsertUser,
   insertUserSchema,
+  Conversation,
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
@@ -58,7 +59,7 @@ const getCurrentUser = () => ({
   practiceId: "practice1",
   role: "poweruser" as const,
   email: "user@example.com",
-  firstName: "Dr. John",
+  firstName: "Dr. Sarah",
   lastName: "Wilson",
 });
 
@@ -419,15 +420,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const currentUser = getCurrentUser();
     const users = await storage.getUsersByPractice(currentUser.practiceId);
     const contacts = users.filter((u) => u.id !== currentUser.id);
+
     res.json(contacts);
   });
 
   app.get("/api/messaging/conversations", async (req, res) => {
     const currentUser = getCurrentUser();
-    const conversations = await storage.getConversationsByUser(
+    /*  const conversations = await storage.getConversationsByUser(
       currentUser.id,
       currentUser.practiceId,
-    );
+    );*/
+    const conversations: Conversation[] = [
+      {
+        id: "dummyconvo",
+        practiceId: "practice1",
+        participantIds: ["user1"],
+        title: "dummy data",
+        createdAt: new Date("july 20, 2025 13:24:00"),
+        updatedAt: new Date("august 20, 2025 13:46:00"),
+      },
+    ];
     res.json(conversations);
   });
 
