@@ -13,7 +13,6 @@ import ChironMessaging from "@/pages/modules/messaging";
 import ChironMoney from "@/pages/modules/money";
 import ChironStock from "@/pages/modules/stock";
 import ChironFacilities from "@/pages/modules/facilities";
-import ChironAIAssistant from "@/pages/modules/AI-assistant";
 
 function Router() {
   return (
@@ -27,7 +26,6 @@ function Router() {
       <Route path="/modules/money" component={ChironMoney} />
       <Route path="/modules/stock" component={ChironStock} />
       <Route path="/modules/facilities" component={ChironFacilities} />
-      <Route path="/modules/ai-assistant" component={ChironAIAssistant} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
