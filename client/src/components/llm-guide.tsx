@@ -3,6 +3,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Bot, Send } from "lucide-react";
 
+import os
+
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+model = genai.GenerativeModel(model_name="Gemma 3")
+if __name__ == "__main__":
+chat = model.start_chat()
+response = chat.send_message(
+    "What's fun to do in San Francisco for someone who's just moved here?")
+print(response.text.strip())
+
 interface LLMGuideProps {
   title: string;
   subtitle: string;
@@ -36,6 +46,8 @@ export default function LLMGuide({
           </div>
           <div className="bg-slate-50 rounded-lg p-3 text-sm">
             <p>{initialMessage}</p>
+            
+
           </div>
         </div>
       </div>
