@@ -115,28 +115,30 @@ export class MemStorage implements IStorage {
         regulationId: "REG12",
         title: "Safe care and treatment",
         summary:
-          "People using services must be protected from avoidable harm and abuse",
+          "People using services must be protected from avoidable harm and abuse.",
         keyQuestion: "Safe",
         sourceUrl:
-          "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-12-safe-care-treatment",
+          "https://www.cqc.org.uk/guidance-regulation/providers/regulations-service-providers-and-managers/health-social-care-act/regulation-12",
       },
       {
         regulationId: "REG17",
         title: "Good governance",
         summary:
-          "Systems and processes must be established and operated effectively",
+          "Systems and processes must be established and operated effectively.",
         keyQuestion: "Well-led",
         sourceUrl:
-          "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-17-good-governance",
+          "https://www.cqc.org.uk/guidance-regulation/providers/regulations-service-providers-and-managers/health-social-care-act/regulation-17",
+        
+
       },
       {
         regulationId: "REG9",
         title: "Person-centred care",
         summary:
-          "Care and treatment must be appropriate and meet service users' needs",
+          "Care and treatment must be appropriate and meet service users' needs and reflect their personal preferences.",
         keyQuestion: "Responsive",
         sourceUrl:
-          "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-9-person-centred-care",
+          "https://www.cqc.org.uk/guidance-regulation/providers/regulations-service-providers-and-managers/health-social-care-act/regulation-9",
       },
     ];
 
