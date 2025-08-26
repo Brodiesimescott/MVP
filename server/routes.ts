@@ -16,6 +16,7 @@ import {
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
+import { getMessageData } from "@shared/initialise";
 
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
@@ -426,11 +427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/messaging/conversations", async (req, res) => {
     const currentUser = getCurrentUser();
-    /*  const conversations = await storage.getConversationsByUser(
-      currentUser.id,
-      currentUser.practiceId,
-    );*/
-    const conversations: Conversation[] = [
+    const newconversations: Conversation[] = [
       {
         id: "dummyconvo",
         practiceId: "practice1",
@@ -440,7 +437,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedAt: new Date("august 20, 2025 13:46:00"),
       },
     ];
+    console.log("create convo"),
+      storage.createConversation(newconversations[0]);
+    storage.createMessage({
+      conversationId: "dummyconvo",
+      senderId: "user1",
+      content: "hello",
+      blocked: null,
+      blockReason: null,
+    });
+    const conversations = await storage.getConversationsByUser(
+      currentUser.id,
+      currentUser.practiceId,
+    );
     res.json(conversations);
+  });
+
+  app.post("/api/messaging/initConversation", async (req, res) => {
+    try {
+      const conversationId = req.body;
+      const messageData =
+        await storage.getMessagesByConversation(conversationId);
+      res.json(messageData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to send message" });
+    }
   });
 
   app.post("/api/messaging/messages", async (req, res) => {
