@@ -11,12 +11,12 @@ interface LLMGuideProps {
   className?: string;
 }
 
-export default function LLMGuide({ 
-  title, 
-  subtitle, 
-  initialMessage, 
+export default function LLMGuide({
+  title,
+  subtitle,
+  initialMessage,
   placeholder = "Ask anything...",
-  className = ""
+  className = "",
 }: LLMGuideProps) {
   return (
     <Card className={`p-6 h-fit sticky top-8 ${className}`}>
@@ -45,6 +45,7 @@ export default function LLMGuide({
           <Send className="w-4 h-4" />
         </Button>
       </div>
+    </div>
     </Card>
   );
 }
