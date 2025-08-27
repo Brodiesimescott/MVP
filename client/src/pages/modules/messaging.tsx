@@ -101,7 +101,10 @@ export default function ChironMessaging() {
     Message[] | null
   >({
     queryKey: ["/api/messaging/initConversation", selectedConversation],
-    //enabled: selectedConversation !== null,
+    queryFn: selectedConversation ? 
+      () => fetch(`/api/messaging/initConversation/${selectedConversation}`).then(res => res.json()) : 
+      () => null,
+    enabled: selectedConversation !== null,
   });
 
   // WebSocket connection for real-time messaging
@@ -380,10 +383,7 @@ export default function ChironMessaging() {
                       <div
                         key={conversation.id}
                         className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === conversation.id ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
-                        onClick={() => {
-                          setSelectedConversation(conversation.id);
-                          getMessageData();
-                        }}
+                        onClick={() => setSelectedConversation(conversation.id)}
                       >
                         <div className="flex items-center space-x-3 mb-1">
                           <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
