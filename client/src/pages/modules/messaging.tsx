@@ -23,6 +23,7 @@ import ModuleLogo from "@/components/module-logo";
 import { useState, useEffect, useRef } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { z } from "zod";
+import { response } from "express";
 
 interface User {
   id: string;
@@ -64,6 +65,7 @@ export default function ChironMessaging() {
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
+  const [conversationMessages, setconvorsationMessage] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -74,6 +76,7 @@ export default function ChironMessaging() {
     queryKey: ["/api/home"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/home");
+      console.log(response);
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
@@ -94,8 +97,6 @@ export default function ChironMessaging() {
     queryKey: ["/api/messaging/messages", selectedConversation],
     enabled: !!selectedConversation,
   });
-
-  console.log(messages);
 
   // WebSocket connection for real-time messaging
   const { socket, isConnected } = useWebSocket("/ws");
@@ -390,6 +391,7 @@ export default function ChironMessaging() {
           <div className="col-span-6 bg-white rounded-xl border border-slate-200 flex flex-col">
             {selectedConversation ? (
               <>
+                (
                 <div className="p-4 border-b border-slate-200">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
@@ -420,9 +422,9 @@ export default function ChironMessaging() {
                     </div>
                   </div>
                 </div>
-
+                ):({" "}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages?.map((message) =>
+                  {messages.map((message) =>
                     message.senderId !== user?.id ? (
                       <div key={message.id} className="flex">
                         <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
@@ -495,7 +497,6 @@ export default function ChironMessaging() {
 
                   <div ref={messagesEndRef} />
                 </div>
-
                 <div className="p-4 border-t border-slate-200">
                   <form onSubmit={handleSendMessage} className="flex space-x-3">
                     <Input
