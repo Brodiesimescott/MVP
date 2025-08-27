@@ -129,7 +129,7 @@ export default function ChironMessaging() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConversation) return;
-    
+
     sendMessageMutation.mutate({
       content: newMessage.trim(),
       conversationId: selectedConversation
