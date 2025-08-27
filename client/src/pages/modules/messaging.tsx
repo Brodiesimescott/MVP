@@ -23,7 +23,6 @@ import ModuleLogo from "@/components/module-logo";
 import { useState, useEffect, useRef } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { z } from "zod";
-import { response } from "express";
 
 interface User {
   id: string;
@@ -65,9 +64,7 @@ export default function ChironMessaging() {
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
-  const [conversationMessages, setconvorsationMessage] = useState<
-    Message[] | null
-  >(null);
+
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -97,14 +94,14 @@ export default function ChironMessaging() {
 
   const { data: messages, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messaging/messages", selectedConversation],
-    enabled: !!selectedConversation,
+    //enabled: selectedConversation !== null,
   });
 
   const { data: convomessages, refetch: refetchconvoMessages } = useQuery<
-    Message[]
+    Message[] | null
   >({
-    queryKey: ["/api/messaging/initConversation"],
-    enabled: !!selectedConversation,
+    queryKey: ["/api/messaging/initConversation", selectedConversation],
+    //enabled: selectedConversation !== null,
   });
 
   // WebSocket connection for real-time messaging
@@ -215,8 +212,12 @@ export default function ChironMessaging() {
   const getMessageData = async () => {
     if (selectedConversation) {
       try {
-        await refetchconvoMessages();
+        refetchconvoMessages();
+        console.log("fetching user", user);
         console.log("fetching messages", convomessages);
+        console.log("conversations", conversations);
+        console.log("selectedConversation", selectedConversation);
+
         return convomessages;
       } catch (error) {
         console.error("Failed to fetch messages:", error);
@@ -381,7 +382,7 @@ export default function ChironMessaging() {
                         className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === conversation.id ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
                         onClick={() => {
                           setSelectedConversation(conversation.id);
-                          refetchMessages();
+                          getMessageData();
                         }}
                       >
                         <div className="flex items-center space-x-3 mb-1">
