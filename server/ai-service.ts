@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Use the Google API key for Gemini AI
+// Use the Google API key for Gemma 3 API
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY || "" });
 
 export interface ChatMessage {
@@ -16,11 +16,11 @@ export interface ChatResponse {
 
 export async function generateAIResponse(messages: ChatMessage[]): Promise<ChatResponse> {
   try {
-    // Convert messages to Gemini format
+    // Convert messages to Gemma 3 format
     const prompt = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + '\nassistant:';
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemma-3-27b-it",
       contents: prompt,
     });
 
@@ -54,7 +54,7 @@ If asked about patient-specific medical advice, politely redirect to appropriate
 User question: ${userMessage}`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemma-3-27b-it",
       contents: systemPrompt,
     });
 
