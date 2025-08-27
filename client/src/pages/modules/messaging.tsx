@@ -23,6 +23,9 @@ import ModuleLogo from "@/components/module-logo";
 import { useState, useEffect, useRef } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertConversationSchema } from "@shared/schema";
 
 interface User {
   id: string;
@@ -136,6 +139,50 @@ export default function ChironMessaging() {
       };
     }
   }, [socket, refetchMessages]);
+
+  type ConvoFormData = z.infer<typeof insertConversationSchema>;
+
+  const form = useForm<ConvoFormData>({
+    resolver: zodResolver(insertConversationSchema),
+    defaultValues: {
+      title: null,
+      practiceId: user.practiceId,
+      participantIds: [user.id],
+    },
+  });
+
+  // create conversation
+  const createConvoMutation = useMutation({
+    mutationFn: async (data: ConvoFormData) => {
+      const response = await apiRequest(
+        "POST",
+        "/api/messaging/createconversations",
+        data,
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/api/messaging/conversations"],
+      });
+      toast({
+        title: "Success",
+        description: "conversation added successfully",
+      });
+      form.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create conversation",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onConvoSubmit = (data: ConvoFormData) => {
+    createConvoMutation.mutate(data);
+  };
 
   // Join conversation when selected
   useEffect(() => {
