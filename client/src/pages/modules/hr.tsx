@@ -19,11 +19,170 @@ import StaffManagement from "@/components/staff-management";
 import ModuleLogo from "@/components/module-logo";
 import { useState } from "react";
 
+//import { createStaff } from "@/lib/api/staff";
+import { useMutation } from "@tanstack/react-query";
+
+interface StaffData {
+  name: string;
+  title: string;
+  workingHours: string;
+}
+
+window.onload = () => {
+  const hiddenDiv1 = document.getElementById("3");
+  const hiddenDiv2 = document.getElementById("4");
+
+  if (hiddenDiv1 && hiddenDiv2) {
+    hiddenDiv1.style.display = "none";
+    hiddenDiv2.style.display = "none";
+  }
+};
+
+const initialStaff: StaffData[] = [
+  {
+    name: "Dr. Sarah Wilson",
+    title: "General Practitioner",
+    workingHours: "08:00 - 18:00",
+  },
+  {
+    name: "Sister Jane Smith",
+    title: "Practice Nurse",
+    workingHours: "09:00 - 17:00",
+  },
+  {
+    name: "Mark Brown",
+    title: "Receptionist",
+    workingHours: "08:30 - 16:30",
+  },
+];
+
+const replacementStaff: StaffData[] = [
+  {
+    name: "Emily Carter",
+    title: "Practice Nurse",
+    workingHours: "10:00 - 18:00",
+  },
+  {
+    name: "Olivia Davis",
+    title: "Practice Nurse",
+    workingHours: "09:30 - 17:30",
+  },
+];
+
+const useCreateInitialStaff = () => {
+  return useMutation({
+    mutationFn: async () => {
+      for (const staffData of initialStaff) {
+        await createStaff({
+          name: staffData.name,
+          title: staffData.title,
+          workingHours: staffData.workingHours,
+          department: "default", // Replace with appropriate default
+          onDuty: false, // Or true, depending on default
+        });
+      }
+    },
+  });
+};
+
 interface HRMetrics {
   totalStaff: number;
   onDuty: number;
   pendingReviews: number;
   leaveRequests: number;
+}
+
+function markAsUnavailable(event: any) {
+  const button = event.target;
+  const parentDiv = button.closest(".bg-slate-50");
+
+  const mainSection = document.getElementById("Rota-Section");
+  const divToToggle1 = document.getElementById("3");
+  const divToToggle2 = document.getElementById("4");
+  const p = document.getElementById("p" + parentDiv.id);
+  const p3 = document.getElementById("p3");
+  const p4 = document.getElementById("p4");
+  const b3 = document.getElementById("button3");
+  const b4 = document.getElementById("button4");
+
+  if (parentDiv && divToToggle1 && divToToggle2) {
+    const currentColor = parentDiv.style.backgroundColor;
+    const defaultColor = "";
+
+    if (currentColor === "rgb(173, 173, 173)") {
+      parentDiv.style.backgroundColor = defaultColor;
+      button.textContent = "Mark as Unavailable";
+      p.textContent = "On duty";
+      p.style.color = "#04af74";
+
+      divToToggle1.style.display = "none";
+      divToToggle2.style.display = "none";
+
+      divToToggle1.style.backgroundColor = defaultColor;
+      divToToggle2.style.backgroundColor = defaultColor;
+
+      p3.textContent = "Off duty";
+      p3.style.color = "#000000";
+      p4.textContent = "Off duty";
+      p4.style.color = "#000000";
+
+      b3.textContent = "Mark as Available";
+      b4.textContent = "Mark as Available";
+    } else {
+      parentDiv.style.backgroundColor = "#ADADAD";
+      button.textContent = "Mark as Available";
+      p.textContent = "Off duty";
+      p.style.color = "red";
+
+      divToToggle1.style.display = "";
+      divToToggle2.style.display = "";
+    }
+  }
+}
+
+function markAsAvailable(event: any) {
+  const button = event.target;
+  const parentDiv = button.closest(".bg-slate-50");
+
+  const mainSection = document.getElementById("Rota-Section");
+  const divToToggle1 = document.getElementById("3");
+  const divToToggle2 = document.getElementById("4");
+  const p = document.getElementById("p" + parentDiv.id);
+
+  if (parentDiv && p && divToToggle1 && divToToggle2) {
+    const currentColor = parentDiv.style.backgroundColor;
+    const defaultColor = "";
+
+    if (currentColor === "rgb(179, 230, 165)") {
+      parentDiv.style.backgroundColor = defaultColor;
+      button.textContent = "Mark as Available";
+      p.textContent = "Off duty";
+      p.style.color = "#000000";
+    } else {
+      parentDiv.style.backgroundColor = "#B3E6A5";
+      button.textContent = "Mark as Unavailable";
+      p.textContent = "On duty";
+      p.style.color = "#04af74";
+    }
+
+    if (divToToggle1 && divToToggle2) {
+      if (parentDiv.id == "3") {
+        // Check if the section is hidden
+        const isHidden2 = divToToggle2.style.display === "none";
+
+        // Toggle the display between none and block (visible)
+        divToToggle2.style.display = isHidden2 ? "" : "none";
+      }
+
+      if (parentDiv.id == "4") {
+        // Check if the section is hidden
+        const isHidden1 = divToToggle1.style.display === "none";
+
+        // Toggle the display between none and block (visible)Mask
+        divToToggle1.style.display = isHidden1 ? "" : "none";
+      }
+    }
+  }
 }
 
 export default function ChironHR() {
@@ -178,16 +337,24 @@ export default function ChironHR() {
               </div>
             </Card>
 
+            {/* Define an array of colors for staff members */}
+
             {/* Today's Rota */}
-            <Card className="p-6">
+            <Card className="p-6" id="Rota-Section">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Today's Rota
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+
+              <div>
+                <div
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  id="1"
+                >
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-chiron-blue rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium text-sm">DW</span>
+                    <div
+                      className={`w-10 h-10 bg-chiron-blue rounded-full flex items-center justify-center`}
+                    >
+                      <span className="text-white font-medium text-sm">DS</span>
                     </div>
                     <div>
                       <p className="font-medium text-slate-900">
@@ -202,13 +369,29 @@ export default function ChironHR() {
                     <p className="text-sm font-medium text-slate-900">
                       08:00 - 18:00
                     </p>
-                    <p className="text-xs text-medical-green">On duty</p>
+                    <p className="text-xs text-medical-green" id="p1">
+                      On duty
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                      onClick={(event) => markAsUnavailable(event)}
+                    >
+                      Mark as Unavailable
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  id="2"
+                >
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
+                    <div
+                      className={`w-10 h-10 bg-medical-green rounded-full flex items-center justify-center`}
+                    >
                       <span className="text-white font-medium text-sm">SJ</span>
                     </div>
                     <div>
@@ -224,13 +407,103 @@ export default function ChironHR() {
                     <p className="text-sm font-medium text-slate-900">
                       09:00 - 17:00
                     </p>
-                    <p className="text-xs text-medical-green">On duty</p>
+                    <p className="text-xs text-medical-green" id="p2">
+                      On duty
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                      onClick={(event) => markAsUnavailable(event)}
+                    >
+                      Mark as Unavailable
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  id="3"
+                >
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-clinical-gray rounded-full flex items-center justify-center">
+                    <div
+                      className={`w-10 h-10 bg-medical-green rounded-full flex items-center justify-center`}
+                    >
+                      <span className="text-white font-medium text-sm">EC</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900">Emily Carte</p>
+                      <p className="text-sm text-clinical-gray">
+                        Practice Nurse
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-slate-900">
+                      10:00 - 18:00
+                    </p>
+                    <p className="text-xs text-red" id="p3">
+                      Off duty
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                      id="button3"
+                      onClick={(event) => markAsAvailable(event)}
+                    >
+                      Mark as Available
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  id="4"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`w-10 h-10 bg-medical-green rounded-full flex items-center justify-center`}
+                    >
+                      <span className="text-white font-medium text-sm">OD</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900">Olivia Davis</p>
+                      <p className="text-sm text-clinical-gray">
+                        Practice Nurse
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-slate-900">
+                      09:30 - 17:30
+                    </p>
+                    <p className="text-xs text-red" id="p4">
+                      Off duty
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                      id="button4"
+                      onClick={(event) => markAsAvailable(event)}
+                    >
+                      Mark as Available
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  id="5"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`w-10 h-10 bg-clinical-gray rounded-full flex items-center justify-center`}
+                    >
                       <span className="text-white font-medium text-sm">MB</span>
                     </div>
                     <div>
@@ -242,7 +515,18 @@ export default function ChironHR() {
                     <p className="text-sm font-medium text-slate-900">
                       08:30 - 16:30
                     </p>
-                    <p className="text-xs text-amber-600">Break 12:00</p>
+                    <p className="text-xs text-medical-green" id="p3">
+                      On duty
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                      onClick={(event) => markAsUnavailable(event)}
+                    >
+                      Mark as Unavailable
+                    </button>
                   </div>
                 </div>
               </div>
