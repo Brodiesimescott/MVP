@@ -438,13 +438,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: "dummy data",
       },
     ];
+
     console.log("create convo");
     storage.createConversation(newconversations[0]);
     const conversations = await storage.getConversationsByUser(
       currentUser.id,
       currentUser.practiceId,
     );
-    storage.createMessage({
+    /** storage.createMessage({
       conversationId: conversations[0].id,
       senderId: "user1",
       content: "hello",
@@ -457,25 +458,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       content: "second try at this",
       blocked: null,
       blockReason: null,
-    });
+    });*/
 
     res.json(conversations);
   });
 
-  app.get("/api/messaging/initConversation/:conversationId", async (req, res) => {
-    try {
-      const conversationId = req.params.conversationId;
-      const messageData =
-        await storage.getMessagesByConversation(conversationId);
-      if (messageData.length == 0) {
-        res.status(200).json([]); // Return empty array instead of error
-        return;
+  app.get(
+    "/api/messaging/initConversation/:conversationId",
+    async (req, res) => {
+      try {
+        const conversationId = req.params.conversationId;
+        const messageData =
+          await storage.getMessagesByConversation(conversationId);
+        if (messageData.length == 0) {
+          res.status(200).json([]); // Return empty array instead of error
+          return;
+        }
+        res.json(messageData);
+      } catch (error) {
+        res.status(500).json({ message: "Failed to retrieve message" });
       }
-      res.json(messageData);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to retrieve message" });
-    }
-  });
+    },
+  );
 
   app.post("/api/messaging/messages", async (req, res) => {
     try {
