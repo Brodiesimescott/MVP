@@ -21,6 +21,7 @@ async function analyzeMessageForPII(
   content: string,
 ): Promise<{ safe: boolean; reason?: string }> {
   // Simple keyword detection - in production this would use a proper AI service
+  
   const piiKeywords = [
     "nhs number",
     "date of birth",
