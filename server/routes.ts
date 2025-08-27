@@ -463,6 +463,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(conversations);
   });
 
+  app.get("/api/messaging/createconversations", async (req, res) => {
+    const currentUser = getCurrentUser();
+    const newconversations: InsertConversation[] = [
+      {
+        practiceId: currentUser.practiceId,
+        participantIds: [currentUser.id],
+        title: req.body(),
+      },
+    ];
+
+    console.log("create convo");
+    storage.createConversation(newconversations[0]);
+    res.json(
+      await storage.getConversationsByUser(
+        currentUser.id,
+        currentUser.practiceId,
+      ),
+    );
+  });
+
   app.get(
     "/api/messaging/initConversation/:conversationId",
     async (req, res) => {
