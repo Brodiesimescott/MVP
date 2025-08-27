@@ -101,9 +101,12 @@ export default function ChironMessaging() {
     Message[] | null
   >({
     queryKey: ["/api/messaging/initConversation", selectedConversation],
-    queryFn: selectedConversation ? 
-      () => fetch(`/api/messaging/initConversation/${selectedConversation}`).then(res => res.json()) : 
-      () => null,
+    queryFn: selectedConversation
+      ? () =>
+          fetch(`/api/messaging/initConversation/${selectedConversation}`).then(
+            (res) => res.json(),
+          )
+      : () => null,
     enabled: selectedConversation !== null,
   });
 
