@@ -432,7 +432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/messaging/conversations", async (req, res) => {
     const currentUser = getCurrentUser();
-    const newconversations: InsertConversation[] = [
+    /** const newconversations: InsertConversation[] = [
       {
         practiceId: "practice1",
         participantIds: ["user1"],
@@ -441,7 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ];
 
     console.log("create convo");
-    storage.createConversation(newconversations[0]);
+    storage.createConversation(newconversations[0]);*/
     const conversations = await storage.getConversationsByUser(
       currentUser.id,
       currentUser.practiceId,

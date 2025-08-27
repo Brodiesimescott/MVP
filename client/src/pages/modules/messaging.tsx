@@ -13,6 +13,21 @@ import {
   Radio,
   Settings,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +82,7 @@ export default function ChironMessaging() {
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
-
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -145,7 +160,7 @@ export default function ChironMessaging() {
   const form = useForm<ConvoFormData>({
     resolver: zodResolver(insertConversationSchema),
     defaultValues: {
-      title: null,
+      title: "null",
       practiceId: user.practiceId,
       participantIds: [user.id],
     },
@@ -320,13 +335,77 @@ export default function ChironMessaging() {
                   />
                 </div>
                 {/* new converstaion*/}
-                <Button
-                  size="sm"
-                  className="bg-chiron-blue hover:bg-blue-800"
-                  disabled
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="bg-chiron-blue hover:bg-blue-800"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add Conversation</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onConvoSubmit)}
+                        className="space-y-4"
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>title *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="participantIds"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Participants Id *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="flex justify-end space-x-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowAddDialog(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={createConvoMutation.isPending}
+                          >
+                            {createConvoMutation.isPending
+                              ? "Adding..."
+                              : "Add Conversation"}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
             <div className="overflow-y-auto h-full">
@@ -482,11 +561,17 @@ export default function ChironMessaging() {
                             : selectedConversation === "mock-3"
                               ? "Team Chat"
                               : conversations !== undefined
-                                ? getContactName(
-                                    conversations.find(
+                                ? conversations.find(
+                                    (i) => i.id == selectedConversation,
+                                  ).title !== undefined
+                                  ? conversations.find(
                                       (i) => i.id == selectedConversation,
-                                    ).participantIds[0],
-                                  )
+                                    ).title
+                                  : getContactName(
+                                      conversations.find(
+                                        (i) => i.id == selectedConversation,
+                                      ).participantIds[0],
+                                    )
                                 : ""}
                       </h3>
                       <p className="text-sm text-medical-green flex items-center">
