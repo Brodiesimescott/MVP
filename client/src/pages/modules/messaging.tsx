@@ -65,7 +65,9 @@ export default function ChironMessaging() {
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
-  const [conversationMessages, setconvorsationMessage] = useState<Message[]>([]);
+  const [conversationMessages, setconvorsationMessage] = useState<
+    Message[] | null
+  >(null);
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -76,7 +78,7 @@ export default function ChironMessaging() {
     queryKey: ["/api/home"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/home");
-      console.log(response);
+
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
@@ -95,6 +97,13 @@ export default function ChironMessaging() {
 
   const { data: messages, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messaging/messages", selectedConversation],
+    enabled: !!selectedConversation,
+  });
+
+  const { data: convomessages, refetch: refetchconvoMessages } = useQuery<
+    Message[]
+  >({
+    queryKey: ["/api/messaging/initConversation"],
     enabled: !!selectedConversation,
   });
 
@@ -201,6 +210,20 @@ export default function ChironMessaging() {
     return contact
       ? `${contact.firstName} ${contact.lastName}`
       : "Unknown User";
+  };
+
+  const getMessageData = async () => {
+    if (selectedConversation) {
+      try {
+        await refetchconvoMessages();
+        console.log("fetching messages", convomessages);
+        return convomessages;
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+        return null;
+      }
+    }
+    return null;
   };
 
   const getContactInitials = (userId: string) => {
@@ -356,7 +379,10 @@ export default function ChironMessaging() {
                       <div
                         key={conversation.id}
                         className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === conversation.id ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
-                        onClick={() => setSelectedConversation(conversation.id)}
+                        onClick={() => {
+                          setSelectedConversation(conversation.id);
+                          refetchMessages();
+                        }}
                       >
                         <div className="flex items-center space-x-3 mb-1">
                           <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
@@ -391,7 +417,6 @@ export default function ChironMessaging() {
           <div className="col-span-6 bg-white rounded-xl border border-slate-200 flex flex-col">
             {selectedConversation ? (
               <>
-                (
                 <div className="p-4 border-b border-slate-200">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
@@ -422,9 +447,8 @@ export default function ChironMessaging() {
                     </div>
                   </div>
                 </div>
-                ):({" "}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((message) =>
+                  {convomessages?.map((message) =>
                     message.senderId !== user?.id ? (
                       <div key={message.id} className="flex">
                         <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
