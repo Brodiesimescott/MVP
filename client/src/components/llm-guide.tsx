@@ -1,19 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Bot, Send, User, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-}
-
-interface LLMGuideProps {
+import { Input } from "@/componeProps {
   title: string;
   subtitle: string;
   initialMessage: string;
@@ -55,17 +43,17 @@ export default function LLMGuide({
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get AI response');
+        throw new Error(errorData.errto get AI response');
       }
       
       return response.json();
     },
     onSuccess: (data) => {
       const aiMessage: ChatMessage = {
-        id: Date.now().toString() + "-ai",
-        role: "assistant",
-        content: data.response,
-        timestamp: data.timestamp || new Date().toISOString(),
+        id: Dat
+          <Button size="sm" className="bg-chiron-blue hover:bg-blue-800">data.respon se,
+        timestamp: data.timestamp   || new D
+        </div>ate().toISOString(),
       };
       setMessages(prev => [...prev, aiMessage]);
     },

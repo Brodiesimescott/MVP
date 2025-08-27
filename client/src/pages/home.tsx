@@ -141,9 +141,8 @@ export default function Home() {
                   className="flex-1 text-sm"
                 />
                 <Button size="sm" className="bg-chiron-blue hover:bg-blue-800">
-                  Connect to AI model
                   <Send className="w-4 h-4" />
-                </Button>
+                  </Button>
               </div>
             </Card>
           </div>
