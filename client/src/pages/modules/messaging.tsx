@@ -94,7 +94,7 @@ export default function ChironMessaging() {
 
   const { data: messages, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messaging/messages", selectedConversation],
-    //enabled: selectedConversation !== null,
+    enabled: selectedConversation !== null,
   });
 
   const { data: convomessages, refetch: refetchconvoMessages } = useQuery<
