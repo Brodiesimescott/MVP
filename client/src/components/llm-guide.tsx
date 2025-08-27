@@ -45,7 +45,6 @@ export default function LLMGuide({
           <Send className="w-4 h-4" />
         </Button>
       </div>
-    </div>
     </Card>
   );
 }
