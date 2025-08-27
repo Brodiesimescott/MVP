@@ -10,6 +10,7 @@ import {
   insertTransactionSchema,
   insertInvoiceSchema,
   insertPurchaseSchema,
+  insertConversationSchema,
   InsertUser,
   insertUserSchema,
   Conversation,
@@ -463,18 +464,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(conversations);
   });
 
-  app.get("/api/messaging/createconversations", async (req, res) => {
+  app.post("/api/messaging/createconversations", async (req, res) => {
     const currentUser = getCurrentUser();
-    const newconversations: InsertConversation[] = [
-      {
-        practiceId: currentUser.practiceId,
-        participantIds: [currentUser.id],
-        title: req.body(),
-      },
-    ];
+    const newconversation: InsertConversation = insertConversationSchema.parse({
+      ...req.body,
+    });
 
     console.log("create convo");
-    storage.createConversation(newconversations[0]);
+    storage.createConversation(newconversation);
     res.json(
       await storage.getConversationsByUser(
         currentUser.id,
