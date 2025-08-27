@@ -143,6 +143,7 @@ export default function Home() {
                 <Button size="sm" className="bg-chiron-blue hover:bg-blue-800">
                   Connect to AI model
                   <Send className="w-4 h-4" />
+                </Button>
               </div>
             </Card>
           </div>
