@@ -10,5 +10,3 @@ const client = new Client({
 client.connect();
 
 export const db = drizzle(client, { schema: schema });
-
-

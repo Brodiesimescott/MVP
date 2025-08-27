@@ -708,31 +708,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       estimatedTax,
       allowances: 0, // Placeholder for future implementation
     });
+  });
 
-    //Ai Chat Endpoint
-    app.post("/api/ai/chat", async (req, res) => {
-      try {
-        const { message } = req.body;
+  // AI Chat endpoint
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message } = req.body;
 
-        if (!message || typeof message !== "string") {
-          return res.status(400).json({ error: "Message is required" });
-        }
-
-        const aiResponse = await generateHealthcareResponse(message);
-
-        if (aiResponse.error) {
-          return res.status(500).json({ error: aiResponse.error });
-        }
-
-        res.json({
-          response: aiResponse.response,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        console.error("AI Chat error:", error);
-        res.status(500).json({ error: "internal server error" });
+      if (!message || typeof message !== "string") {
+        return res.status(400).json({ error: "Message is required" });
       }
-    });
+
+      const aiResponse = await generateHealthcareResponse(message);
+
+      if (aiResponse.error) {
+        return res.status(500).json({ error: aiResponse.error });
+      }
+
+      res.json({
+        response: aiResponse.response,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("AI Chat Error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   return httpServer;
