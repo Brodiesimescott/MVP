@@ -136,10 +136,9 @@ export default function Home() {
                 </div>
               </div>              
               <div className="flex space-x-2">
-                <Input
+               
                   placeholder="Ask anything..."
-                  className="flex-1 text-sm"
-                />
+                  className="flex-1 text-sm" />
                 <Button size="sm" className="bg-chiron-blue hover:bg-blue-800">
                   <Send className="w-4 h-4" />
                   </Button>
