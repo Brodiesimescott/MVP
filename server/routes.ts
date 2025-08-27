@@ -15,6 +15,7 @@ import {
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
+import { generateHealthcareResponse } from "./ai-service";
 
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
@@ -641,6 +642,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       estimatedTax,
       allowances: 0, // Placeholder for future implementation
     });
+  });
+
+  // AI Chat endpoint
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      const aiResponse = await generateHealthcareResponse(message);
+      
+      if (aiResponse.error) {
+        return res.status(500).json({ error: aiResponse.error });
+      }
+      
+      res.json({ 
+        response: aiResponse.response,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("AI Chat Error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   return httpServer;
