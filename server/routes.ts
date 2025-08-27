@@ -13,6 +13,7 @@ import {
   InsertUser,
   insertUserSchema,
   Conversation,
+  InsertConversation,
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
@@ -430,54 +431,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/messaging/conversations", async (req, res) => {
     const currentUser = getCurrentUser();
-    const newconversations: Conversation[] = [
+    const newconversations: InsertConversation[] = [
       {
-        id: "dummyconvo",
         practiceId: "practice1",
         participantIds: ["user1"],
         title: "dummy data",
-        createdAt: new Date("july 20, 2025 13:24:00"),
-        updatedAt: new Date("august 20, 2025 13:46:00"),
       },
     ];
-    console.log("create convo"),
-      storage.createConversation(newconversations[0]);
+    console.log("create convo");
+    storage.createConversation(newconversations[0]);
+    const conversations = await storage.getConversationsByUser(
+      currentUser.id,
+      currentUser.practiceId,
+    );
     storage.createMessage({
-      conversationId: "dummyconvo",
+      conversationId: conversations[0].id,
       senderId: "user1",
       content: "hello",
       blocked: null,
       blockReason: null,
     });
     storage.createMessage({
-      conversationId: "dummyconvo",
+      conversationId: conversations[0].id,
       senderId: "user1",
       content: "second try at this",
       blocked: null,
       blockReason: null,
     });
-    const conversations = await storage.getConversationsByUser(
-      currentUser.id,
-      currentUser.practiceId,
-    );
+
     res.json(conversations);
   });
 
-  app.post("/api/messaging/initConversation", async (req, res) => {
+  app.get("/api/messaging/initConversation", async (req, res) => {
     try {
       const conversationId = req.body;
       const messageData =
         await storage.getMessagesByConversation(conversationId);
+      if (messageData.length == 0) {
+        res.status(500).json({ message: "Failed to retrieve message" });
+      }
       res.json(messageData);
     } catch (error) {
-      res.status(500).json({ message: "Failed to send message" });
+      res.status(500).json({ message: "Failed to retrieve message" });
     }
   });
 
   app.post("/api/messaging/messages", async (req, res) => {
     try {
       const currentUser = getCurrentUser();
-      
+
       const messageData = insertMessageSchema.parse({
         ...req.body,
         senderId: currentUser.id,
