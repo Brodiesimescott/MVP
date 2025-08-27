@@ -160,7 +160,7 @@ export default function ChironMessaging() {
   const form = useForm<ConvoFormData>({
     resolver: zodResolver(insertConversationSchema),
     defaultValues: {
-      title: "null",
+      title: undefined,
       practiceId: user.practiceId,
       participantIds: [user.id],
     },
@@ -560,19 +560,20 @@ export default function ChironMessaging() {
                             ? "Mark Brown"
                             : selectedConversation === "mock-3"
                               ? "Team Chat"
-                              : conversations !== undefined
+                              : conversations !== undefined &&
+                                  conversations.find(
+                                    (i) => i.id == selectedConversation,
+                                  ).title !== null
                                 ? conversations.find(
                                     (i) => i.id == selectedConversation,
-                                  ).title !== undefined
-                                  ? conversations.find(
-                                      (i) => i.id == selectedConversation,
-                                    ).title
-                                  : getContactName(
+                                  ).title
+                                : conversations !== undefined
+                                  ? getContactName(
                                       conversations.find(
                                         (i) => i.id == selectedConversation,
                                       ).participantIds[0],
                                     )
-                                : ""}
+                                  : "error"}
                       </h3>
                       <p className="text-sm text-medical-green flex items-center">
                         <span className="w-2 h-2 bg-medical-green rounded-full mr-2"></span>
