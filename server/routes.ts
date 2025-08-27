@@ -55,6 +55,9 @@ async function analyzeMessageForPII(
 }
 
 // Mock current user for MVP - in production this would come from session
+/**
+ * user.id(token.id)
+ */
 const getCurrentUser = () => ({
   id: "user1",
   practiceId: "practice1",
@@ -443,6 +446,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       conversationId: "dummyconvo",
       senderId: "user1",
       content: "hello",
+      blocked: null,
+      blockReason: null,
+    });
+    storage.createMessage({
+      conversationId: "dummyconvo",
+      senderId: "user1",
+      content: "second try at this",
       blocked: null,
       blockReason: null,
     });
