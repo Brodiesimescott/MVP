@@ -477,6 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messaging/messages", async (req, res) => {
     try {
       const currentUser = getCurrentUser();
+      
       const messageData = insertMessageSchema.parse({
         ...req.body,
         senderId: currentUser.id,
