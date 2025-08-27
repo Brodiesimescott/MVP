@@ -101,9 +101,12 @@ export default function ChironMessaging() {
     Message[] | null
   >({
     queryKey: ["/api/messaging/initConversation", selectedConversation],
-    queryFn: selectedConversation ? 
-      () => fetch(`/api/messaging/initConversation/${selectedConversation}`).then(res => res.json()) : 
-      () => null,
+    queryFn: selectedConversation
+      ? () =>
+          fetch(`/api/messaging/initConversation/${selectedConversation}`).then(
+            (res) => res.json(),
+          )
+      : () => null,
     enabled: selectedConversation !== null,
   });
 
@@ -176,6 +179,7 @@ export default function ChironMessaging() {
       setNewMessage("");
       setMessageError(null);
       refetchMessages();
+      refetchconvoMessages();
     },
     onError: (error: Error) => {
       setMessageError(error.message);
@@ -207,27 +211,12 @@ export default function ChironMessaging() {
 
   const getContactName = (userId: string) => {
     const contact = contacts?.find((c) => c.id === userId);
+    if (userId == user?.id) {
+      return user ? `${user.firstName} ${user.lastName}` : "UU";
+    }
     return contact
       ? `${contact.firstName} ${contact.lastName}`
       : "Unknown User";
-  };
-
-  const getMessageData = async () => {
-    if (selectedConversation) {
-      try {
-        refetchconvoMessages();
-        console.log("fetching user", user);
-        console.log("fetching messages", convomessages);
-        console.log("conversations", conversations);
-        console.log("selectedConversation", selectedConversation);
-
-        return convomessages;
-      } catch (error) {
-        console.error("Failed to fetch messages:", error);
-        return null;
-      }
-    }
-    return null;
   };
 
   const getContactInitials = (userId: string) => {
@@ -428,7 +417,13 @@ export default function ChironMessaging() {
                             ? "MB"
                             : selectedConversation === "mock-3"
                               ? "TC"
-                              : "UU"}
+                              : conversations !== undefined
+                                ? getContactInitials(
+                                    conversations.find(
+                                      (i) => i.id == selectedConversation,
+                                    ).participantIds[0],
+                                  )
+                                : ""}
                       </span>
                     </div>
                     <div>
@@ -439,7 +434,13 @@ export default function ChironMessaging() {
                             ? "Mark Brown"
                             : selectedConversation === "mock-3"
                               ? "Team Chat"
-                              : "Unknown User"}
+                              : conversations !== undefined
+                                ? getContactName(
+                                    conversations.find(
+                                      (i) => i.id == selectedConversation,
+                                    ).participantIds[0],
+                                  )
+                                : ""}
                       </h3>
                       <p className="text-sm text-medical-green flex items-center">
                         <span className="w-2 h-2 bg-medical-green rounded-full mr-2"></span>
@@ -478,35 +479,45 @@ export default function ChironMessaging() {
                     ),
                   )}
 
-                  {/* Sample messages for demonstration */}
-                  <div className="flex">
-                    <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-white font-medium text-xs">SJ</span>
-                    </div>
-                    <div className="bg-slate-100 rounded-lg p-3 max-w-xs">
-                      <p className="text-sm text-slate-900">
-                        {selectedConversation === "mock-1"
-                          ? "Hi Dr. Wilson, the morning appointment results are ready for review."
-                          : selectedConversation === "mock-2"
-                            ? "CQC check ahead. Be ready."
-                            : selectedConversation === "mock-3"
-                              ? "Good morning! Hope everyone is ready for today's schedule."
-                              : ""}
-                      </p>
-                      <p className="text-xs text-clinical-gray mt-1">
-                        10:15 AM
-                      </p>
-                    </div>
-                  </div>
+                  {selectedConversation !== "mock-1" &&
+                  selectedConversation !== "mock-2" &&
+                  selectedConversation !== "mock-3" ? (
+                    <></>
+                  ) : (
+                    <>
+                      {/* Sample messages for demonstration */}
+                      <div className="flex">
+                        <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                          <span className="text-white font-medium text-xs">
+                            SJ
+                          </span>
+                        </div>
+                        <div className="bg-slate-100 rounded-lg p-3 max-w-xs">
+                          <p className="text-sm text-slate-900">
+                            {selectedConversation === "mock-1"
+                              ? "Hi Dr. Wilson, the morning appointment results are ready for review."
+                              : selectedConversation === "mock-2"
+                                ? "CQC check ahead. Be ready."
+                                : selectedConversation === "mock-3"
+                                  ? "Good morning! Hope everyone is ready for today's schedule."
+                                  : ""}
+                          </p>
+                          <p className="text-xs text-clinical-gray mt-1">
+                            10:15 AM
+                          </p>
+                        </div>
+                      </div>
 
-                  <div className="flex justify-end">
-                    <div className="bg-chiron-blue text-white rounded-lg p-3 max-w-xs">
-                      <p className="text-sm">
-                        Thanks! I'll review them now. Any urgent cases?
-                      </p>
-                      <p className="text-xs text-blue-200 mt-1">10:17 AM</p>
-                    </div>
-                  </div>
+                      <div className="flex justify-end">
+                        <div className="bg-chiron-blue text-white rounded-lg p-3 max-w-xs">
+                          <p className="text-sm">
+                            Thanks! I'll review them now. Any urgent cases?
+                          </p>
+                          <p className="text-xs text-blue-200 mt-1">10:17 AM</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   {/* AI Safety Net Indicator */}
                   <div className="flex justify-center">
