@@ -55,8 +55,7 @@ export default function LLMGuide({
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorD       </div>
-     AI response');
+        throw new Error(errorData.message || 'Failed to get AI response');
       }
       
       return response.json();
