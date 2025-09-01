@@ -381,20 +381,22 @@ export default function ChironMessaging() {
                           <FormField
                             control={form.control}
                             name="participantIds"
+                            defaultValue={[user.id]}
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Participants</FormLabel>
-                                <Select
-                                  value={participants}
-                                  onChange={handleSelectChange}
-                                  onValueChange={field.onChange}
-                                >
-                                  {contacts.map((contact) => (
-                                    <option key={contact.id} value={contact.id}>
-                                      {contact.firstName}
-                                    </option>
-                                  ))}
-                                </Select>
+                                <FormControl>
+                                  <Select {...field} >
+                                    {contacts.map((contact) => (
+                                      <option
+                                        key={contact.id}
+                                        value={contact.id}
+                                      >
+                                        {contact.firstName}
+                                      </option>
+                                    ))}
+                                  </Select>
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
