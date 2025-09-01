@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, queryOptions } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import {
@@ -37,10 +37,12 @@ import useWebSocket from "@/hooks/use-websocket";
 import ModuleLogo from "@/components/module-logo";
 import { useState, useEffect, useRef } from "react";
 import { apiRequest } from "@/lib/queryClient";
-import { z } from "zod";
+import { optional, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertConversationSchema } from "@shared/schema";
+import Select from "react-select";
+import "react-select/dist/react-select.css";
 
 interface User {
   id: string;
@@ -86,6 +88,7 @@ export default function ChironMessaging() {
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [participants, setParticipants] = useState<string[]>([]);
 
   const { toast } = useToast();
 
@@ -165,6 +168,11 @@ export default function ChironMessaging() {
       participantIds: [user.id],
     },
   });
+
+  const handleSelectChange = (event) => {
+    setParticipants(event.target.value);
+    // Additional logic can be added here, e.g., notifying a parent component
+  };
 
   // create conversation
   const createConvoMutation = useMutation({
@@ -375,10 +383,18 @@ export default function ChironMessaging() {
                             name="participantIds"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Participants Id *</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
+                                <FormLabel>Participants</FormLabel>
+                                <Select
+                                  value={participants}
+                                  onChange={handleSelectChange}
+                                  onValueChange={field.onChange}
+                                >
+                                  {contacts.map((contact) => (
+                                    <option key={contact.id} value={contact.id}>
+                                      {contact.firstName}
+                                    </option>
+                                  ))}
+                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}

@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const newconversation: InsertConversation = insertConversationSchema.parse({
       ...req.body,
     });
-
+    
     console.log("create convo");
     storage.createConversation(newconversation);
     res.json(
