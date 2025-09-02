@@ -4,8 +4,6 @@ import {
   ArrowLeft,
   ShieldCheck,
   FileText,
-  Search,
-  Filter,
   ExternalLink,
   CheckCircle,
   AlertTriangle,
@@ -15,10 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ModuleLogo from "@/components/module-logo";
-import { useState } from "react";
 
 interface CQCStandard {
   id: string;
@@ -33,23 +28,8 @@ interface CQCStandard {
 }
 
 export default function CQCStandards() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterKeyQuestion, setFilterKeyQuestion] = useState("all");
-
   const { data: standards, isLoading } = useQuery<CQCStandard[]>({
     queryKey: ["/api/cqc/standards"],
-  });
-
-  const keyQuestions = ["all", "Safe", "Effective", "Caring", "Responsive", "Well-led"];
-
-  const filteredStandards = standards?.filter(standard => {
-    const matchesSearch = standard.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         standard.regulationId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         standard.summary.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterKeyQuestion === "all" || 
-                         standard.keyQuestion.toLowerCase() === filterKeyQuestion.toLowerCase() ||
-                         (filterKeyQuestion === "Well-led" && standard.keyQuestion === "WellLed");
-    return matchesSearch && matchesFilter;
   });
 
   const getStatusIcon = (status: string) => {
@@ -111,38 +91,6 @@ export default function CQCStandards() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Search and Filters */}
-        <Card className="p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-clinical-gray" />
-              <Input
-                placeholder="Search standards by title, regulation ID, or keywords..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                data-testid="input-search-standards"
-              />
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-clinical-gray" />
-                <Select value={filterKeyQuestion} onValueChange={setFilterKeyQuestion}>
-                  <SelectTrigger className="w-48" data-testid="select-filter-key-question">
-                    <SelectValue placeholder="Filter by Key Question" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {keyQuestions.map((question) => (
-                      <SelectItem key={question} value={question}>
-                        {question === "all" ? "All Key Questions" : question}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </Card>
 
         {/* Standards Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -150,7 +98,7 @@ export default function CQCStandards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {filteredStandards?.filter(s => s.status === "compliant").length || 0}
+                  {standards?.filter(s => s.status === "compliant").length || 0}
                 </p>
                 <p className="text-sm text-medical-green">Compliant</p>
               </div>
@@ -162,7 +110,7 @@ export default function CQCStandards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {filteredStandards?.filter(s => s.status === "needs-attention").length || 0}
+                  {standards?.filter(s => s.status === "needs-attention").length || 0}
                 </p>
                 <p className="text-sm text-chiron-orange">Needs Attention</p>
               </div>
@@ -174,7 +122,7 @@ export default function CQCStandards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {filteredStandards?.filter(s => s.status === "pending-review").length || 0}
+                  {standards?.filter(s => s.status === "pending-review").length || 0}
                 </p>
                 <p className="text-sm text-clinical-gray">Pending Review</p>
               </div>
@@ -186,7 +134,7 @@ export default function CQCStandards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {filteredStandards?.length || 0}
+                  {standards?.length || 0}
                 </p>
                 <p className="text-sm text-chiron-blue">Total Standards</p>
               </div>
@@ -211,9 +159,9 @@ export default function CQCStandards() {
               <div className="text-center py-12">
                 <p className="text-clinical-gray">Loading CQC standards...</p>
               </div>
-            ) : filteredStandards && filteredStandards.length > 0 ? (
+            ) : standards && standards.length > 0 ? (
               <div className="space-y-4">
-                {filteredStandards.map((standard) => (
+                {standards.map((standard) => (
                   <div
                     key={standard.id}
                     className="border border-slate-200 rounded-lg p-6 hover:border-chiron-blue transition-colors"
@@ -264,10 +212,7 @@ export default function CQCStandards() {
               <div className="text-center py-12">
                 <FileText className="w-12 h-12 text-clinical-gray mx-auto mb-4" />
                 <p className="text-clinical-gray">
-                  {searchTerm || filterKeyQuestion !== "all" 
-                    ? "No standards match your search criteria" 
-                    : "No CQC standards found"
-                  }
+                  No CQC standards found
                 </p>
               </div>
             )}
