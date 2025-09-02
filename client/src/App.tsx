@@ -9,6 +9,7 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ChironHR from "@/pages/modules/hr";
 import ChironCQC from "@/pages/modules/cqc";
+import CQCStandards from "@/pages/modules/cqc-standards";
 import ChironMessaging from "@/pages/modules/messaging";
 import ChironMoney from "@/pages/modules/money";
 import ChironStock from "@/pages/modules/stock";
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/modules/hr" component={ChironHR} />
       <Route path="/modules/cqc" component={ChironCQC} />
+      <Route path="/modules/cqc/standards" component={CQCStandards} />
       <Route path="/modules/messaging" component={ChironMessaging} />
       <Route path="/modules/money" component={ChironMoney} />
       <Route path="/modules/stock" component={ChironStock} />

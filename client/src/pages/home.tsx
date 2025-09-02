@@ -25,7 +25,7 @@ type UserData = z.infer<typeof userSchema>;
 
 export default function Home() {
   const [, setLocation] = useLocation();
-
+  
   const {
     data: user,
     isLoading,
