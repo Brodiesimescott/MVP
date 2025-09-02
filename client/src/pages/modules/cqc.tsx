@@ -259,38 +259,44 @@ export default function ChironCQC() {
                   </span>
                 </Button>
 
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
-                >
-                  <FileText className="w-8 h-8 text-chiron-blue" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Generate Report
-                  </span>
-                </Button>
+                <Link href="/modules/cqc/standards">
+                  <Button
+                    variant="outline"
+                    className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50 w-full"
+                    data-testid="button-generate-report"
+                  >
+                    <FileText className="w-8 h-8 text-chiron-blue" />
+                    <span className="text-sm font-medium text-slate-700">
+                      Generate Report
+                    </span>
+                  </Button>
+                </Link>
 
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
-                >
-                  <CheckCircle className="w-8 h-8 text-chiron-blue" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Standards Browser
-                  </span>
-                </Button>
+                <Link href="/modules/cqc/standards">
+                  <Button
+                    variant="outline"
+                    className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50 w-full"
+                    data-testid="button-standards-browser"
+                  >
+                    <CheckCircle className="w-8 h-8 text-chiron-blue" />
+                    <span className="text-sm font-medium text-slate-700">
+                      Standards Browser
+                    </span>
+                  </Button>
+                </Link>
 
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
-                >
-                  <Activity className="w-8 h-8 text-chiron-blue" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Audit Trail
-                  </span>
-                </Button>
+                <Link href="/modules/cqc/standards">
+                  <Button
+                    variant="outline"
+                    className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50 w-full"
+                    data-testid="button-audit-trail"
+                  >
+                    <Activity className="w-8 h-8 text-chiron-blue" />
+                    <span className="text-sm font-medium text-slate-700">
+                      Audit Trail
+                    </span>
+                  </Button>
+                </Link>
               </div>
             </Card>
 
@@ -300,9 +306,11 @@ export default function ChironCQC() {
                 <h3 className="text-lg font-semibold text-slate-900">
                   CQC Standards
                 </h3>
-                <Button variant="outline" size="sm" disabled>
-                  View All
-                </Button>
+                <Link href="/modules/cqc/standards">
+                  <Button variant="outline" size="sm" data-testid="button-view-all-standards">
+                    View All
+                  </Button>
+                </Link>
               </div>
               <div className="space-y-3">
                 {standardsLoading ? (
