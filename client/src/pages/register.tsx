@@ -78,7 +78,7 @@ const SignUp = () => {
       toast({
         title: "Sign up successful!",
       });
-      setLocation("/home");
+      setLocation("/");
     },
     onError: (error: any) => {
       toast({

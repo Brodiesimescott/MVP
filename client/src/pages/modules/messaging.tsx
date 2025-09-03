@@ -38,11 +38,15 @@ import ModuleLogo from "@/components/module-logo";
 import { useState, useEffect, useRef } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { optional, z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertConversationSchema } from "@shared/schema";
+import { insertConversationSchema, insertMessageSchema } from "@shared/schema";
 import Select from "react-select";
-import "react-select/dist/react-select.css";
+
+interface ContactOption {
+  value: string;
+  label: string;
+}
 
 interface User {
   id: string;
@@ -85,10 +89,10 @@ export default function ChironMessaging() {
     string | null
   >(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showAnouncementDialog, setShowAnouncementDialog] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [participants, setParticipants] = useState<string[]>([]);
 
   const { toast } = useToast();
 
@@ -107,6 +111,15 @@ export default function ChironMessaging() {
 
   const { data: contacts } = useQuery<User[]>({
     queryKey: ["/api/messaging/contacts"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/messaging/contacts");
+
+      if (!response.ok) {
+        throw new Error("Authentication failed");
+      }
+      return (await response.json()) as UserData[];
+    },
+    retry: false,
   });
 
   const { data: conversations } = useQuery<Conversation[]>({
@@ -129,6 +142,12 @@ export default function ChironMessaging() {
           )
       : () => null,
     enabled: selectedConversation !== null,
+  });
+
+  const { data: anouncements, refetch: refetchAnouncements } = useQuery<
+    Message[] | null
+  >({
+    queryKey: ["/api/messaging/anouncements"],
   });
 
   // WebSocket connection for real-time messaging
@@ -169,10 +188,16 @@ export default function ChironMessaging() {
     },
   });
 
-  const handleSelectChange = (event) => {
-    setParticipants(event.target.value);
-    // Additional logic can be added here, e.g., notifying a parent component
-  };
+  type AnouncementFormData = z.infer<typeof insertMessageSchema>;
+
+  const formAnouncement = useForm<AnouncementFormData>({
+    resolver: zodResolver(insertMessageSchema),
+    defaultValues: {
+      senderId: user.id,
+      conversationId: "Anouncement",
+      content: "",
+    },
+  });
 
   // create conversation
   const createConvoMutation = useMutation({
@@ -250,6 +275,7 @@ export default function ChironMessaging() {
       setMessageError(null);
       refetchMessages();
       refetchconvoMessages();
+      refetchAnouncements();
     },
     onError: (error: Error) => {
       setMessageError(error.message);
@@ -271,6 +297,19 @@ export default function ChironMessaging() {
     });
   };
 
+  const onAnouncementSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
+    const anouncement = conversations?.find(
+      (obj) => obj.title == "anouncements",
+    );
+    sendMessageMutation.mutate({
+      content: newMessage.trim(),
+      conversationId: anouncement?.id,
+    });
+  };
+
   const formatTime = (timestamp: string) => {
     // need to add : if timestamp = 1 day ago set data not time
     return new Date(timestamp).toLocaleTimeString("en-GB", {
@@ -278,6 +317,15 @@ export default function ChironMessaging() {
       minute: "2-digit",
     });
   };
+
+  const contactTags: ContactOption[] | undefined = contacts
+    ?.map((contact) => ({
+      value: contact.id,
+      label: `${contact.firstName} ${contact.lastName}`,
+    }))
+    .concat([{ value: user.id, label: `${user.firstName} ${user.lastName}` }]);
+
+  type contactType = { label: string; value: string };
 
   const getContactName = (userId: string) => {
     const contact = contacts?.find((c) => c.id === userId);
@@ -381,22 +429,29 @@ export default function ChironMessaging() {
                           <FormField
                             control={form.control}
                             name="participantIds"
-                            defaultValue={[user.id]}
-                            render={({ field }) => (
+                            render={({ field: { value, onChange } }) => (
                               <FormItem>
                                 <FormLabel>Participants</FormLabel>
-                                <FormControl>
-                                  <Select {...field} >
-                                    {contacts.map((contact) => (
-                                      <option
-                                        key={contact.id}
-                                        value={contact.id}
-                                      >
-                                        {contact.firstName}
-                                      </option>
-                                    ))}
-                                  </Select>
-                                </FormControl>
+                                <Select
+                                  isMulti={true}
+                                  name="participantIds"
+                                  value={contactTags.filter((el) =>
+                                    value?.includes(el.value),
+                                  )}
+                                  onChange={(
+                                    option: readonly contactType[],
+                                  ) => {
+                                    if (option === null) {
+                                      onChange(null);
+
+                                      return;
+                                    }
+                                    onChange(option.map((el) => el.value));
+                                  }}
+                                  options={contactTags}
+                                  className="basic-multi-select"
+                                  classNamePrefix="select"
+                                />
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -695,11 +750,17 @@ export default function ChironMessaging() {
                       placeholder="Type a secure message..."
                       className="flex-1"
                     />
+
                     <Button
                       type="submit"
                       className="bg-chiron-blue hover:bg-blue-800"
                       disabled={
-                        sendMessageMutation.isPending || !newMessage.trim()
+                        sendMessageMutation.isPending ||
+                        !newMessage.trim() ||
+                        selectedConversation ===
+                          conversations?.find(
+                            (obj) => obj.title == "anouncements",
+                          )?.id
                       }
                     >
                       <Send className="w-4 h-4" />
@@ -737,46 +798,24 @@ export default function ChironMessaging() {
               <h3 className="font-semibold text-slate-900">Practice Updates</h3>
             </div>
             <div className="p-4 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <Bell className="w-4 h-4 text-chiron-blue mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-chiron-blue">
-                      System Maintenance
-                    </p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Scheduled downtime Sunday 2-4 AM
-                    </p>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {anouncements?.map((message) => (
+                  <div key={message.id} className="flex">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-start space-x-2">
+                        <Bell className="w-4 h-4 text-amber-600 mt-0.5" />
+                        <div>
+                          <span className="text-sm font-medium text-chiron-blue">
+                            {getContactName(message.senderId)}
+                          </span>
+                          <p className="text-xs text-blue-700 mt-1">
+                            {message.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <Shield className="w-4 h-4 text-amber-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">
-                      CQC Inspection
-                    </p>
-                    <p className="text-xs text-amber-700 mt-1">
-                      Preparation meeting tomorrow 3 PM
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <Users className="w-4 h-4 text-medical-green mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800">
-                      New Staff Member
-                    </p>
-                    <p className="text-xs text-green-700 mt-1">
-                      Welcome Dr. Emily Chen starting Monday
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
 
               <div className="pt-4 border-t border-slate-200">
@@ -784,22 +823,72 @@ export default function ChironMessaging() {
                   Quick Actions
                 </h4>
                 <div className="space-y-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-sm text-clinical-gray hover:bg-slate-50"
-                    disabled
+                  <Dialog
+                    open={showAnouncementDialog}
+                    onOpenChange={setShowAnouncementDialog}
                   >
-                    <Radio className="w-4 h-4 mr-2" />
-                    Send Announcement
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-sm text-clinical-gray hover:bg-slate-50"
-                    disabled
+                    <DialogTrigger asChild>
+                      <Button className="w-full justify-start text-sm text-clinical-gray hover:bg-slate-50">
+                        <Radio className="w-4 h-4 mr-2" />
+                        Send Announcement
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Add Anouncement</DialogTitle>
+                      </DialogHeader>
+
+                      <form
+                        onSubmit={onAnouncementSubmit}
+                        className="flex space-x-3"
+                      >
+                        <Input
+                          value={newMessage}
+                          onChange={(e) => {
+                            setNewMessage(e.target.value);
+                            setMessageError(null);
+                          }}
+                          placeholder="Type a secure message..."
+                          className="flex-1"
+                        />
+
+                        <div className="flex justify-end space-x-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowAnouncementDialog(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={sendMessageMutation.isPending}
+                          >
+                            {sendMessageMutation.isPending
+                              ? "Adding..."
+                              : "Add Anouncement"}
+                          </Button>
+                        </div>
+                      </form>
+                      {messageError && (
+                        <p className="text-xs text-alert-red mt-2">
+                          {messageError}
+                        </p>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                  <Link
+                    href="/modules/hr"
+                    className="flex items-center space-x-2 text-clinical-gray hover:text-chiron-blue"
                   >
-                    <Users className="w-4 h-4 mr-2" />
-                    View All Staff
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-sm text-clinical-gray hover:bg-slate-50"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      View All Staff
+                    </Button>
+                  </Link>
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-sm text-clinical-gray hover:bg-slate-50"
