@@ -19,6 +19,7 @@ import {
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
 import { generateHealthcareResponse } from "./ai-service";
+import { title } from "process";
 
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
@@ -67,6 +68,9 @@ const getCurrentUser = () => ({
   email: "user@example.com",
   firstName: "Dr. Sarah",
   lastName: "Wilson",
+  createdAt: new Date(),
+  hashedPassword: "string",
+  salt: "string",
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -469,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const newconversation: InsertConversation = insertConversationSchema.parse({
       ...req.body,
     });
-    
+
     console.log("create convo");
     storage.createConversation(newconversation);
     res.json(
@@ -478,6 +482,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentUser.practiceId,
       ),
     );
+  });
+
+  app.get("/api/messaging/anouncements", async (req, res) => {
+    try {
+      const currentUser = getCurrentUser();
+      const UserbyPractice = await storage.getUsersByPractice(
+        currentUser.practiceId,
+      );
+      UserbyPractice.push(currentUser);
+      const ids = UserbyPractice.map((user) => user.id);
+      const newconversation: InsertConversation =
+        insertConversationSchema.parse({
+          practiceId: currentUser.practiceId,
+          title: "anouncements",
+          participantIds: ids,
+        });
+      await storage.createConversation(newconversation);
+
+      const conversations = await storage.getConversationsByUser(
+        currentUser.id,
+        currentUser.practiceId,
+      );
+      const anouncements = conversations.find(
+        (obj) => obj.title == "anouncements",
+      );
+      const testdata = await storage.getMessagesByConversation(anouncements.id);
+      if (testdata.length == 0) {
+        await storage.createMessage({
+          conversationId: anouncements.id,
+          senderId: "user1",
+          content: "CQC Inspection! Preparation meeting tomorrow 3 PM",
+          blocked: null,
+          blockReason: null,
+        });
+        await storage.createMessage({
+          conversationId: anouncements.id,
+          senderId: "user1",
+          content: "New Staff Member! Welcome Dr. Emily Chen starting Monday",
+          blocked: null,
+          blockReason: null,
+        });
+        await storage.createMessage({
+          conversationId: anouncements.id,
+          senderId: "user1",
+          content: "System Maintenance! Scheduled downtime Sunday 2-4 AM",
+          blocked: null,
+          blockReason: null,
+        });
+      }
+
+      const messageData = await storage.getMessagesByConversation(
+        anouncements.id,
+      );
+      res.json(messageData);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to retrieve anouncements", error });
+    }
   });
 
   app.get(
@@ -502,10 +565,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const currentUser = getCurrentUser();
 
-      const messageData = insertMessageSchema.parse({
+      var messageData = insertMessageSchema.parse({
         ...req.body,
         senderId: currentUser.id,
       });
+
+      if (messageData.conversationId == "Anouncement") {
+        const conversations = await storage.getConversationsByUser(
+          currentUser.id,
+          currentUser.practiceId,
+        );
+        const anouncements = conversations.find(
+          (obj) => obj.title == "anouncements",
+        );
+        messageData = insertMessageSchema.parse({
+          messageData,
+          conversationid: anouncements.id,
+        });
+      }
 
       // AI Safety Net
       const safetyCheck = await analyzeMessageForPII(messageData.content);
