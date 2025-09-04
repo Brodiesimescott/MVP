@@ -1,4 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import {
@@ -17,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import LLMGuide from "@/components/llm-guide";
 import ModuleLogo from "@/components/module-logo";
+import FileUploadModal from "@/components/FileUploadModal";
 import { useToast } from "@/hooks/use-toast";
 
 interface CQCDashboardMetrics {
@@ -51,6 +53,7 @@ interface CQCActivity {
 
 export default function ChironCQC() {
   const { toast } = useToast();
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const { data: metrics, isLoading: metricsLoading } =
     useQuery<CQCDashboardMetrics>({
@@ -69,36 +72,6 @@ export default function ChironCQC() {
     queryKey: ["/api/cqc/activity"],
   });
 
-  const uploadEvidenceMutation = useMutation({
-    mutationFn: async (evidenceData: {
-      fileName: string;
-      description: string;
-      standardIds: string[];
-    }) => {
-      const response = await fetch("/api/cqc/evidence", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(evidenceData),
-      });
-      if (!response.ok) throw new Error("Failed to upload evidence");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cqc/dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cqc/activity"] });
-      toast({
-        title: "Success",
-        description: "Evidence uploaded successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to upload evidence",
-        variant: "destructive",
-      });
-    },
-  });
 
   const getQuestionColor = (score: number) => {
     if (score >= 95) return "text-medical-green";
@@ -240,18 +213,8 @@ export default function ChironCQC() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  onClick={() => {
-                    const fileName = prompt("Enter evidence file name:");
-                    const description = prompt("Enter evidence description:");
-                    if (fileName && description) {
-                      uploadEvidenceMutation.mutate({
-                        fileName,
-                        description,
-                        standardIds: ["reg12"], // Mock standard ID
-                      });
-                    }
-                  }}
-                  disabled={uploadEvidenceMutation.isPending}
+                  onClick={() => setShowUploadModal(true)}
+                  data-testid="button-upload-evidence"
                 >
                   <Upload className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">
@@ -403,6 +366,12 @@ export default function ChironCQC() {
           </div>
         </div>
       </main>
+      
+      <FileUploadModal
+        open={showUploadModal}
+        onOpenChange={setShowUploadModal}
+        title="Upload CQC Evidence"
+      />
     </div>
   );
 }

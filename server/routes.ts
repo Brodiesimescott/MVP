@@ -387,14 +387,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/cqc/evidence", async (req, res) => {
     try {
       const currentUser = getCurrentUser();
+      const { fileName, fileData, fileSize, mimeType, description, standardIds } = req.body;
+      
+      // Validate required fields
+      if (!fileName || !fileData || !fileSize || !mimeType) {
+        return res.status(400).json({ 
+          message: "Missing required fields: fileName, fileData, fileSize, or mimeType" 
+        });
+      }
+      
       const evidenceData = {
-        ...req.body,
         practiceId: currentUser.practiceId,
+        fileName,
+        fileData,
+        fileSize,
+        mimeType,
+        description: description || null,
+        standardIds: standardIds || [],
       };
 
       const evidence = await storage.createPracticeEvidence(evidenceData);
       res.json(evidence);
     } catch (error) {
+      console.error("Error creating evidence:", error);
       res.status(500).json({ message: "Failed to create evidence" });
     }
   });
