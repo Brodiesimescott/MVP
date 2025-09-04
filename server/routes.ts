@@ -368,18 +368,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const standards = await storage.getCqcStandards();
     const evidence = await storage.getPracticeEvidence(currentUser.practiceId);
 
+    // Get analyzed compliance scores if available, otherwise use defaults
+    const complianceScores = await storage.getPracticeComplianceScores(currentUser.practiceId);
+    const keyQuestions = complianceScores || {
+      Safe: 95,
+      Effective: 98,
+      Caring: 100,
+      Responsive: 96,
+      WellLed: 99,
+    };
+
+    // Calculate overall compliance score from key questions
+    const totalScore = Object.values(keyQuestions).reduce((sum, score) => sum + score, 0);
+    const complianceScore = Math.round(totalScore / Object.keys(keyQuestions).length);
+
     res.json({
-      complianceScore: 98,
-      openIssues: 2,
+      complianceScore,
+      openIssues: complianceScore < 85 ? 3 : complianceScore < 95 ? 2 : 1,
       totalStandards: standards.length,
       evidenceCount: evidence.length,
-      keyQuestions: {
-        Safe: 95,
-        Effective: 98,
-        Caring: 100,
-        Responsive: 96,
-        WellLed: 99,
-      },
+      keyQuestions,
     });
   });
 
@@ -490,8 +498,14 @@ Provide realistic scores based on the evidence provided. If evidence strongly su
       const analysisText = result.response.text();
       
       try {
+        // Clean AI response by removing code blocks if present
+        let cleanedResponse = analysisText.trim();
+        if (cleanedResponse.startsWith('```json') || cleanedResponse.startsWith('```')) {
+          cleanedResponse = cleanedResponse.replace(/^```json?\s*/, '').replace(/```\s*$/, '').trim();
+        }
+        
         // Parse AI response and validate it
-        const scores = JSON.parse(analysisText);
+        const scores = JSON.parse(cleanedResponse);
         
         // Validate the response has all required keys
         const requiredKeys = ['Safe', 'Effective', 'Caring', 'Responsive', 'WellLed'];
@@ -500,6 +514,9 @@ Provide realistic scores based on the evidence provided. If evidence strongly su
         if (!hasAllKeys) {
           throw new Error('Invalid AI response format');
         }
+        
+        // Store the analyzed scores for dashboard display
+        await storage.updatePracticeComplianceScores(currentUser.practiceId, scores);
         
         // Return the analyzed scores
         res.json({

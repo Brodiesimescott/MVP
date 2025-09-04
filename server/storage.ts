@@ -49,6 +49,8 @@ export interface IStorage {
   createPracticeEvidence(
     evidence: InsertPracticeEvidence,
   ): Promise<PracticeEvidence>;
+  updatePracticeComplianceScores(practiceId: string, scores: { Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number }): Promise<void>;
+  getPracticeComplianceScores(practiceId: string): Promise<{ Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number } | null>;
 
   // Messaging methods
   getUsersByPractice(practiceId: string): Promise<User[]>;
@@ -85,6 +87,7 @@ export class MemStorage implements IStorage {
   private staff: Map<string, Staff>;
   private cqcStandards: Map<string, CqcStandard>;
   private practiceEvidence: Map<string, PracticeEvidence>;
+  private practiceComplianceScores: Map<string, { Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number }>;
   private conversations: Map<string, Conversation>;
   private messages: Map<string, Message>;
   private transactions: Map<string, Transaction>;
@@ -98,6 +101,7 @@ export class MemStorage implements IStorage {
     this.staff = new Map();
     this.cqcStandards = new Map();
     this.practiceEvidence = new Map();
+    this.practiceComplianceScores = new Map();
     this.conversations = new Map();
     this.messages = new Map();
     this.transactions = new Map();
@@ -285,6 +289,19 @@ export class MemStorage implements IStorage {
     // Note: Uncomment the line below when using actual database
     // await db.insert(practiceEvidence).values(evidence);
     return evidence;
+  }
+
+  async updatePracticeComplianceScores(
+    practiceId: string, 
+    scores: { Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number }
+  ): Promise<void> {
+    this.practiceComplianceScores.set(practiceId, scores);
+  }
+
+  async getPracticeComplianceScores(
+    practiceId: string
+  ): Promise<{ Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number } | null> {
+    return this.practiceComplianceScores.get(practiceId) || null;
   }
 
   // Messaging methods
