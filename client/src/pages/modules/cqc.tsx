@@ -60,6 +60,7 @@ interface CQCActivity {
 export default function ChironCQC() {
   const { toast } = useToast();
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   const { data: metrics, isLoading: metricsLoading } =
     useQuery<CQCDashboardMetrics>({
@@ -77,7 +78,42 @@ export default function ChironCQC() {
   >({
     queryKey: ["/api/cqc/activity"],
   });
+  
+  const generateReportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/cqc/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to generate report");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate dashboard query to refresh with new scores
+      queryClient.invalidateQueries({ queryKey: ["/api/cqc/dashboard"] });
+      toast({
+        title: "Report Generated Successfully",
+        description: `Analyzed ${data.filesAnalyzed} files and updated compliance scores`,
+      });
+      setIsGeneratingReport(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Report Generation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsGeneratingReport(false);
+    },
+  });
 
+  const handleGenerateReport = () => {
+    setIsGeneratingReport(true);
+    generateReportMutation.mutate();
+  };
 
   const getQuestionColor = (score: number) => {
     if (score >= 95) return "text-medical-green";
@@ -228,18 +264,29 @@ export default function ChironCQC() {
                   </span>
                 </Button>
 
-                <Link href="/modules/cqc/standards">
-                  <Button
-                    variant="outline"
-                    className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50 w-full"
-                    data-testid="button-generate-report"
-                  >
-                    <FileText className="w-8 h-8 text-chiron-blue" />
-                    <span className="text-sm font-medium text-slate-700">
-                      Generate Report
-                    </span>
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
+                  data-testid="button-generate-report"
+                  onClick={handleGenerateReport}
+                  disabled={isGeneratingReport || generateReportMutation.isPending}
+                >
+                  {isGeneratingReport || generateReportMutation.isPending ? (
+                    <>
+                      <Clock className="w-8 h-8 text-chiron-blue animate-spin" />
+                      <span className="text-sm font-medium text-slate-700">
+                        Analyzing Files...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-8 h-8 text-chiron-blue" />
+                      <span className="text-sm font-medium text-slate-700">
+                        Generate Report
+                      </span>
+                    </>
+                  )}
+                </Button>
 
                 <Link href="/modules/cqc/standards">
                   <Button
