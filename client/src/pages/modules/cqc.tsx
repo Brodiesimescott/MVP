@@ -11,6 +11,8 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  File,
+  Download,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,7 +49,11 @@ interface CQCStandard {
 interface CQCActivity {
   id: string;
   type: string;
+  fileName?: string;
   description: string;
+  fileSize?: number;
+  mimeType?: string;
+  reviewStatus?: string;
   timestamp: string;
 }
 
@@ -317,7 +323,7 @@ export default function ChironCQC() {
             {/* Recent Activity */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Recent Compliance Activity
+                Uploaded Files
               </h3>
               <div className="space-y-3">
                 {activitiesLoading ? (
@@ -328,26 +334,47 @@ export default function ChironCQC() {
                   activities?.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg"
+                      className="flex items-start justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                      data-testid={`uploaded-file-${activity.id}`}
                     >
-                      <div className="w-8 h-8 bg-chiron-blue bg-opacity-10 rounded-full flex items-center justify-center">
-                        {activity.type === "evidence_upload" ? (
-                          <Upload className="w-4 h-4 text-chiron-blue" />
-                        ) : (
-                          <Activity className="w-4 h-4 text-chiron-blue" />
+                      <div className="flex items-start space-x-3">
+                        <div className="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
+                          <File className="w-5 h-5 text-chiron-blue" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold text-slate-900 mb-1">
+                            {activity.fileName || 'Unknown File'}
+                          </h4>
+                          <p className="text-xs text-clinical-gray mb-2">
+                            {activity.description}
+                          </p>
+                          <div className="flex items-center space-x-4 text-xs text-clinical-gray">
+                            <span>
+                              {activity.fileSize 
+                                ? `${(activity.fileSize / 1024).toFixed(1)} KB` 
+                                : 'Unknown size'
+                              }
+                            </span>
+                            <span className="capitalize">
+                              {activity.mimeType?.split('/')[1] || 'Unknown type'}
+                            </span>
+                            <span>
+                              {new Date(activity.timestamp).toLocaleDateString('en-GB')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {activity.reviewStatus === 'compliant' && (
+                          <CheckCircle className="w-4 h-4 text-medical-green" />
+                        )}
+                        {activity.reviewStatus === 'needs_review' && (
+                          <Clock className="w-4 h-4 text-chiron-orange" />
+                        )}
+                        {activity.reviewStatus === 'non_compliant' && (
+                          <AlertCircle className="w-4 h-4 text-alert-red" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900">
-                          {activity.description}
-                        </p>
-                        <p className="text-xs text-clinical-gray">
-                          {new Date(activity.timestamp).toLocaleDateString(
-                            "en-GB",
-                          )}
-                        </p>
-                      </div>
-                      <Clock className="w-4 h-4 text-clinical-gray" />
                     </div>
                   ))
                 )}
