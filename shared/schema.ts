@@ -121,6 +121,9 @@ export const practiceEvidence = pgTable("practice_evidence", {
     .default(sql`gen_random_uuid()`),
   practiceId: varchar("practice_id").notNull(),
   fileName: text("file_name").notNull(),
+  fileData: text("file_data").notNull(),
+  fileSize: integer("file_size").notNull(),
+  mimeType: text("mime_type").notNull(),
   description: text("description"),
   uploadDate: timestamp("upload_date").defaultNow(),
   reviewStatus: reviewStatusEnum("review_status")
