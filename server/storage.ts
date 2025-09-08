@@ -22,6 +22,7 @@ import {
   type Practice,
   users,
   staff,
+  people,
 } from "@shared/schema";
 import { db } from "@shared/index";
 import { randomUUID } from "crypto";
@@ -141,16 +142,14 @@ export class MemStorage implements IStorage {
     ];
 
     standards.forEach((standard) => {
-      const id = randomUUID();
       const cqcStandard: CqcStandard = {
         ...standard,
-        id,
         summary: standard.summary ?? null,
         sourceUrl: standard.sourceUrl ?? null,
         lastCheckedForUpdate: new Date(),
         createdAt: new Date(),
       };
-      this.cqcStandards.set(id, cqcStandard);
+      this.cqcStandards.set(cqcStandard.regulationId, cqcStandard);
     });
   }
 
