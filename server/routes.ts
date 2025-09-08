@@ -444,12 +444,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const contactpeople = people.filter((u) => u.id !== currentUser.id);
     const contacts = {
       id: contactuser.employeeId,
-      practiceId: ,
-      role: z.enum(["staff", "powerUser", "user"]),
-      email: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-    }
+      practiceId: contactuser.practiceId,
+      role: contactuser.role,
+      email: contactpeople.get(contactuser.employeeId).email,
+      firstName: contactpeople.get(contactuser.employeeId).firstName,
+      lastName: contactpeople.get(contactuser.employeeId).lastName,
+    };
     res.json(contacts);
   });
 
