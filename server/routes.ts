@@ -699,14 +699,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify conversation belongs to user's practice
-      const conversation = await storage.getConversation(
+      /**const conversation = await storage.getConversation(
         messageData.conversationId,
         currentUser.practiceId,
       );
       if (!conversation) {
         res.status(404).json({ message: "Conversation not found" });
         return;
-      }
+      }*/
 
       const message = await storage.createMessage(messageData);
 
