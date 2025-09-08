@@ -143,6 +143,7 @@ export class MemStorage implements IStorage {
 
     standards.forEach((standard) => {
       const cqcStandard: CqcStandard = {
+        practice_id: "default@practice.com", // Default practice for in-memory storage
         ...standard,
         summary: standard.summary ?? null,
         sourceUrl: standard.sourceUrl ?? null,
