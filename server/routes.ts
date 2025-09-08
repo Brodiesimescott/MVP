@@ -12,6 +12,8 @@ import {
   insertPurchaseSchema,
   insertConversationSchema,
   InsertUser,
+  InsertPerson,
+  insertPersonSchema,
   insertUserSchema,
   Conversation,
   InsertConversation,
@@ -146,14 +148,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const salt = makeSalt();
 
       const userTemplate: InsertUser = {
-        email: user.email,
+        employeeId: user.id,
         hashedPassword: dohash(user.password, salt).toString("base64"),
         salt: salt,
         practiceId: user.practiceId,
-        firstName: user.firstname,
-        lastName: user.lastname,
         role: user.role,
       };
+      const personTemplate: InsertPerson = {
+        email: user.email,
+        firstName: user.firstname,
+        lastName: user.lastname,
+        id: user.id,
+      };
+      await storage.createPerson(personTemplate);
       await storage.createUser(userTemplate);
 
       const newuser = await storage.getUserByEmail(user.email);
@@ -163,13 +170,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       //empty
-      generateToken(newuser.id);
+      generateToken(newuser.employeeId);
 
-      res
-        .status(201)
-        .json({ message: "User created successfully", userId: newuser.id });
+      res.status(201).json({
+        message: "User created successfully",
+        userId: newuser.employeeId,
+      });
     } catch (error: any) {
-      console.log("Error in login controller", error.message);
+      console.log("Error in sign up controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });
     }
   });
@@ -196,9 +204,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // empty
-      generateToken(user.id);
+      generateToken(user.employeeId);
 
-      res.status(200).json({ message: "Login successful", userId: user.id });
+      res
+        .status(200)
+        .json({ message: "Login successful", userId: user.employeeId });
     } catch (error: any) {
       console.log("Error in login controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });
@@ -429,7 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/messaging/contacts", async (req, res) => {
     const currentUser = getCurrentUser();
     const users = await storage.getUsersByPractice(currentUser.practiceId);
-    const contacts = users.filter((u) => u.id !== currentUser.id);
+    const contacts = users.filter((u) => u.employeeId !== currentUser.id);
 
     res.json(contacts);
   });
@@ -452,46 +462,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
     if (testdata.length < 2) {
       const newuser0 = await storage.createUser({
-        email: "ask@gmail.com",
+        employeeId: "uuid 1",
         hashedPassword: "string0",
         salt: makeSalt(),
         practiceId: "practice1",
-        firstName: "Sister Jane",
-        lastName: "Smith",
         role: "user",
       });
+      const newPerson0 = await storage.createPerson({
+        id: "uuid 1",
+        email: "ask@gmail.com",
+        firstName: "Sister Jane",
+        lastName: "Smith",
+      });
       const newuser2 = await storage.createUser({
-        email: "string@gmailcom",
+        employeeId: "uuid 2",
         hashedPassword: "string1",
         salt: makeSalt(),
         practiceId: "practice1",
-        firstName: "Team",
-        lastName: "Chat",
+
         role: "user",
       });
+      const newPerson2 = await storage.createPerson({
+        id: "uuid 2",
+        email: "string@gmailcom",
+        firstName: "Team",
+        lastName: "Chat",
+      });
       const newuser1 = await storage.createUser({
-        email: "help.gmail.com",
+        employeeId: "uuid 3",
         hashedPassword: "string2",
         salt: makeSalt(),
         practiceId: "practice1",
+        role: "user",
+      });
+      const newPerson1 = await storage.createPerson({
+        id: "uuid 3",
+        email: "help.gmail.com",
         firstName: "Mark",
         lastName: "Brown",
-        role: "user",
       });
       const newconversations: InsertConversation[] = [
         {
           practiceId: "practice1",
-          participantIds: [newuser0.id, "user1"],
+          participantIds: [newuser0.employeeId, "user1"],
           title: "Sister Jane Smith",
         },
         {
           practiceId: "practice1",
-          participantIds: [newuser1.id, "user1"],
+          participantIds: [newuser1.employeeId, "user1"],
           title: "Mark Brown",
         },
         {
           practiceId: "practice1",
-          participantIds: [newuser2.id, "user1"],
+          participantIds: [newuser2.employeeId, "user1"],
           title: "Team Chat",
         },
       ];
@@ -500,7 +523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const convo3 = await storage.createConversation(newconversations[2]);
       await storage.createMessage({
         conversationId: convo1.id,
-        senderId: newuser0.id,
+        senderId: newuser0.employeeId,
         content:
           "Hi Dr. Wilson, the morning appointment results are ready for review.",
         blocked: null,
@@ -508,14 +531,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       await storage.createMessage({
         conversationId: convo2.id,
-        senderId: newuser1.id,
+        senderId: newuser1.employeeId,
         content: "CQC check ahead. Be ready.",
         blocked: null,
         blockReason: null,
       });
       await storage.createMessage({
         conversationId: convo3.id,
-        senderId: newuser2.id,
+        senderId: newuser2.employeeId,
         content: "Good morning! Hope everyone is ready for today's schedule.",
         blocked: null,
         blockReason: null,
@@ -552,8 +575,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const UserbyPractice = await storage.getUsersByPractice(
         currentUser.practiceId,
       );
-      UserbyPractice.push(currentUser);
-      const ids = UserbyPractice.map((user) => user.id);
+      //fix when current user fixed
+      const ids = UserbyPractice.map((user) => user.employeeId).concat(
+        currentUser.id,
+      );
       const newconversation: InsertConversation =
         insertConversationSchema.parse({
           practiceId: currentUser.practiceId,

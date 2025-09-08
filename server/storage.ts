@@ -21,6 +21,9 @@ import {
   type InsertVatReturn,
   type Practice,
   type Person,
+  type InsertPerson,
+  type Shift,
+  type InsertShift,
 } from "@shared/schema";
 import { db } from "@shared/index";
 
@@ -29,6 +32,11 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+
+  //Person methods
+  getPerson(id: string): Promise<Person | undefined>;
+  getPersonByEmail(email: string): Promise<Person | undefined>;
+  createPerson(person: InsertPerson): Promise<Person>;
 
   // Staff methods
   getStaffByPractice(practiceId: string): Promise<Staff[]>;
@@ -161,9 +169,11 @@ export class MemStorage implements IStorage {
     // Note: Users table doesn't have email directly - email is stored in people/staff tables
     // This would require joining with people table in a real database implementation
     // For in-memory storage, we'll need to look up via staff records that have email
-    const personWithEmail = Array.from(this.people.values()).find((person) => person.email === email);
+    const personWithEmail = Array.from(this.people.values()).find(
+      (person) => person.email === email,
+    );
     if (personWithEmail) {
-      return this.users.get(personWithEmail.employeeId);
+      return this.users.get(personWithEmail.id);
     }
     return undefined;
   }
@@ -178,6 +188,24 @@ export class MemStorage implements IStorage {
     // Note: Uncomment the line below when using actual database
     // await db.insert(users).values(user);
     return user;
+  }
+
+  //Person methods
+  async getPerson(id: string): Promise<Person | undefined> {
+    return this.people.get(id);
+  }
+
+  async getPersonByEmail(email: string): Promise<Person | undefined> {
+    return this.people.get(email);
+  }
+
+  async createPerson(insertPerson: InsertPerson): Promise<Person> {
+    const person: Person = {
+      ...insertPerson,
+    };
+    this.people.set(person.id, person);
+    // await db.insert(people).values(person);
+    return person;
   }
 
   // Staff methods
@@ -325,9 +353,9 @@ export class MemStorage implements IStorage {
     return conversation;
   }
 
-  async getMessagesByConversation(conversationId: string): Promise<Message[]> {
+  async getMessagesByConversation(conversationId: number): Promise<Message[]> {
     return Array.from(this.messages.values())
-      .filter((m) => m.conversationId === parseInt(conversationId))
+      .filter((m) => m.conversationId === conversationId)
       .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime());
   }
 
