@@ -442,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = getCurrentUser();
       const users = await storage.getUsersByPractice(currentUser.practiceId);
       const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
-      
+
       const contacts = [];
       for (const contactuser of contactusers) {
         const person = await storage.getPerson(contactuser.employeeId);
@@ -457,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
+
       res.json(contacts);
     } catch (error) {
       res.status(500).json({ message: "Failed to get contacts" });
@@ -621,7 +621,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (obj) => obj.title == "announcements",
       );
       if (!announcements) {
-        res.status(404).json({ message: "Announcements conversation not found" });
+        res
+          .status(404)
+          .json({ message: "Announcements conversation not found" });
         return;
       }
       const testdata = await storage.getMessagesByConversation(
@@ -718,14 +720,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify conversation belongs to user's practice
-      /**const conversation = await storage.getConversation(
+      const conversation = await storage.getConversation(
         messageData.conversationId,
         currentUser.practiceId,
       );
       if (!conversation) {
         res.status(404).json({ message: "Conversation not found" });
         return;
-      }*/
+      }
 
       const message = await storage.createMessage(messageData);
 
