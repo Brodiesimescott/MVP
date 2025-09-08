@@ -20,12 +20,9 @@ import {
   type VatReturn,
   type InsertVatReturn,
   type Practice,
-  users,
-  staff,
-  people,
+  type Person,
 } from "@shared/schema";
 import { db } from "@shared/index";
-import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User methods
@@ -82,6 +79,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private people: Map<string, Person>;
   private practices: Map<string, Practice>;
   private staff: Map<string, Staff>;
   private cqcStandards: Map<string, CqcStandard>;
@@ -95,6 +93,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.people = new Map();
     this.practices = new Map();
     this.staff = new Map();
     this.cqcStandards = new Map();
@@ -113,7 +112,6 @@ export class MemStorage implements IStorage {
   private initializeCqcStandards() {
     const standards: InsertCqcStandard[] = [
       {
-        practice_id: "default@practice.com",
         regulationId: "REG12",
         title: "Safe care and treatment",
         summary:
@@ -123,7 +121,6 @@ export class MemStorage implements IStorage {
           "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-12-safe-care-treatment",
       },
       {
-        practice_id: "default@practice.com",
         regulationId: "REG17",
         title: "Good governance",
         summary:
@@ -133,7 +130,6 @@ export class MemStorage implements IStorage {
           "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-17-good-governance",
       },
       {
-        practice_id: "default@practice.com",
         regulationId: "REG9",
         title: "Person-centred care",
         summary:
@@ -162,9 +158,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    // Note: Users don't have email directly - would need to join with people table
-    // For in-memory storage, this is simplified
-    return undefined;
+    return Array.from(this.users.values()).find((user) => user.email === email);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

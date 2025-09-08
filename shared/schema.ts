@@ -77,6 +77,7 @@ export const people = pgTable("users", {
   id: text("id").primaryKey(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
+  email: text("email").notNull().unique(),
 });
 
 // Practices table
@@ -138,19 +139,14 @@ export const staff = pgTable("staff", {
 
 // CQC Standards table
 export const cqcStandards = pgTable("cqc_standards", {
-  practice_id: text("practice_id")
-    .references(() => practices.email, { onDelete: "no action" })
-    .notNull(),
-  regulationId: text("regulation_id").notNull(),
+  regulationId: text("regulation_id").primaryKey().notNull(),
   title: text("title").notNull(),
   summary: text("summary"),
   keyQuestion: text("key_question").notNull(),
   sourceUrl: text("source_url"),
   lastCheckedForUpdate: timestamp("last_checked_for_update").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
-}, (table) => ({
-  pk: primaryKey({ columns: [table.practice_id, table.regulationId] }),
-}));
+});
 
 // Practice Evidence table
 export const practiceEvidence = pgTable("practice_evidence", {
@@ -255,6 +251,17 @@ export const vatReturns = pgTable("vat_returns", {
   status: text("status").default("draft"),
   submittedAt: timestamp("submitted_at"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+//relational tables
+export const userPersonRelation = pgTable("user_person_relation", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.employeeId, { onDelete: "cascade" })
+    .notNull(),
+  personId: text("person_id")
+    .references(() => people.id, { onDelete: "cascade" })
+    .notNull(),
 });
 
 // Insert schemas
