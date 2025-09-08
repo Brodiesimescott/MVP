@@ -269,6 +269,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 });
 
+export const insertPersonSchema = createInsertSchema(people);
+
 export const insertStaffSchema = createInsertSchema(staff).omit({
   createdAt: true,
 });
@@ -310,6 +312,8 @@ export const insertVatReturnSchema = createInsertSchema(vatReturns).omit({
   createdAt: true,
 });
 
+export const insertShiftSchema = createInsertSchema(shifts);
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -346,5 +350,7 @@ export type VatReturn = typeof vatReturns.$inferSelect;
 export type InsertVatReturn = z.infer<typeof insertVatReturnSchema>;
 
 export type Person = typeof people.$inferSelect;
+export type InsertPerson = z.infer<typeof insertPersonSchema>;
 
 export type Shift = typeof shifts.$inferSelect;
+export type InsertShift = z.infer<typeof insertShiftSchema>;
