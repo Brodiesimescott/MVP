@@ -113,6 +113,7 @@ export class MemStorage implements IStorage {
   private initializeCqcStandards() {
     const standards: InsertCqcStandard[] = [
       {
+        practice_id: "default@practice.com",
         regulationId: "REG12",
         title: "Safe care and treatment",
         summary:
@@ -122,6 +123,7 @@ export class MemStorage implements IStorage {
           "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-12-safe-care-treatment",
       },
       {
+        practice_id: "default@practice.com",
         regulationId: "REG17",
         title: "Good governance",
         summary:
@@ -131,6 +133,7 @@ export class MemStorage implements IStorage {
           "https://www.cqc.org.uk/guidance-regulation/regulations/regulation-17-good-governance",
       },
       {
+        practice_id: "default@practice.com",
         regulationId: "REG9",
         title: "Person-centred care",
         summary:
@@ -143,7 +146,6 @@ export class MemStorage implements IStorage {
 
     standards.forEach((standard) => {
       const cqcStandard: CqcStandard = {
-        practice_id: "default@practice.com", // Default practice for in-memory storage
         ...standard,
         summary: standard.summary ?? null,
         sourceUrl: standard.sourceUrl ?? null,
@@ -160,18 +162,18 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find((user) => user.email === email);
+    // Note: Users don't have email directly - would need to join with people table
+    // For in-memory storage, this is simplified
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
     const user: User = {
       ...insertUser,
-      id,
       role: insertUser.role ?? "user",
       createdAt: new Date(),
     };
-    this.users.set(id, user);
+    this.users.set(user.employeeId, user);
     // Note: Uncomment the line below when using actual database
     // await db.insert(users).values(user);
     return user;
@@ -189,10 +191,8 @@ export class MemStorage implements IStorage {
   }
 
   async createStaff(insertStaff: InsertStaff): Promise<Staff> {
-    const id = randomUUID();
     const staffMember: Staff = {
       ...insertStaff,
-      id,
       title: insertStaff.title ?? null,
       email: insertStaff.email ?? null,
       phone: insertStaff.phone ?? null,
@@ -215,7 +215,7 @@ export class MemStorage implements IStorage {
       status: insertStaff.status ?? "active",
       createdAt: new Date(),
     };
-    this.staff.set(id, staffMember);
+    this.staff.set(staffMember.employeeId, staffMember);
     // Note: Uncomment the line below when using actual database
     // await db.insert(staff).values(staffMember);
     return staffMember;
@@ -245,16 +245,14 @@ export class MemStorage implements IStorage {
   async createCqcStandard(
     insertStandard: InsertCqcStandard,
   ): Promise<CqcStandard> {
-    const id = randomUUID();
     const standard: CqcStandard = {
       ...insertStandard,
-      id,
       summary: insertStandard.summary ?? null,
       sourceUrl: insertStandard.sourceUrl ?? null,
       lastCheckedForUpdate: new Date(),
       createdAt: new Date(),
     };
-    this.cqcStandards.set(id, standard);
+    this.cqcStandards.set(standard.regulationId, standard);
     // Note: Uncomment the line below when using actual database
     // await db.insert(cqcStandards).values(standard);
     return standard;
@@ -269,17 +267,15 @@ export class MemStorage implements IStorage {
   async createPracticeEvidence(
     insertEvidence: InsertPracticeEvidence,
   ): Promise<PracticeEvidence> {
-    const id = randomUUID();
     const evidence: PracticeEvidence = {
       ...insertEvidence,
-      id,
       description: insertEvidence.description ?? null,
       reviewStatus: insertEvidence.reviewStatus ?? "needs_review",
       standardIds: insertEvidence.standardIds ?? null,
       uploadDate: new Date(),
       createdAt: new Date(),
     };
-    this.practiceEvidence.set(id, evidence);
+    this.practiceEvidence.set(evidence.fileName, evidence);
     // Note: Uncomment the line below when using actual database
     // await db.insert(practiceEvidence).values(evidence);
     return evidence;
@@ -314,7 +310,7 @@ export class MemStorage implements IStorage {
   async createConversation(
     insertConversation: InsertConversation,
   ): Promise<Conversation> {
-    const id = randomUUID();
+    const id = Math.floor(Math.random() * 1000000); // Simple ID for in-memory storage
     const conversation: Conversation = {
       ...insertConversation,
       id,
@@ -322,7 +318,7 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.conversations.set(id, conversation);
+    this.conversations.set(id.toString(), conversation);
     // Note: Uncomment the line below when using actual database
     // await db.insert(conversations).values(conversation);
     return conversation;
@@ -330,12 +326,12 @@ export class MemStorage implements IStorage {
 
   async getMessagesByConversation(conversationId: string): Promise<Message[]> {
     return Array.from(this.messages.values())
-      .filter((m) => m.conversationId === conversationId)
+      .filter((m) => m.conversationId === parseInt(conversationId))
       .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime());
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const id = randomUUID();
+    const id = Math.floor(Math.random() * 1000000); // Simple ID for in-memory storage
     const message: Message = {
       ...insertMessage,
       id,
@@ -343,7 +339,7 @@ export class MemStorage implements IStorage {
       blockReason: insertMessage.blockReason ?? null,
       createdAt: new Date(),
     };
-    this.messages.set(id, message);
+    this.messages.set(id.toString(), message);
     // Note: Uncomment the line below when using actual database
     // await db.insert(messages).values(message);
     return message;
@@ -359,7 +355,7 @@ export class MemStorage implements IStorage {
   async createTransaction(
     insertTransaction: InsertTransaction,
   ): Promise<Transaction> {
-    const id = randomUUID();
+    const id = Math.floor(Math.random() * 1000000); // Simple ID for in-memory storage
     const transaction: Transaction = {
       ...insertTransaction,
       id,
@@ -367,7 +363,7 @@ export class MemStorage implements IStorage {
       bankReference: insertTransaction.bankReference ?? null,
       createdAt: new Date(),
     };
-    this.transactions.set(id, transaction);
+    this.transactions.set(id.toString(), transaction);
     // Note: Uncomment the line below when using actual database
     // await db.insert(transactions).values(transaction);
     return transaction;
@@ -380,7 +376,7 @@ export class MemStorage implements IStorage {
   }
 
   async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
-    const id = randomUUID();
+    const id = Math.floor(Math.random() * 1000000); // Simple ID for in-memory storage
     const invoice: Invoice = {
       ...insertInvoice,
       id,
@@ -391,7 +387,7 @@ export class MemStorage implements IStorage {
       paidDate: insertInvoice.paidDate ?? null,
       createdAt: new Date(),
     };
-    this.invoices.set(id, invoice);
+    this.invoices.set(id.toString(), invoice);
     // Note: Uncomment the line below when using actual database
     // await db.insert(invoices).values(invoice);
     return invoice;
@@ -416,7 +412,7 @@ export class MemStorage implements IStorage {
   }
 
   async createPurchase(insertPurchase: InsertPurchase): Promise<Purchase> {
-    const id = randomUUID();
+    const id = Math.floor(Math.random() * 1000000); // Simple ID for in-memory storage
     const purchase: Purchase = {
       ...insertPurchase,
       id,
@@ -424,7 +420,7 @@ export class MemStorage implements IStorage {
       receiptUrl: insertPurchase.receiptUrl ?? null,
       createdAt: new Date(),
     };
-    this.purchases.set(id, purchase);
+    this.purchases.set(id.toString(), purchase);
     // Note: Uncomment the line below when using actual database
     // await db.insert(purchases).values(purchase);
     return purchase;
@@ -437,7 +433,7 @@ export class MemStorage implements IStorage {
   }
 
   async createVatReturn(insertVatReturn: InsertVatReturn): Promise<VatReturn> {
-    const id = randomUUID();
+    const id = Math.floor(Math.random() * 1000000); // Simple ID for in-memory storage
     const vatReturn: VatReturn = {
       ...insertVatReturn,
       id,
@@ -445,7 +441,7 @@ export class MemStorage implements IStorage {
       submittedAt: insertVatReturn.submittedAt ?? null,
       createdAt: new Date(),
     };
-    this.vatReturns.set(id, vatReturn);
+    this.vatReturns.set(id.toString(), vatReturn);
     // Note: Uncomment the line below when using actual database
     // await db.insert(VatReturns).values(vatReturn);
     return vatReturn;
@@ -453,56 +449,56 @@ export class MemStorage implements IStorage {
 
   async insertDBUsers(usersReg: User[]) {
     usersReg.forEach((user) => {
-      this.users.set(user.id, user);
+      this.users.set(user.employeeId, user);
     });
   }
   async insertDBpractice(practiceReg: Practice) {
-    this.practices.set(practiceReg.id, practiceReg);
+    this.practices.set(practiceReg.email, practiceReg);
   }
   async insertDBstafflist(staffReg: Staff[]) {
     staffReg.forEach((staffMember) => {
-      this.staff.set(staffMember.id, staffMember);
+      this.staff.set(staffMember.employeeId, staffMember);
     });
   }
   async insertDBCQC(cqcReg: CqcStandard[]) {
     cqcReg.forEach((cqc) => {
-      this.cqcStandards.set(cqc.id, cqc);
+      this.cqcStandards.set(cqc.regulationId, cqc);
     });
   }
   async insertDBEvidence(evidenceList: PracticeEvidence[]) {
     evidenceList.forEach((evidence) => {
-      this.practiceEvidence.set(evidence.id, evidence);
+      this.practiceEvidence.set(evidence.fileName, evidence);
     });
   }
   async insertDBconversations(conversationsList: Conversation[]) {
     conversationsList.forEach((conversation) => {
-      this.conversations.set(conversation.id, conversation);
+      this.conversations.set(conversation.id.toString(), conversation);
     });
   }
   async insertDBtransactions(transactionsRec: Transaction[]) {
     transactionsRec.forEach((transaction) => {
-      this.transactions.set(transaction.id, transaction);
+      this.transactions.set(transaction.id.toString(), transaction);
     });
   }
   async insertDBinvoices(invoicesRec: Invoice[]) {
     invoicesRec.forEach((invoice) => {
-      this.invoices.set(invoice.id, invoice);
+      this.invoices.set(invoice.id.toString(), invoice);
     });
   }
   async insertDBpurchases(purchasesRec: Purchase[]) {
     purchasesRec.forEach((purchase) => {
-      this.purchases.set(purchase.id, purchase);
+      this.purchases.set(purchase.id.toString(), purchase);
     });
   }
   async insertDBvatReturn(vatReturnRec: VatReturn[]) {
     vatReturnRec.forEach((vatReturn) => {
-      this.vatReturns.set(vatReturn.id, vatReturn);
+      this.vatReturns.set(vatReturn.id.toString(), vatReturn);
     });
   }
 
   async insertMessages(messagelist: Message[]) {
     messagelist.forEach((message) => {
-      this.messages.set(message.id, message);
+      this.messages.set(message.id.toString(), message);
     });
   }
 }
