@@ -443,8 +443,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
     const contactpeople = people.filter((u) => u.id !== currentUser.id);
     const contacts = {
-      id: contactuser.
-      practiceId: z.string(),
+      id: contactuser.employeeId,
+      practiceId: ,
       role: z.enum(["staff", "powerUser", "user"]),
       email: z.string(),
       firstName: z.string(),
