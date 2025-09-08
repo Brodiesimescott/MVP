@@ -63,11 +63,11 @@ export interface IStorage {
     practiceId: string,
   ): Promise<Conversation[]>;
   getConversation(
-    id: string,
+    id: number,
     practiceId: string,
   ): Promise<Conversation | undefined>;
   createConversation(conversation: InsertConversation): Promise<Conversation>;
-  getMessagesByConversation(conversationId: string): Promise<Message[]>;
+  getMessagesByConversation(conversationId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
 
   // Financial methods
@@ -327,7 +327,7 @@ export class MemStorage implements IStorage {
   }
 
   async getConversation(
-    id: string,
+    id: number,
     practiceId: string,
   ): Promise<Conversation | undefined> {
     const conversation = this.conversations.get(id);
