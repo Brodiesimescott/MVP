@@ -57,15 +57,15 @@ interface User {
 }
 
 interface Conversation {
-  id: string;
+  id: number;
   title?: string;
   participantIds: string[];
   updatedAt: string;
 }
 
 interface Message {
-  id: string;
-  conversationId: string;
+  id: number;
+  conversationId: number;
   senderId: string;
   content: string;
   blocked: boolean;

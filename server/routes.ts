@@ -17,6 +17,7 @@ import {
   insertUserSchema,
   Conversation,
   InsertConversation,
+  conversations,
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
@@ -439,8 +440,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/messaging/contacts", async (req, res) => {
     const currentUser = getCurrentUser();
     const users = await storage.getUsersByPractice(currentUser.practiceId);
-    const contacts = users.filter((u) => u.employeeId !== currentUser.id);
-
+    const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
+    const contactpeople = people.filter((u) => u.id !== currentUser.id);
+    const contacts = {
+      id: contactuser.
+      practiceId: z.string(),
+      role: z.enum(["staff", "powerUser", "user"]),
+      email: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+    }
     res.json(contacts);
   });
 
@@ -575,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const UserbyPractice = await storage.getUsersByPractice(
         currentUser.practiceId,
       );
-      //fix when current user fixed
+      //fix when current user fix
       const ids = UserbyPractice.map((user) => user.employeeId).concat(
         currentUser.id,
       );
@@ -665,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         senderId: currentUser.id,
       });
 
-      if (messageData.conversationId == "Anouncement") {
+      /**if (messageData.conversationId == "Anouncement") {
         const conversations = await storage.getConversationsByUser(
           currentUser.id,
           currentUser.practiceId,
@@ -677,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           messageData,
           conversationid: announcements.id,
         });
-      }
+      }*/
 
       // AI Safety Net
       const safetyCheck = await analyzeMessageForPII(messageData.content);
