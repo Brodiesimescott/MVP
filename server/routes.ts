@@ -438,19 +438,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Messaging endpoints
   app.get("/api/messaging/contacts", async (req, res) => {
-    const currentUser = getCurrentUser();
-    const users = await storage.getUsersByPractice(currentUser.practiceId);
-    const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
-    const contactpeople = people.filter((u) => u.id !== currentUser.id);
-    const contacts = {
-      id: contactuser.employeeId,
-      practiceId: contactuser.practiceId,
-      role: contactuser.role,
-      email: contactpeople.get(contactuser.employeeId).email,
-      firstName: contactpeople.get(contactuser.employeeId).firstName,
-      lastName: contactpeople.get(contactuser.employeeId).lastName,
-    };
-    res.json(contacts);
+    try {
+      const currentUser = getCurrentUser();
+      const users = await storage.getUsersByPractice(currentUser.practiceId);
+      const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
+      
+      const contacts = [];
+      for (const contactuser of contactusers) {
+        const person = await storage.getPerson(contactuser.employeeId);
+        if (person) {
+          contacts.push({
+            id: contactuser.employeeId,
+            practiceId: contactuser.practiceId,
+            role: contactuser.role,
+            email: person.email,
+            firstName: person.firstName,
+            lastName: person.lastName,
+          });
+        }
+      }
+      
+      res.json(contacts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get contacts" });
+    }
   });
 
   app.get("/api/messaging/conversations", async (req, res) => {
