@@ -620,6 +620,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const announcements = conversations.find(
         (obj) => obj.title == "announcements",
       );
+      if (!announcements) {
+        res.status(404).json({ message: "Announcements conversation not found" });
+        return;
+      }
       const testdata = await storage.getMessagesByConversation(
         announcements.id,
       );
@@ -662,7 +666,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     "/api/messaging/initConversation/:conversationId",
     async (req, res) => {
       try {
-        const conversationId = req.params.conversationId;
+        const conversationId = parseInt(req.params.conversationId, 10);
+        if (isNaN(conversationId)) {
+          res.status(400).json({ message: "Invalid conversation ID" });
+          return;
+        }
         const messageData =
           await storage.getMessagesByConversation(conversationId);
         if (messageData.length == 0) {
@@ -722,7 +730,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const message = await storage.createMessage(messageData);
 
       // Broadcast to WebSocket clients
-      broadcastMessage(messageData.conversationId, message);
+      broadcastMessage(messageData.conversationId.toString(), message);
 
       res.json(message);
     } catch (error) {

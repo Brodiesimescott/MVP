@@ -330,7 +330,7 @@ export class MemStorage implements IStorage {
     id: number,
     practiceId: string,
   ): Promise<Conversation | undefined> {
-    const conversation = this.conversations.get(id);
+    const conversation = this.conversations.get(id.toString());
     if (!conversation || conversation.practiceId !== practiceId)
       return undefined;
     return conversation;
