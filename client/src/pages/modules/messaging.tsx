@@ -109,7 +109,7 @@ export default function ChironMessaging() {
     retry: false,
   });
 
-  const { data: contacts } = useQuery<User[]>({
+  const { data: contacts, refetch: refetchContacts } = useQuery<User[]>({
     queryKey: ["/api/messaging/contacts"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/messaging/contacts");
@@ -122,7 +122,9 @@ export default function ChironMessaging() {
     retry: false,
   });
 
-  const { data: conversations } = useQuery<Conversation[]>({
+  const { data: conversations, refetch: refetchConversations } = useQuery<
+    Conversation[]
+  >({
     queryKey: ["/api/messaging/conversations"],
   });
 
@@ -144,10 +146,10 @@ export default function ChironMessaging() {
     enabled: selectedConversation !== null,
   });
 
-  const { data: anouncements, refetch: refetchAnouncements } = useQuery<
+  const { data: announcements, refetch: refetchAnnouncements } = useQuery<
     Message[] | null
   >({
-    queryKey: ["/api/messaging/anouncements"],
+    queryKey: ["/api/messaging/announcements"],
   });
 
   // WebSocket connection for real-time messaging
@@ -188,17 +190,6 @@ export default function ChironMessaging() {
     },
   });
 
-  type AnouncementFormData = z.infer<typeof insertMessageSchema>;
-
-  const formAnouncement = useForm<AnouncementFormData>({
-    resolver: zodResolver(insertMessageSchema),
-    defaultValues: {
-      senderId: user.id,
-      conversationId: "Anouncement",
-      content: "",
-    },
-  });
-
   // create conversation
   const createConvoMutation = useMutation({
     mutationFn: async (data: ConvoFormData) => {
@@ -213,6 +204,7 @@ export default function ChironMessaging() {
       queryClient.invalidateQueries({
         queryKey: ["/api/messaging/conversations"],
       });
+      refetchConversations();
       toast({
         title: "Success",
         description: "conversation added successfully",
@@ -275,7 +267,6 @@ export default function ChironMessaging() {
       setMessageError(null);
       refetchMessages();
       refetchconvoMessages();
-      refetchAnouncements();
     },
     onError: (error: Error) => {
       setMessageError(error.message);
@@ -297,16 +288,16 @@ export default function ChironMessaging() {
     });
   };
 
-  const onAnouncementSubmit = (e: React.FormEvent) => {
+  const onAnnouncementSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    const anouncement = conversations?.find(
-      (obj) => obj.title == "anouncements",
+    const announcements = conversations?.find(
+      (obj) => obj.title == "Announcements",
     );
     sendMessageMutation.mutate({
       content: newMessage.trim(),
-      conversationId: anouncement?.id,
+      conversationId: announcements?.id,
     });
   };
 
@@ -338,11 +329,14 @@ export default function ChironMessaging() {
   };
 
   const getContactInitials = (userId: string) => {
+    refetchContacts();
+    refetchConversations();
+    refetchAnnouncements();
     const contact = contacts?.find((c) => c.id === userId);
     if (userId == user?.id) {
       return user ? `${user.firstName[0]}${user.lastName[0]}` : "UU";
     }
-    return contact ? `${contact.firstName[0]}${contact.lastName[0]}` : "UU";
+    return contact ? `${contact.firstName[0]}${contact.lastName[0]}` : "help";
   };
 
   return (
@@ -469,6 +463,7 @@ export default function ChironMessaging() {
                           <Button
                             type="submit"
                             disabled={createConvoMutation.isPending}
+                            onClick={() => setShowAddDialog(false)}
                           >
                             {createConvoMutation.isPending
                               ? "Adding..."
@@ -496,7 +491,7 @@ export default function ChironMessaging() {
                 ) : (
                   <>
                     {/* Mock conversations for demo */}
-                    <div
+                    {/** <div
                       className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === "mock-1" ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
                       onClick={() => setSelectedConversation("mock-1")}
                     >
@@ -518,9 +513,9 @@ export default function ChironMessaging() {
                       <p className="text-sm text-clinical-gray truncate ml-11">
                         Test results are ready for review...
                       </p>
-                    </div>
+                    </div>*/}
 
-                    <div
+                    {/**<div
                       className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === "mock-2" ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
                       onClick={() => setSelectedConversation("mock-2")}
                     >
@@ -542,9 +537,9 @@ export default function ChironMessaging() {
                       <p className="text-sm text-clinical-gray truncate ml-11">
                         Can we schedule a team meeting?
                       </p>
-                    </div>
+                    </div>*/}
 
-                    <div
+                    {/** <div
                       className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === "mock-3" ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
                       onClick={() => setSelectedConversation("mock-3")}
                     >
@@ -566,7 +561,7 @@ export default function ChironMessaging() {
                       <p className="text-sm text-clinical-gray truncate ml-11">
                         CQC inspection preparation...
                       </p>
-                    </div>
+                    </div>*/}
                     {conversations?.map((conversation) => (
                       <div
                         key={conversation.id}
@@ -610,43 +605,30 @@ export default function ChironMessaging() {
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
                       <span className="text-white font-semibold text-sm">
-                        {selectedConversation === "mock-1"
-                          ? "SJ"
-                          : selectedConversation === "mock-2"
-                            ? "MB"
-                            : selectedConversation === "mock-3"
-                              ? "TC"
-                              : conversations !== undefined
-                                ? getContactInitials(
-                                    conversations.find(
-                                      (i) => i.id == selectedConversation,
-                                    ).participantIds[0],
-                                  )
-                                : ""}
+                        {conversations !== undefined
+                          ? getContactInitials(
+                              conversations.find(
+                                (i) => i.id == selectedConversation,
+                              ).participantIds[0],
+                            )
+                          : ""}
                       </span>
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-900">
-                        {selectedConversation === "mock-1"
-                          ? "Sister Jane Smith"
-                          : selectedConversation === "mock-2"
-                            ? "Mark Brown"
-                            : selectedConversation === "mock-3"
-                              ? "Team Chat"
-                              : conversations !== undefined &&
-                                  conversations.find(
-                                    (i) => i.id == selectedConversation,
-                                  ).title !== null
-                                ? conversations.find(
-                                    (i) => i.id == selectedConversation,
-                                  ).title
-                                : conversations !== undefined
-                                  ? getContactName(
-                                      conversations.find(
-                                        (i) => i.id == selectedConversation,
-                                      ).participantIds[0],
-                                    )
-                                  : "error"}
+                        {conversations !== undefined &&
+                        conversations.find((i) => i.id == selectedConversation)
+                          .title !== null
+                          ? conversations.find(
+                              (i) => i.id == selectedConversation,
+                            ).title
+                          : conversations !== undefined
+                            ? getContactName(
+                                conversations.find(
+                                  (i) => i.id == selectedConversation,
+                                ).participantIds[0],
+                              )
+                            : "error"}
                       </h3>
                       <p className="text-sm text-medical-green flex items-center">
                         <span className="w-2 h-2 bg-medical-green rounded-full mr-2"></span>
@@ -685,46 +667,6 @@ export default function ChironMessaging() {
                     ),
                   )}
 
-                  {selectedConversation !== "mock-1" &&
-                  selectedConversation !== "mock-2" &&
-                  selectedConversation !== "mock-3" ? (
-                    <></>
-                  ) : (
-                    <>
-                      {/* Sample messages for demonstration */}
-                      <div className="flex">
-                        <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                          <span className="text-white font-medium text-xs">
-                            SJ
-                          </span>
-                        </div>
-                        <div className="bg-slate-100 rounded-lg p-3 max-w-xs">
-                          <p className="text-sm text-slate-900">
-                            {selectedConversation === "mock-1"
-                              ? "Hi Dr. Wilson, the morning appointment results are ready for review."
-                              : selectedConversation === "mock-2"
-                                ? "CQC check ahead. Be ready."
-                                : selectedConversation === "mock-3"
-                                  ? "Good morning! Hope everyone is ready for today's schedule."
-                                  : ""}
-                          </p>
-                          <p className="text-xs text-clinical-gray mt-1">
-                            10:15 AM
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <div className="bg-chiron-blue text-white rounded-lg p-3 max-w-xs">
-                          <p className="text-sm">
-                            Thanks! I'll review them now. Any urgent cases?
-                          </p>
-                          <p className="text-xs text-blue-200 mt-1">10:17 AM</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
                   {/* AI Safety Net Indicator */}
                   <div className="flex justify-center">
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
@@ -759,9 +701,10 @@ export default function ChironMessaging() {
                         !newMessage.trim() ||
                         selectedConversation ===
                           conversations?.find(
-                            (obj) => obj.title == "anouncements",
+                            (obj) => obj.title == "Announcements",
                           )?.id
                       }
+                      onClick={() => setShowAddDialog(false)}
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -799,7 +742,7 @@ export default function ChironMessaging() {
             </div>
             <div className="p-4 space-y-4">
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {anouncements?.map((message) => (
+                {announcements?.map((message) => (
                   <div key={message.id} className="flex">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <div className="flex items-start space-x-2">
@@ -839,7 +782,7 @@ export default function ChironMessaging() {
                       </DialogHeader>
 
                       <form
-                        onSubmit={onAnouncementSubmit}
+                        onSubmit={onAnnouncementSubmit}
                         className="flex space-x-3"
                       >
                         <Input
@@ -862,7 +805,10 @@ export default function ChironMessaging() {
                           </Button>
                           <Button
                             type="submit"
-                            disabled={sendMessageMutation.isPending}
+                            disabled={
+                              sendMessageMutation.isPending ||
+                              user?.role === "staff"
+                            }
                           >
                             {sendMessageMutation.isPending
                               ? "Adding..."

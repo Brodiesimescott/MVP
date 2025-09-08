@@ -446,24 +446,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     console.log("create convo");
     storage.createConversation(newconversations[0]);*/
+    const testdata = await storage.getConversationsByUser(
+      currentUser.id,
+      currentUser.practiceId,
+    );
+    if (testdata.length < 2) {
+      const newuser0 = await storage.createUser({
+        email: "ask@gmail.com",
+        hashedPassword: "string0",
+        salt: makeSalt(),
+        practiceId: "practice1",
+        firstName: "Sister Jane",
+        lastName: "Smith",
+        role: "user",
+      });
+      const newuser2 = await storage.createUser({
+        email: "string@gmailcom",
+        hashedPassword: "string1",
+        salt: makeSalt(),
+        practiceId: "practice1",
+        firstName: "Team",
+        lastName: "Chat",
+        role: "user",
+      });
+      const newuser1 = await storage.createUser({
+        email: "help.gmail.com",
+        hashedPassword: "string2",
+        salt: makeSalt(),
+        practiceId: "practice1",
+        firstName: "Mark",
+        lastName: "Brown",
+        role: "user",
+      });
+      const newconversations: InsertConversation[] = [
+        {
+          practiceId: "practice1",
+          participantIds: [newuser0.id, "user1"],
+          title: "Sister Jane Smith",
+        },
+        {
+          practiceId: "practice1",
+          participantIds: [newuser1.id, "user1"],
+          title: "Mark Brown",
+        },
+        {
+          practiceId: "practice1",
+          participantIds: [newuser2.id, "user1"],
+          title: "Team Chat",
+        },
+      ];
+      const convo1 = await storage.createConversation(newconversations[0]);
+      const convo2 = await storage.createConversation(newconversations[1]);
+      const convo3 = await storage.createConversation(newconversations[2]);
+      await storage.createMessage({
+        conversationId: convo1.id,
+        senderId: newuser0.id,
+        content:
+          "Hi Dr. Wilson, the morning appointment results are ready for review.",
+        blocked: null,
+        blockReason: null,
+      });
+      await storage.createMessage({
+        conversationId: convo2.id,
+        senderId: newuser1.id,
+        content: "CQC check ahead. Be ready.",
+        blocked: null,
+        blockReason: null,
+      });
+      await storage.createMessage({
+        conversationId: convo3.id,
+        senderId: newuser2.id,
+        content: "Good morning! Hope everyone is ready for today's schedule.",
+        blocked: null,
+        blockReason: null,
+      });
+    }
+
     const conversations = await storage.getConversationsByUser(
       currentUser.id,
       currentUser.practiceId,
     );
-    /** storage.createMessage({
-      conversationId: conversations[0].id,
-      senderId: "user1",
-      content: "hello",
-      blocked: null,
-      blockReason: null,
-    });
-    storage.createMessage({
-      conversationId: conversations[0].id,
-      senderId: "user1",
-      content: "second try at this",
-      blocked: null,
-      blockReason: null,
-    });*/
 
     res.json(conversations);
   });
@@ -484,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
   });
 
-  app.get("/api/messaging/anouncements", async (req, res) => {
+  app.get("/api/messaging/announcements", async (req, res) => {
     try {
       const currentUser = getCurrentUser();
       const UserbyPractice = await storage.getUsersByPractice(
@@ -495,36 +557,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newconversation: InsertConversation =
         insertConversationSchema.parse({
           practiceId: currentUser.practiceId,
-          title: "anouncements",
+          title: "announcements",
           participantIds: ids,
         });
-      await storage.createConversation(newconversation);
 
+      const testcreate = await storage.getConversationsByUser(
+        currentUser.id,
+        currentUser.practiceId,
+      );
+      if (testcreate.find((obj) => obj.title == "announcements") == null) {
+        await storage.createConversation(newconversation);
+      }
       const conversations = await storage.getConversationsByUser(
         currentUser.id,
         currentUser.practiceId,
       );
-      const anouncements = conversations.find(
-        (obj) => obj.title == "anouncements",
+      const announcements = conversations.find(
+        (obj) => obj.title == "announcements",
       );
-      const testdata = await storage.getMessagesByConversation(anouncements.id);
+      const testdata = await storage.getMessagesByConversation(
+        announcements.id,
+      );
       if (testdata.length == 0) {
         await storage.createMessage({
-          conversationId: anouncements.id,
+          conversationId: announcements.id,
           senderId: "user1",
           content: "CQC Inspection! Preparation meeting tomorrow 3 PM",
           blocked: null,
           blockReason: null,
         });
         await storage.createMessage({
-          conversationId: anouncements.id,
+          conversationId: announcements.id,
           senderId: "user1",
           content: "New Staff Member! Welcome Dr. Emily Chen starting Monday",
           blocked: null,
           blockReason: null,
         });
         await storage.createMessage({
-          conversationId: anouncements.id,
+          conversationId: announcements.id,
           senderId: "user1",
           content: "System Maintenance! Scheduled downtime Sunday 2-4 AM",
           blocked: null,
@@ -533,13 +603,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const messageData = await storage.getMessagesByConversation(
-        anouncements.id,
+        announcements.id,
       );
       res.json(messageData);
     } catch (error) {
       res
         .status(500)
-        .json({ message: "Failed to retrieve anouncements", error });
+        .json({ message: "Failed to retrieve announcements", error });
     }
   });
 
@@ -575,12 +645,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currentUser.id,
           currentUser.practiceId,
         );
-        const anouncements = conversations.find(
-          (obj) => obj.title == "anouncements",
+        const announcements = conversations.find(
+          (obj) => obj.title == "announcements",
         );
         messageData = insertMessageSchema.parse({
           messageData,
-          conversationid: anouncements.id,
+          conversationid: announcements.id,
         });
       }
 
