@@ -158,7 +158,14 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find((user) => user.email === email);
+    // Note: Users table doesn't have email directly - email is stored in people/staff tables
+    // This would require joining with people table in a real database implementation
+    // For in-memory storage, we'll need to look up via staff records that have email
+    const staffWithEmail = Array.from(this.staff.values()).find((staff) => staff.email === email);
+    if (staffWithEmail) {
+      return this.users.get(staffWithEmail.employeeId);
+    }
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
