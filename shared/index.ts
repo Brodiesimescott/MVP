@@ -16,7 +16,7 @@ const pool = new Pool({
  * Asynchronously verifies the PostgreSQL connection.
  * Ensures that any issues are logged immediately at application startup.
  */
-async function verifyConnection(): Promise<void> {
+export async function verifyConnection(): Promise<void> {
   try {
     // Attempt to acquire a client from the pool
     const client = await pool.connect();
@@ -31,5 +31,4 @@ async function verifyConnection(): Promise<void> {
 verifyConnection();
 
 // Export the pool to be used across the application.
-
 export const db = drizzle(pool, { schema: schema });
