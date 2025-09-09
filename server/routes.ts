@@ -602,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newconversation: InsertConversation =
         insertConversationSchema.parse({
           practiceId: currentUser.practiceId,
-          title: "announcements",
+          title: "Announcements",
           participantIds: ids,
         });
 
@@ -610,7 +610,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentUser.id,
         currentUser.practiceId,
       );
-      if (testcreate.find((obj) => obj.title == "announcements") == null) {
+      if (testcreate.find((obj) => obj.title == "Announcements") == null) {
         await storage.createConversation(newconversation);
       }
       const conversations = await storage.getConversationsByUser(
@@ -618,7 +618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentUser.practiceId,
       );
       const announcements = conversations.find(
-        (obj) => obj.title == "announcements",
+        (obj) => obj.title == "Announcements",
       );
       if (!announcements) {
         res
