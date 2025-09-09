@@ -18,6 +18,19 @@ const pool = new Pool({
   min: 2,
 });
 
+// Handle pool-level errors to prevent crashes
+pool.on('error', (err) => {
+  console.error('PostgreSQL pool error:', err.message);
+  console.error('Connection will be retried automatically');
+});
+
+// Handle individual client errors
+pool.on('connect', (client) => {
+  client.on('error', (err) => {
+    console.error('PostgreSQL client error:', err.message);
+  });
+});
+
 /**
  * Asynchronously verifies the PostgreSQL connection.
  * Ensures that any issues are logged immediately at application startup.
@@ -39,8 +52,11 @@ export async function verifyConnection(): Promise<void> {
   }
 }
 
-// Immediately verify connection upon module load.
-verifyConnection();
+// Verify connection upon module load, but don't block startup on failure
+verifyConnection().catch((err) => {
+  console.error('Initial database connection verification failed:', err.message);
+  console.log('Application will continue, database operations may fail until connection is restored');
+});
 
 // Export the pool to be used across the application.
 export const db = drizzle(pool, { schema: schema });
