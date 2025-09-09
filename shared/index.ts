@@ -10,7 +10,7 @@ const pool = new Pool({
   password: process.env.PGPASSWORD,
   port: Number(process.env.PGPORT),
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
   },
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
