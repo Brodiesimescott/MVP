@@ -1,15 +1,21 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import cron from "node-cron";
-
 import * as schema from "./schema";
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: Number(process.env.DB_PORT),
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: Number(process.env.PGPORT),
+  ssl: {
+    rejectUnauthorized: false
+  },
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+  max: 10,
+  min: 2,
 });
 
 /**
@@ -17,6 +23,11 @@ const pool = new Pool({
  * Ensures that any issues are logged immediately at application startup.
  */
 export async function verifyConnection(): Promise<void> {
+  console.log("Testing database connection...");
+  console.log("Host:", process.env.PGHOST);
+  console.log("User:", process.env.PGUSER);
+  console.log("Database:", process.env.PGDATABASE);
+  console.log("Port:", process.env.PGPORT);
   try {
     // Attempt to acquire a client from the pool
     console.log("attempting connection");
