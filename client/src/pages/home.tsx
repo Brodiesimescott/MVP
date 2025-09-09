@@ -11,7 +11,6 @@ import { useLocation } from "wouter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { db, verifyConnection } from "@shared/index";
 
 const userSchema = z.object({
   id: z.string(),
@@ -26,8 +25,6 @@ type UserData = z.infer<typeof userSchema>;
 
 export default function Home() {
   const [, setLocation] = useLocation();
-
-  verifyConnection();
 
   const {
     data: user,

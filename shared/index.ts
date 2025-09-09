@@ -19,6 +19,7 @@ const pool = new Pool({
 export async function verifyConnection(): Promise<void> {
   try {
     // Attempt to acquire a client from the pool
+    console.log("attempting connection");
     const client = await pool.connect();
     console.log("✅ Connected to PostgreSQL database");
     client.release(); // Release the client back to the pool

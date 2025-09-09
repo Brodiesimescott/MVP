@@ -24,6 +24,8 @@ import { z } from "zod";
 import { generateHealthcareResponse } from "./ai-service";
 import { title } from "process";
 
+import { db, verifyConnection } from "@shared/index";
+
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
   content: string,
@@ -135,6 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //Home api
   app.get("/api/home", async (req, res) => {
     const currentUser = getCurrentUser();
+    console.log("test");
     res.status(200).json(currentUser);
   });
 
