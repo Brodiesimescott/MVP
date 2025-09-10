@@ -26,12 +26,8 @@ export const jobEnum = pgEnum("job", [
   "physio",
   "health visitor",
   "dentist",
-  "dentist",
   "dental therapist",
   "hygienist",
-  "business",
-  "admin",
-  "reception",
 ]);
 export const moduleStatusEnum = pgEnum("module_status", [
   "good",

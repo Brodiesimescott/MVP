@@ -31,15 +31,21 @@ import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertStaffSchema } from "@shared/schema";
+import { insertStaffSchema, insertPersonSchema } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import type { Staff } from "@shared/schema";
+import type { Person, Staff } from "@shared/schema";
 
 const staffFormSchema = insertStaffSchema.extend({
   practiceId: z.string().optional(),
+  // Person fields from insertPersonSchema
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  // Use contract field directly from schema instead of contractType
+}).omit({
+  // Remove fields that will be handled separately
 });
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
@@ -70,12 +76,12 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       address: "",
       dateOfBirth: "",
       niNumber: "",
-      position: "",
+      position: "admin",
       department: "",
       startDate: "",
-      contractType: "permanent",
+      contract: "permanent", // Use contract instead of contractType
       salary: "0",
-      workingHours: "",
+      workingHours: undefined,
       professionalBody: "",
       professionalBodyNumber: "",
       appraisalDate: "",
@@ -113,13 +119,13 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const updateStaffMutation = useMutation({
     mutationFn: async ({
-      id,
+      employeeId,
       data,
     }: {
-      id: string;
+      employeeId: string;
       data: Partial<StaffFormData>;
     }) => {
-      const response = await apiRequest("PUT", `/api/hr/staff/${id}`, data);
+      const response = await apiRequest("PUT", `/api/hr/staff/${employeeId}`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -140,8 +146,8 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
   });
 
   const deleteStaffMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/hr/staff/${id}`);
+    mutationFn: async (employeeId: string) => {
+      await apiRequest("DELETE", `/api/hr/staff/${employeeId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
@@ -164,7 +170,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const onSubmit = (data: StaffFormData) => {
     if (viewMode === "edit" && selectedStaff) {
-      updateStaffMutation.mutate({ id: selectedStaff.id, data });
+      updateStaffMutation.mutate({ employeeId: selectedStaff.employeeId, data });
     } else {
       createStaffMutation.mutate(data);
     }
@@ -211,7 +217,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => deleteStaffMutation.mutate(selectedStaff.id)}
+                onClick={() => deleteStaffMutation.mutate(selectedStaff.employeeId)}
                 disabled={deleteStaffMutation.isPending}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -234,14 +240,12 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-chiron-blue rounded-full flex items-center justify-center">
                         <span className="text-white font-semibold text-lg">
-                          {selectedStaff.firstName[0]}
-                          {selectedStaff.lastName[0]}
+                          {selectedStaff.employeeId.slice(0, 2).toUpperCase()}
                         </span>
                       </div>
                       <div>
                         <h4 className="text-lg font-semibold text-slate-900">
-                          {selectedStaff.title} {selectedStaff.firstName}{" "}
-                          {selectedStaff.lastName}
+                          {selectedStaff.title || "Staff Member"} ({selectedStaff.employeeId})
                         </h4>
                         <p className="text-clinical-gray">
                           {selectedStaff.position}
@@ -298,7 +302,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Contract Type:</span>
                       <Badge variant="secondary">
-                        {selectedStaff.contractType}
+                        {selectedStaff.contract}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -451,6 +455,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                               <Input
                                 placeholder="Dr., Mr., Ms., etc."
                                 {...field}
+                                value={field.value || ""}
                               />
                             </FormControl>
                             <FormMessage />
@@ -525,7 +530,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input type="email" {...field} />
+                              <Input type="email" {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -538,7 +543,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           <FormItem>
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -640,6 +645,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                             <Input
                               placeholder="Dr., Mr., Ms., etc."
                               {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -683,10 +689,38 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                       name="position"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Position *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                          <FormLabel>Position</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a role" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="doctor">Doctor</SelectItem>
+                              <SelectItem value="nurse">Nurse</SelectItem>
+                              <SelectItem value="business">Business</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="reception">
+                                Reception
+                              </SelectItem>
+                              <SelectItem value="pharmacy">Pharmacy</SelectItem>
+                              <SelectItem value="physio">Physio</SelectItem>
+                              <SelectItem value="health visitor">
+                                Health Visitor
+                              </SelectItem>
+                              <SelectItem value="dentist">Dentist</SelectItem>
+                              <SelectItem value="dental therapist">
+                                Dental therapist
+                              </SelectItem>
+                              <SelectItem value="hygienist">
+                                hygienist
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -780,19 +814,17 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {staff.map((staffMember) => (
-                  <Card key={staffMember.id} className="p-6">
+                  <Card key={staffMember.employeeId} className="p-6">
                     <CardContent className="p-0">
                       <div className="flex items-center space-x-4 mb-4">
                         <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
                           <span className="text-white font-semibold">
-                            {staffMember.firstName[0]}
-                            {staffMember.lastName[0]}
+                            {staffMember.employeeId.slice(0, 2).toUpperCase()}
                           </span>
                         </div>
                         <div>
                           <h3 className="font-semibold text-slate-900">
-                            {staffMember.title} {staffMember.firstName}{" "}
-                            {staffMember.lastName}
+                            {staffMember.title || "Staff Member"} ({staffMember.employeeId})
                           </h3>
                           <p className="text-sm text-clinical-gray">
                             {staffMember.position}
