@@ -316,7 +316,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
+                  onClick={() => setCurrentView("staff")}
                 >
                   <FileText className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">
