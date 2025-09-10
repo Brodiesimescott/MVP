@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Plus, Search, Eye, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Search, Eye, Edit, Trash2, Upload } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,11 +59,13 @@ const staffFormSchema = insertStaffSchema
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
 
-interface StaffManagementProps {
+interface AppraisalManagementProps {
   onBack: () => void;
 }
 
-export default function StaffManagement({ onBack }: StaffManagementProps) {
+export default function AppraisalManagement({
+  onBack,
+}: AppraisalManagementProps) {
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
@@ -176,6 +178,38 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       toast({
         title: "Error",
         description: "Failed to delete staff member",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const uploadAppraisalMutation = useMutation({
+    mutationFn: async (evidenceData: {
+      fileName: string;
+      file: File;
+      description: string;
+      standardIds: string[];
+    }) => {
+      const response = await fetch("/api/cqc/evidence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(evidenceData),
+      });
+      if (!response.ok) throw new Error("Failed to upload evidence");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cqc/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cqc/activity"] });
+      toast({
+        title: "Success",
+        description: "Evidence uploaded successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload evidence",
         variant: "destructive",
       });
     },
@@ -626,165 +660,9 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
             </Button>
             <div className="w-px h-6 bg-slate-200"></div>
             <h1 className="text-xl font-semibold text-slate-900">
-              Staff Management
+              Appraisal Management
             </h1>
           </div>
-          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-            <DialogTrigger asChild>
-              <Button className="bg-chiron-blue hover:bg-blue-800">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Staff Member
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Add New Staff Member</DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="employeeId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Employee ID *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Dr., Mr., Ms., etc."
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a role" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="doctor">Doctor</SelectItem>
-                              <SelectItem value="nurse">Nurse</SelectItem>
-                              <SelectItem value="business">Business</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="reception">
-                                Reception
-                              </SelectItem>
-                              <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                              <SelectItem value="physio">Physio</SelectItem>
-                              <SelectItem value="health visitor">
-                                Health Visitor
-                              </SelectItem>
-                              <SelectItem value="dentist">Dentist</SelectItem>
-                              <SelectItem value="dental therapist">
-                                Dental therapist
-                              </SelectItem>
-                              <SelectItem value="hygienist">
-                                hygienist
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="department"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Department *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowAddDialog(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={createStaffMutation.isPending}
-                    >
-                      {createStaffMutation.isPending
-                        ? "Adding..."
-                        : "Add Staff Member"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
         </div>
       </header>
 
@@ -827,13 +705,6 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                 <p className="text-clinical-gray mb-4">
                   No staff members found
                 </p>
-                <Button
-                  onClick={() => setShowAddDialog(true)}
-                  className="bg-chiron-blue hover:bg-blue-800"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add First Staff Member
-                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -874,9 +745,19 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">Status:</span>
+                          <span className="text-clinical-gray">
+                            Last Appraisal:
+                          </span>
                           <Badge className="bg-medical-green text-white">
-                            {staffMember.status || "Active"}
+                            {staffMember.appraisalDate || "Needed"}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-clinical-gray">
+                            Next Appraisal:
+                          </span>
+                          <Badge className="bg-medical-green text-white">
+                            {staffMember.appraisalDate || "Now"}
                           </Badge>
                         </div>
                       </div>
@@ -888,15 +769,37 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           onClick={() => handleViewStaff(staffMember)}
                         >
                           <Eye className="w-3 h-3 mr-1" />
-                          View
+                          View Appraisal
                         </Button>
+                      </div>
+                      <div>
                         <Button
                           size="sm"
                           className="flex-1 bg-chiron-blue hover:bg-blue-800"
-                          onClick={() => handleEditStaff(staffMember)}
+                          onClick={() => {
+                            const fileName = prompt(
+                              "Enter evidence file name:",
+                            );
+                            const file = prompt(
+                              
+
+                            );
+                            const description = prompt(
+                              "Enter evidence description:",
+                            );
+                            if (fileName && description) {
+                              uploadAppraisalMutation.mutate({
+                                fileName,
+                                file,
+                                description,
+                                standardIds: ["reg12"], // Mock standard ID
+                              });
+                            }
+                          }}
+                          disabled={uploadAppraisalMutation.isPending}
                         >
                           <Edit className="w-3 h-3 mr-1" />
-                          Edit
+                          Add Appraisal
                         </Button>
                       </div>
                     </CardContent>

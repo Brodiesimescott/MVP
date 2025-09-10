@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import LLMGuide from "@/components/llm-guide";
 import StaffManagement from "@/components/staff-management";
+import AppraisalManagement from "@/components/appraisal";
 import ModuleLogo from "@/components/module-logo";
 import { useState } from "react";
 
@@ -186,9 +187,9 @@ function markAsAvailable(event: any) {
 }
 
 export default function ChironHR() {
-  const [currentView, setCurrentView] = useState<"dashboard" | "staff">(
-    "dashboard",
-  );
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "staff" | "appraisals"
+  >("dashboard");
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<HRMetrics>({
     queryKey: ["/api/hr/metrics"],
@@ -196,6 +197,10 @@ export default function ChironHR() {
 
   if (currentView === "staff") {
     return <StaffManagement onBack={() => setCurrentView("dashboard")} />;
+  }
+
+  if (currentView === "appraisals") {
+    return <AppraisalManagement onBack={() => setCurrentView("dashboard")} />;
   }
 
   return (
@@ -268,7 +273,7 @@ export default function ChironHR() {
                 <p className="text-2xl font-bold text-slate-900">
                   {metricsLoading ? "..." : metrics?.pendingReviews}
                 </p>
-                <p className="text-sm text-amber-600">Due this week</p>
+                <p className="text-sm text-amber-600">Due this month</p>
               </Card>
 
               <Card className="p-6">
@@ -316,7 +321,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  onClick={() => setCurrentView("staff")}
+                  onClick={() => setCurrentView("appraisals")}
                 >
                   <FileText className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">

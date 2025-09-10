@@ -13,6 +13,7 @@ import ChironMessaging from "@/pages/modules/messaging";
 import ChironMoney from "@/pages/modules/money";
 import ChironStock from "@/pages/modules/stock";
 import ChironFacilities from "@/pages/modules/facilities";
+import { FileUploadDemo } from "@/pages/FileUploadDemo";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/modules/money" component={ChironMoney} />
       <Route path="/modules/stock" component={ChironStock} />
       <Route path="/modules/facilities" component={ChironFacilities} />
+      <Route path="/file-upload" component={FileUploadDemo} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
