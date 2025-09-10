@@ -37,6 +37,10 @@ export interface IStorage {
   getPerson(id: string): Promise<Person | undefined>;
   getPersonByEmail(email: string): Promise<Person | undefined>;
   createPerson(person: InsertPerson): Promise<Person>;
+  updatePerson(
+    id: string,
+    person: Partial<InsertPerson>,
+  ): Promise<Person | undefined>;
 
   // Staff methods
   getStaffByPractice(practiceId: string): Promise<Staff[]>;
@@ -206,6 +210,18 @@ export class MemStorage implements IStorage {
     this.people.set(person.id, person);
     // await db.insert(people).values(person);
     return person;
+  }
+
+  async updatePerson(
+    id: string,
+    updates: Partial<InsertPerson>,
+  ): Promise<Person | undefined> {
+    const existing = this.people.get(id);
+    if (!existing) return undefined;
+
+    const updated: Person = { ...existing, ...updates };
+    this.people.set(id, updated);
+    return updated;
   }
 
   // Staff methods

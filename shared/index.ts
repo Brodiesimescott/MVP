@@ -19,15 +19,15 @@ const pool = new Pool({
 });
 
 // Handle pool-level errors to prevent crashes
-pool.on('error', (err) => {
-  console.error('PostgreSQL pool error:', err.message);
-  console.error('Connection will be retried automatically');
+pool.on("error", (err) => {
+  console.error("PostgreSQL pool error:", err.message);
+  console.error("Connection will be retried automatically");
 });
 
 // Handle individual client errors
-pool.on('connect', (client) => {
-  client.on('error', (err) => {
-    console.error('PostgreSQL client error:', err.message);
+pool.on("connect", (client) => {
+  client.on("error", (err) => {
+    console.error("PostgreSQL client error:", err.message);
   });
 });
 
@@ -54,8 +54,13 @@ export async function verifyConnection(): Promise<void> {
 
 // Verify connection upon module load, but don't block startup on failure
 verifyConnection().catch((err) => {
-  console.error('Initial database connection verification failed:', err.message);
-  console.log('Application will continue, database operations may fail until connection is restored');
+  console.error(
+    "Initial database connection verification failed:",
+    err.message,
+  );
+  console.log(
+    "Application will continue, database operations may fail until connection is restored",
+  );
 });
 
 // Export the pool to be used across the application.

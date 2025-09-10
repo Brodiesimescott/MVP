@@ -16,8 +16,17 @@ export const JOBS = [
   "hygienist",
 ] as const;
 export const MODULE_STATUSES = ["good", "attention", "critical"] as const;
-export const CONTRACT_TYPES = ["permanent", "temporary", "locum", "contractor"] as const;
-export const REVIEW_STATUSES = ["compliant", "needs_review", "non_compliant"] as const;
+export const CONTRACT_TYPES = [
+  "permanent",
+  "temporary",
+  "locum",
+  "contractor",
+] as const;
+export const REVIEW_STATUSES = [
+  "compliant",
+  "needs_review",
+  "non_compliant",
+] as const;
 export const SHIFTS = ["all day", "am", "pm", "not in"] as const;
 export const TRANSACTION_CATEGORIES = ["income", "expense"] as const;
 
@@ -157,7 +166,9 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertPerson = z.infer<typeof insertPersonSchema>;
 export type InsertStaff = z.infer<typeof insertStaffSchema>;
 export type InsertCqcStandard = z.infer<typeof insertCqcStandardSchema>;
-export type InsertPracticeEvidence = z.infer<typeof insertPracticeEvidenceSchema>;
+export type InsertPracticeEvidence = z.infer<
+  typeof insertPracticeEvidenceSchema
+>;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
@@ -172,7 +183,7 @@ export type User = {
   hashedPassword: string;
   salt: string;
   practiceId: string;
-  role: typeof USER_ROLES[number];
+  role: (typeof USER_ROLES)[number];
   createdAt: Date | null;
 };
 
@@ -194,12 +205,12 @@ export type Staff = {
   address: string | null;
   dateOfBirth: string | null;
   niNumber: string | null;
-  position: typeof JOBS[number];
+  position: (typeof JOBS)[number];
   department: string;
   startDate: string;
-  contract: typeof CONTRACT_TYPES[number];
+  contract: (typeof CONTRACT_TYPES)[number];
   salary: string | null;
-  workingHours: (typeof SHIFTS[number])[] | null;
+  workingHours: (typeof SHIFTS)[number][] | null;
   annualLeave: number | null;
   studyLeave: number | null;
   otherLeave: number | null;
@@ -230,7 +241,7 @@ export type PracticeEvidence = {
   fileName: string;
   description: string | null;
   uploadDate: Date | null;
-  reviewStatus: typeof REVIEW_STATUSES[number];
+  reviewStatus: (typeof REVIEW_STATUSES)[number];
   standardIds: string[] | null;
   createdAt: Date | null;
 };
@@ -259,7 +270,7 @@ export type Transaction = {
   practiceId: string;
   description: string;
   amount: string;
-  category: typeof TRANSACTION_CATEGORIES[number];
+  category: (typeof TRANSACTION_CATEGORIES)[number];
   subcategory: string | null;
   date: string;
   bankReference: string | null;
@@ -318,9 +329,9 @@ export type Person = {
 
 export type Shift = {
   email: string;
-  mon: typeof SHIFTS[number] | null;
-  tue: typeof SHIFTS[number] | null;
-  wed: typeof SHIFTS[number] | null;
-  thu: typeof SHIFTS[number] | null;
-  fri: typeof SHIFTS[number] | null;
+  mon: (typeof SHIFTS)[number] | null;
+  tue: (typeof SHIFTS)[number] | null;
+  wed: (typeof SHIFTS)[number] | null;
+  thu: (typeof SHIFTS)[number] | null;
+  fri: (typeof SHIFTS)[number] | null;
 };

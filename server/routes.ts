@@ -18,6 +18,7 @@ import {
   Conversation,
   InsertConversation,
   conversations,
+  people,
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
@@ -25,6 +26,8 @@ import { generateHealthcareResponse } from "./ai-service";
 import { title } from "process";
 import { log } from "./vite";
 import { db, verifyConnection } from "@shared/index";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectPermission } from "./objectAcl";
 
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
@@ -64,7 +67,7 @@ async function analyzeMessageForPII(
 
 // Mock current user for MVP - in production this would come from session
 /**
- * user.id(token.id)
+ * user = storage.getUser(token.id)
  */
 const getCurrentUser = () => ({
   id: "user1",
@@ -134,10 +137,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return randomBytes(128).toString("base64");
   }
 
-  //Home api
+  //Home api add omit(salt when current user is fixed)
   app.get("/api/home", async (req, res) => {
     const currentUser = getCurrentUser();
-    log("test");
     const database = db;
     res.status(200).json(currentUser);
   });
@@ -298,19 +300,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/hr/staff", async (req, res) => {
     const currentUser = getCurrentUser();
     const staff = await storage.getStaffByPractice(currentUser.practiceId);
-    res.json(staff);
+
+    const employees = [];
+    for (const employee of staff) {
+      const person = await storage.getPerson(employee.employeeId);
+      if (person) {
+        employees.push({
+          employeeId: employee.employeeId,
+          title: employee.title,
+          email: employee.email,
+          phone: employee.phone,
+          address: employee.address,
+          dateOfBirth: employee.dateOfBirth,
+          niNumber: employee.niNumber,
+          position: employee.position,
+          department: employee.department,
+          startDate: employee.startDate,
+          contract: employee.contract,
+          salary: employee.salary,
+          workingHours: employee.workingHours,
+          annualLeave: employee.annualLeave,
+          studyLeave: employee.studyLeave,
+          otherLeave: employee.otherLeave,
+          professionalBody: employee.professionalBody,
+          professionalBodyNumber: employee.professionalBodyNumber,
+          appraisalDate: employee.appraisalDate,
+          revalidationInfo: employee.revalidationInfo,
+          dbsCheckExpiry: employee.dbsCheckExpiry,
+          emergencyContactName: employee.emergencyContactName,
+          emergencyContactPhone: employee.emergencyContactPhone,
+          emergencyContactRelation: employee.emergencyContactRelation,
+          status: employee.status,
+          createdAt: employee.createdAt,
+          practiceId: currentUser.practiceId,
+          firstName: person.firstName,
+          lastName: person.lastName,
+        });
+      }
+    }
+    res.json(employees);
   });
 
   app.post("/api/hr/staff", async (req, res) => {
     try {
+      const employee = req.body;
       const currentUser = getCurrentUser();
       const staffData = insertStaffSchema.parse({
-        ...req.body,
+        employeeId: employee.employeeId,
+        title: employee.title,
+        email: employee.email,
+        phone: employee.phone,
+        address: employee.address,
+        dateOfBirth: employee.dateOfBirth,
+        niNumber: employee.niNumber,
+        position: employee.position,
+        department: employee.department,
+        startDate: employee.startDate,
+        contract: employee.contract,
+        salary: employee.salary,
+        annualLeave: employee.annualLeave,
+        studyLeave: employee.studyLeave,
+        otherLeave: employee.otherLeave,
+        professionalBody: employee.professionalBody,
+        professionalBodyNumber: employee.professionalBodyNumber,
+        appraisalDate: employee.appraisalDate,
+        revalidationInfo: employee.revalidationInfo,
+        dbsCheckExpiry: employee.dbsCheckExpiry,
+        emergencyContactName: employee.emergencyContactName,
+        emergencyContactPhone: employee.emergencyContactPhone,
+        emergencyContactRelation: employee.emergencyContactRelation,
         practiceId: currentUser.practiceId,
       });
 
+      if ((await storage.getPerson(employee.employeeId)) == undefined) {
+        const personData = insertPersonSchema.parse({
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          email: employee.email,
+          id: employee.employeeId,
+        });
+        await storage.createPerson(personData);
+      }
+      const person = await storage.getPerson(employee.employeeId);
+
       const newStaff = await storage.createStaff(staffData);
-      res.json(newStaff);
+
+      const newEmployee = {
+        employeeId: newStaff.employeeId,
+        title: newStaff.title,
+        email: newStaff.email,
+        phone: newStaff.phone,
+        address: newStaff.address,
+        dateOfBirth: newStaff.dateOfBirth,
+        niNumber: newStaff.niNumber,
+        position: newStaff.position,
+        department: newStaff.department,
+        startDate: newStaff.startDate,
+        contract: newStaff.contract,
+        salary: newStaff.salary,
+        workingHours: newStaff.workingHours,
+        annualLeave: newStaff.annualLeave,
+        studyLeave: newStaff.studyLeave,
+        otherLeave: newStaff.otherLeave,
+        professionalBody: newStaff.professionalBody,
+        professionalBodyNumber: newStaff.professionalBodyNumber,
+        appraisalDate: newStaff.appraisalDate,
+        revalidationInfo: newStaff.revalidationInfo,
+        dbsCheckExpiry: newStaff.dbsCheckExpiry,
+        emergencyContactName: newStaff.emergencyContactName,
+        emergencyContactPhone: newStaff.emergencyContactPhone,
+        emergencyContactRelation: newStaff.emergencyContactRelation,
+        status: newStaff.status,
+        createdAt: newStaff.createdAt,
+        practiceId: newStaff.practiceId,
+        firstName: person.firstName,
+        lastName: person.lastName,
+      };
+      res.json(newEmployee);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res
@@ -334,16 +440,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(403).json({ message: "Access denied" });
       return;
     }
+    const person = await storage.getPerson(req.params.id);
 
-    res.json(staff);
+    const employee = {
+      employeeId: staff.employeeId,
+      title: staff.title,
+      email: staff.email,
+      phone: staff.phone,
+      address: staff.address,
+      dateOfBirth: staff.dateOfBirth,
+      niNumber: staff.niNumber,
+      position: staff.position,
+      department: staff.department,
+      startDate: staff.startDate,
+      contract: staff.contract,
+      salary: staff.salary,
+      workingHours: staff.workingHours,
+      annualLeave: staff.annualLeave,
+      studyLeave: staff.studyLeave,
+      otherLeave: staff.otherLeave,
+      professionalBody: staff.professionalBody,
+      professionalBodyNumber: staff.professionalBodyNumber,
+      appraisalDate: staff.appraisalDate,
+      revalidationInfo: staff.revalidationInfo,
+      dbsCheckExpiry: staff.dbsCheckExpiry,
+      emergencyContactName: staff.emergencyContactName,
+      emergencyContactPhone: staff.emergencyContactPhone,
+      emergencyContactRelation: staff.emergencyContactRelation,
+      status: staff.status,
+      createdAt: staff.createdAt,
+      practiceId: staff.practiceId,
+      firstName: person.firstName,
+      lastName: person.lastName,
+    };
+    res.json(employee);
   });
 
   app.put("/api/hr/staff/:id", async (req, res) => {
     try {
       const currentUser = getCurrentUser();
       const updates = insertStaffSchema.partial().parse(req.body);
+      const updateName = insertPersonSchema.partial().parse(req.body);
 
       const existingStaff = await storage.getStaff(req.params.id);
+      const existingPerson = await storage.getPerson(req.params.id);
       if (
         !existingStaff ||
         existingStaff.practiceId !== currentUser.practiceId
@@ -353,7 +493,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedStaff = await storage.updateStaff(req.params.id, updates);
-      res.json(updatedStaff);
+      const updatedPerson = await storage.updatePerson(
+        req.params.id,
+        updateName,
+      );
+      const employee = {
+        employeeId: updatedStaff.employeeId,
+        title: updatedStaff.title,
+        email: updatedStaff.email,
+        phone: updatedStaff.phone,
+        address: updatedStaff.address,
+        dateOfBirth: updatedStaff.dateOfBirth,
+        niNumber: updatedStaff.niNumber,
+        position: updatedStaff.position,
+        department: updatedStaff.department,
+        startDate: updatedStaff.startDate,
+        contract: updatedStaff.contract,
+        salary: updatedStaff.salary,
+        workingHours: updatedStaff.workingHours,
+        annualLeave: updatedStaff.annualLeave,
+        studyLeave: updatedStaff.studyLeave,
+        otherLeave: updatedStaff.otherLeave,
+        professionalBody: updatedStaff.professionalBody,
+        professionalBodyNumber: updatedStaff.professionalBodyNumber,
+        appraisalDate: updatedStaff.appraisalDate,
+        revalidationInfo: updatedStaff.revalidationInfo,
+        dbsCheckExpiry: updatedStaff.dbsCheckExpiry,
+        emergencyContactName: updatedStaff.emergencyContactName,
+        emergencyContactPhone: updatedStaff.emergencyContactPhone,
+        emergencyContactRelation: updatedStaff.emergencyContactRelation,
+        status: updatedStaff.status,
+        createdAt: updatedStaff.createdAt,
+        practiceId: updatedStaff.practiceId,
+        firstName: updatedPerson.firstName,
+        lastName: updatedPerson.lastName,
+      };
+      res.json(employee);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res
@@ -938,6 +1113,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("AI Chat Error:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // File Upload Routes
+  // Get upload URL for secure file upload
+  app.post("/api/objects/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  // Set ACL policy after file upload
+  app.put("/api/files/uploaded", async (req, res) => {
+    try {
+      const { fileURL, fileName, fileType, fileSize } = req.body;
+      
+      if (!fileURL) {
+        return res.status(400).json({ error: "fileURL is required" });
+      }
+
+      const currentUser = getCurrentUser();
+      const objectStorageService = new ObjectStorageService();
+      
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        fileURL,
+        {
+          owner: currentUser.id,
+          visibility: "private", // Healthcare files should be private
+          aclRules: [
+            {
+              group: {
+                type: "practice_members" as any,
+                id: currentUser.practiceId,
+              },
+              permission: ObjectPermission.READ,
+            },
+          ],
+        },
+      );
+
+      res.json({
+        objectPath,
+        fileName,
+        fileType,
+        fileSize,
+      });
+    } catch (error) {
+      console.error("Error setting file ACL:", error);
+      res.status(500).json({ error: "Failed to set file permissions" });
+    }
+  });
+
+  // Serve protected files
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const currentUser = getCurrentUser();
+      const objectStorageService = new ObjectStorageService();
+      
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: currentUser.id,
+        requestedPermission: ObjectPermission.READ,
+      });
+      
+      if (!canAccess) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing file:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      return res.status(500).json({ error: "Internal server error" });
     }
   });
 
