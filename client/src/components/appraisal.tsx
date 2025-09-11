@@ -1,6 +1,14 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Plus, Search, Eye, Edit, Trash2, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +45,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { createInsertSchema } from "drizzle-zod";
+import { FileUploader } from "@/components/FileUploader";
 
 const staffSchema = createInsertSchema(staff).extend({
   firstName: z.string(),
@@ -70,6 +79,12 @@ export default function AppraisalManagement({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const { toast } = useToast();
+  const [uploadedFiles, setUploadedFiles] = useState<
+    Array<{
+      path: string;
+      uploadedAt: string;
+    }>
+  >([]);
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
@@ -186,9 +201,11 @@ export default function AppraisalManagement({
   const uploadAppraisalMutation = useMutation({
     mutationFn: async (evidenceData: {
       fileName: string;
-      file: File;
       description: string;
-      standardIds: string[];
+      uploadedFile: {
+        path: string;
+        uploadedAt: string;
+      };
     }) => {
       const response = await fetch("/api/cqc/evidence", {
         method: "POST",
@@ -236,6 +253,16 @@ export default function AppraisalManagement({
     setViewMode("edit");
     // Populate form with staff data
     form.reset(staffMember);
+  };
+
+  const handleUploadComplete = (filePath: string) => {
+    setUploadedFiles((prev) => [
+      ...prev,
+      {
+        path: filePath,
+        uploadedAt: new Date().toLocaleString(),
+      },
+    ]);
   };
 
   if (viewMode === "view" && selectedStaff) {
@@ -780,19 +807,28 @@ export default function AppraisalManagement({
                             const fileName = prompt(
                               "Enter evidence file name:",
                             );
-                            const file = prompt(
-                              
-
-                            );
                             const description = prompt(
                               "Enter evidence description:",
                             );
                             if (fileName && description) {
+                              // Get the most recent uploaded file, if any
+                              const uploadedFile = uploadedFiles.length > 0 
+                                ? uploadedFiles[uploadedFiles.length - 1] 
+                                : null;
+                              
+                              if (!uploadedFile) {
+                                toast({
+                                  title: "No file uploaded",
+                                  description: "Please upload a file first before adding an appraisal",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              
                               uploadAppraisalMutation.mutate({
                                 fileName,
-                                file,
                                 description,
-                                standardIds: ["reg12"], // Mock standard ID
+                                uploadedFile,
                               });
                             }
                           }}
