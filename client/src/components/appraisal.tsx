@@ -811,12 +811,20 @@ export default function AppraisalManagement({
                               "Enter evidence description:",
                             );
                             if (fileName && description) {
-                              <FileUploader
-                                onUploadComplete={handleUploadComplete}
-                                maxFileSize={25}
-                                acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
-                              />;
-                              const uploadedFile = uploadedFiles.findLast();
+                              // Get the most recent uploaded file, if any
+                              const uploadedFile = uploadedFiles.length > 0 
+                                ? uploadedFiles[uploadedFiles.length - 1] 
+                                : null;
+                              
+                              if (!uploadedFile) {
+                                toast({
+                                  title: "No file uploaded",
+                                  description: "Please upload a file first before adding an appraisal",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              
                               uploadAppraisalMutation.mutate({
                                 fileName,
                                 description,
@@ -829,6 +837,14 @@ export default function AppraisalManagement({
                           <Edit className="w-3 h-3 mr-1" />
                           Add Appraisal
                         </Button>
+                        
+                        <div className="mt-2">
+                          <FileUploader
+                            onUploadComplete={handleUploadComplete}
+                            maxFileSize={25}
+                            acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                          />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
