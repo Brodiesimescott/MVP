@@ -811,20 +811,12 @@ export default function AppraisalManagement({
                               "Enter evidence description:",
                             );
                             if (fileName && description) {
-                              // Get the most recent uploaded file, if any
-                              const uploadedFile = uploadedFiles.length > 0 
-                                ? uploadedFiles[uploadedFiles.length - 1] 
-                                : null;
-                              
-                              if (!uploadedFile) {
-                                toast({
-                                  title: "No file uploaded",
-                                  description: "Please upload a file first before adding an appraisal",
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-                              
+                              <FileUploader
+                                onUploadComplete={handleUploadComplete}
+                                maxFileSize={25}
+                                acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                              />;
+                              const uploadedFile = uploadedFiles.findLast();
                               uploadAppraisalMutation.mutate({
                                 fileName,
                                 description,
