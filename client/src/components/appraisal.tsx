@@ -260,9 +260,19 @@ export default function AppraisalManagement({
   };
 
   const handleUploadComplete = (filePath: string) => {
+    console.log("🚀 Upload complete called with filePath:", filePath);
+    console.log("📁 selectedStaff:", selectedStaff);
+    
     const fileName = prompt("Enter evidence name:");
     const description = prompt("Enter evidence description:");
+    
     if (!selectedStaff) {
+      console.error("❌ selectedStaff is null - cannot process upload");
+      toast({
+        title: "Error",
+        description: "Please select a staff member first",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -277,10 +287,16 @@ export default function AppraisalManagement({
       id: selectedStaff.employeeId,
     };
 
-    // Add to state
-    setUploadedFiles((prev) => [...prev, newUploadedFile]);
+    console.log("📄 Adding new uploaded file:", newUploadedFile);
 
-    // Use the newly created file object directly (not from state)
+    // Add to state
+    setUploadedFiles((prev) => {
+      console.log("📂 Previous uploadedFiles:", prev);
+      const newArray = [...prev, newUploadedFile];
+      console.log("📂 New uploadedFiles:", newArray);
+      return newArray;
+    });
+
     uploadAppraisalMutation.mutate({
       uploadedFile: newUploadedFile,
     });
