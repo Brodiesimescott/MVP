@@ -8,8 +8,9 @@ import {
   Edit,
   Trash2,
   Upload,
+  FileText,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -82,7 +83,10 @@ export default function AppraisalManagement({
   const [uploadedFiles, setUploadedFiles] = useState<
     Array<{
       path: string;
+      fileName: string;
       uploadedAt: string;
+      description: string;
+      id: string;
     }>
   >([]);
 
@@ -200,14 +204,15 @@ export default function AppraisalManagement({
 
   const uploadAppraisalMutation = useMutation({
     mutationFn: async (evidenceData: {
-      fileName: string;
-      description: string;
       uploadedFile: {
         path: string;
+        fileName: string;
         uploadedAt: string;
+        id: string;
+        description: string;
       };
     }) => {
-      const response = await fetch("/api/cqc/evidence", {
+      const response = await fetch("/api/hr/appraisal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(evidenceData),
@@ -216,8 +221,7 @@ export default function AppraisalManagement({
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cqc/dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cqc/activity"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisal"] });
       toast({
         title: "Success",
         description: "Evidence uploaded successfully",
@@ -256,13 +260,30 @@ export default function AppraisalManagement({
   };
 
   const handleUploadComplete = (filePath: string) => {
-    setUploadedFiles((prev) => [
-      ...prev,
-      {
-        path: filePath,
-        uploadedAt: new Date().toLocaleString(),
-      },
-    ]);
+    const fileName = prompt("Enter evidence name:");
+    const description = prompt("Enter evidence description:");
+    if (!selectedStaff) {
+      return;
+    }
+
+    // Create the new uploaded file object
+    const newUploadedFile = {
+      path: filePath,
+      fileName: fileName || `Appraisal_${new Date().toLocaleString()}`,
+      uploadedAt: new Date().toLocaleString(),
+      description:
+        description ||
+        `Appraisal_of_${selectedStaff.firstName}_${selectedStaff.lastName}_${new Date().toLocaleString()}`,
+      id: selectedStaff.employeeId,
+    };
+
+    // Add to state
+    setUploadedFiles((prev) => [...prev, newUploadedFile]);
+
+    // Use the newly created file object directly (not from state)
+    uploadAppraisalMutation.mutate({
+      uploadedFile: newUploadedFile,
+    });
   };
 
   if (viewMode === "view" && selectedStaff) {
@@ -437,33 +458,34 @@ export default function AppraisalManagement({
                   </div>
                 </Card>
 
-                {/* Emergency Contact */}
-                <Card className="p-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">
-                    Emergency Contact
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">Name:</span>
-                      <span className="text-slate-900">
-                        {selectedStaff.emergencyContactName || "Not provided"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">Phone:</span>
-                      <span className="text-slate-900">
-                        {selectedStaff.emergencyContactPhone || "Not provided"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-clinical-gray">Relation:</span>
-                      <span className="text-slate-900">
-                        {selectedStaff.emergencyContactRelation ||
-                          "Not provided"}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
+                {uploadedFiles.length > 0 && (
+                  <Card data-testid="card-uploaded-files">
+                    <CardHeader>
+                      <CardTitle>Recently Uploaded</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {uploadedFiles.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                            data-testid={`uploaded-file-${index}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm font-medium">
+                                {file.fileName}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {file.uploadedAt}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
 
@@ -472,197 +494,6 @@ export default function AppraisalManagement({
                 title="Staff Guide"
                 subtitle="Management assistance"
                 initialMessage="I can help you with staff records, compliance tracking, and HR policies. What would you like to know about this staff member?"
-                placeholder="Ask about staff..."
-              />
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (viewMode === "edit" && selectedStaff) {
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <header className="bg-white border-b border-slate-200 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => setViewMode("view")}
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Profile</span>
-              </Button>
-              <div className="w-px h-6 bg-slate-200"></div>
-              <h1 className="text-xl font-semibold text-slate-900">
-                Edit Staff Member
-              </h1>
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3">
-              <Card className="p-6">
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="employeeId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Employee ID *</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Title</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Dr., Mr., Ms., etc."
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>First Name *</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name *</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Position *</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="department"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Department *</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone</FormLabel>
-                            <FormControl>
-                              <Input {...field} value={field.value || ""} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="flex justify-end space-x-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setViewMode("view")}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={updateStaffMutation.isPending}
-                      >
-                        {updateStaffMutation.isPending
-                          ? "Updating..."
-                          : "Update Staff Member"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-1">
-              <LLMGuide
-                title="Staff Guide"
-                subtitle="Management assistance"
-                initialMessage="I can help you with staff records, compliance tracking, and HR policies. What would you like to know?"
                 placeholder="Ask about staff..."
               />
             </div>
@@ -800,73 +631,12 @@ export default function AppraisalManagement({
                         </Button>
                       </div>
                       <div>
-                        <Dialog
-                          open={showAddDialog}
-                          onOpenChange={setShowAddDialog}
-                        >
-                          <DialogTrigger asChild>
-                            <Button className="bg-chiron-blue hover:bg-blue-800">
-                              <Plus className="w-4 h-4 mr-2" />
-                              Add Staff Member
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>Add New Staff Member</DialogTitle>
-                            </DialogHeader>
-                            <FileUploader
-                              onUploadComplete={handleUploadComplete}
-                              maxFileSize={25}
-                              acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setShowAddDialog(false)}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="flex-1 bg-chiron-blue hover:bg-blue-800"
-                              onClick={() => {
-                                const fileName = prompt(
-                                  "Enter evidence file name:",
-                                );
-                                const description = prompt(
-                                  "Enter evidence description:",
-                                );
-                                if (fileName && description) {
-                                  // Get the most recent uploaded file, if any
-                                  const uploadedFile =
-                                    uploadedFiles.length > 0
-                                      ? uploadedFiles[uploadedFiles.length - 1]
-                                      : null;
-
-                                  if (!uploadedFile) {
-                                    toast({
-                                      title: "No file uploaded",
-                                      description:
-                                        "Please upload a file first before adding an appraisal",
-                                      variant: "destructive",
-                                    });
-                                    return;
-                                  }
-
-                                  uploadAppraisalMutation.mutate({
-                                    fileName,
-                                    description,
-                                    uploadedFile,
-                                  });
-                                }
-                              }}
-                              disabled={uploadAppraisalMutation.isPending}
-                            >
-                              <Edit className="w-3 h-3 mr-1" />
-                              Add Appraisal
-                            </Button>
-                          </DialogContent>
-                        </Dialog>
+                        <FileUploader
+                          onUploadComplete={handleUploadComplete}
+                          maxFileSize={25}
+                          acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                          disabled={uploadAppraisalMutation.isPending}
+                        />
                       </div>
                     </CardContent>
                   </Card>
