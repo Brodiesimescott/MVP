@@ -800,51 +800,73 @@ export default function AppraisalManagement({
                         </Button>
                       </div>
                       <div>
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-chiron-blue hover:bg-blue-800"
-                          onClick={() => {
-                            const fileName = prompt(
-                              "Enter evidence file name:",
-                            );
-                            const description = prompt(
-                              "Enter evidence description:",
-                            );
-                            if (fileName && description) {
-                              // Get the most recent uploaded file, if any
-                              const uploadedFile = uploadedFiles.length > 0 
-                                ? uploadedFiles[uploadedFiles.length - 1] 
-                                : null;
-                              
-                              if (!uploadedFile) {
-                                toast({
-                                  title: "No file uploaded",
-                                  description: "Please upload a file first before adding an appraisal",
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-                              
-                              uploadAppraisalMutation.mutate({
-                                fileName,
-                                description,
-                                uploadedFile,
-                              });
-                            }
-                          }}
-                          disabled={uploadAppraisalMutation.isPending}
+                        <Dialog
+                          open={showAddDialog}
+                          onOpenChange={setShowAddDialog}
                         >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Add Appraisal
-                        </Button>
-                        
-                        <div className="mt-2">
-                          <FileUploader
-                            onUploadComplete={handleUploadComplete}
-                            maxFileSize={25}
-                            acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
-                          />
-                        </div>
+                          <DialogTrigger asChild>
+                            <Button className="bg-chiron-blue hover:bg-blue-800">
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Staff Member
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Add New Staff Member</DialogTitle>
+                            </DialogHeader>
+                            <FileUploader
+                              onUploadComplete={handleUploadComplete}
+                              maxFileSize={25}
+                              acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowAddDialog(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-chiron-blue hover:bg-blue-800"
+                              onClick={() => {
+                                const fileName = prompt(
+                                  "Enter evidence file name:",
+                                );
+                                const description = prompt(
+                                  "Enter evidence description:",
+                                );
+                                if (fileName && description) {
+                                  // Get the most recent uploaded file, if any
+                                  const uploadedFile =
+                                    uploadedFiles.length > 0
+                                      ? uploadedFiles[uploadedFiles.length - 1]
+                                      : null;
+
+                                  if (!uploadedFile) {
+                                    toast({
+                                      title: "No file uploaded",
+                                      description:
+                                        "Please upload a file first before adding an appraisal",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+
+                                  uploadAppraisalMutation.mutate({
+                                    fileName,
+                                    description,
+                                    uploadedFile,
+                                  });
+                                }
+                              }}
+                              disabled={uploadAppraisalMutation.isPending}
+                            >
+                              <Edit className="w-3 h-3 mr-1" />
+                              Add Appraisal
+                            </Button>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </CardContent>
                   </Card>
