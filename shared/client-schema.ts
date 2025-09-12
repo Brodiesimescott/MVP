@@ -53,22 +53,22 @@ export const insertStaffSchema = z.object({
   email: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: z.date().optional(),
   niNumber: z.string().optional(),
   position: z.enum(JOBS),
   department: z.string(),
-  startDate: z.string(),
+  startDate: z.date(),
   contract: z.enum(CONTRACT_TYPES),
-  salary: z.string().optional(),
+  salary: z.number().optional(),
   workingHours: z.array(z.enum(SHIFTS)).max(5).optional(),
   annualLeave: z.number().default(28).optional(),
   studyLeave: z.number().default(5).optional(),
   otherLeave: z.number().default(0).optional(),
   professionalBody: z.string().optional(),
   professionalBodyNumber: z.string().optional(),
-  appraisalDate: z.string().optional(),
+  appraisalDate: z.date().optional(),
   revalidationInfo: z.string().optional(),
-  dbsCheckExpiry: z.string().optional(),
+  dbsCheckExpiry: z.date().optional(),
   emergencyContactName: z.string().optional(),
   emergencyContactPhone: z.string().optional(),
   emergencyContactRelation: z.string().optional(),
@@ -111,7 +111,7 @@ export const insertTransactionSchema = z.object({
   amount: z.string(),
   category: z.enum(TRANSACTION_CATEGORIES),
   subcategory: z.string().optional(),
-  date: z.string(),
+  date: z.date(),
   bankReference: z.string().optional(),
 });
 
@@ -125,8 +125,8 @@ export const insertInvoiceSchema = z.object({
   vatAmount: z.string().optional(),
   totalAmount: z.string(),
   status: z.string().default("draft").optional(),
-  dueDate: z.string().optional(),
-  paidDate: z.string().optional(),
+  dueDate: z.date().optional(),
+  paidDate: z.date().optional(),
 });
 
 export const insertPurchaseSchema = z.object({
@@ -138,13 +138,13 @@ export const insertPurchaseSchema = z.object({
   totalAmount: z.string(),
   category: z.string(),
   receiptUrl: z.string().optional(),
-  date: z.string(),
+  date: z.date(),
 });
 
 export const insertVatReturnSchema = z.object({
   practiceId: z.string(),
-  periodStart: z.string(),
-  periodEnd: z.string(),
+  periodStart: z.date(),
+  periodEnd: z.date(),
   vatDue: z.string(),
   vatReclaimed: z.string(),
   netVat: z.string(),
@@ -203,11 +203,11 @@ export type Staff = {
   email: string | null;
   phone: string | null;
   address: string | null;
-  dateOfBirth: string | null;
+  dateOfBirth: Date | null;
   niNumber: string | null;
   position: (typeof JOBS)[number];
   department: string;
-  startDate: string;
+  startDate: Date;
   contract: (typeof CONTRACT_TYPES)[number];
   salary: string | null;
   workingHours: (typeof SHIFTS)[number][] | null;
@@ -216,7 +216,7 @@ export type Staff = {
   otherLeave: number | null;
   professionalBody: string | null;
   professionalBodyNumber: string | null;
-  appraisalDate: string | null;
+  appraisalDate: Date | null;
   revalidationInfo: string | null;
   dbsCheckExpiry: string | null;
   emergencyContactName: string | null;
@@ -288,8 +288,8 @@ export type Invoice = {
   vatAmount: string | null;
   totalAmount: string;
   status: string | null;
-  dueDate: string | null;
-  paidDate: string | null;
+  dueDate: Date | null;
+  paidDate: Date | null;
   createdAt: Date | null;
 };
 
@@ -303,15 +303,15 @@ export type Purchase = {
   totalAmount: string;
   category: string;
   receiptUrl: string | null;
-  date: string;
+  date: Date;
   createdAt: Date | null;
 };
 
 export type VatReturn = {
   id: number;
   practiceId: string;
-  periodStart: string;
-  periodEnd: string;
+  periodStart: Date;
+  periodEnd: Date;
   vatDue: string;
   vatReclaimed: string;
   netVat: string;
