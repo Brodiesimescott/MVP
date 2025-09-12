@@ -40,7 +40,12 @@ import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertStaffSchema, staff, AppraisalEvidence, insertAppraisalEvidenceSchema } from "@shared/schema";
+import {
+  insertStaffSchema,
+  staff,
+  AppraisalEvidence,
+  insertAppraisalEvidenceSchema,
+} from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -92,7 +97,9 @@ export default function AppraisalManagement({
     queryKey: ["/api/hr/staff"],
   });
 
-  const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<AppraisalEvidence[]>({
+  const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
+    AppraisalEvidence[]
+  >({
     queryKey: ["/api/hr/appraisals"],
   });
 
@@ -164,7 +171,11 @@ export default function AppraisalManagement({
       description?: string;
       employeeId: string;
     }) => {
-      const response = await apiRequest("POST", "/api/hr/appraisal", evidenceData);
+      const response = await apiRequest(
+        "POST",
+        "/api/hr/appraisal",
+        evidenceData,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -198,14 +209,19 @@ export default function AppraisalManagement({
     const evidenceData = {
       fileName: fileName || `Appraisal_${new Date().toLocaleString()}`,
       path: filePath,
-      description: description || `Appraisal of ${selectedStaff.firstName} ${selectedStaff.lastName} - ${new Date().toLocaleString()}`,
+      description:
+        description ||
+        `Appraisal of ${selectedStaff.firstName} ${selectedStaff.lastName} - ${new Date().toLocaleString()}`,
       employeeId: selectedStaff.employeeId,
     };
 
     uploadAppraisalMutation.mutate(evidenceData);
     updateStaffMutation.mutate({
       employeeId: selectedStaff.employeeId,
-      data: { ...selectedStaff, appraisalDate: new Date().toISOString().split('T')[0] },
+      data: {
+        ...selectedStaff,
+        appraisalDate: new Date().toISOString().split("T")[0],
+      },
     });
   };
 
@@ -379,41 +395,53 @@ export default function AppraisalManagement({
                   </div>
                 </Card>
 
-                {appraisals && appraisals.filter(appraisal => appraisal.employeeId === selectedStaff.employeeId).length > 0 && (
-                  <Card data-testid="card-uploaded-files">
-                    <CardHeader>
-                      <CardTitle>Appraisal Evidence</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {appraisals
-                          .filter(appraisal => appraisal.employeeId === selectedStaff.employeeId)
-                          .map((evidence, index) => (
-                          <div
-                            key={evidence.fileName}
-                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                            data-testid={`uploaded-file-${index}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm font-medium">
-                                {evidence.fileName}
-                              </span>
-                              {evidence.description && (
-                                <span className="text-xs text-gray-500 italic">
-                                  - {evidence.description}
+                {appraisals &&
+                  appraisals.filter(
+                    (appraisal) =>
+                      appraisal.employeeId === selectedStaff.employeeId,
+                  ).length > 0 && (
+                    <Card data-testid="card-uploaded-files">
+                      <CardHeader>
+                        <CardTitle>Appraisal Evidence</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {appraisals
+                            .filter(
+                              (appraisal) =>
+                                appraisal.employeeId ===
+                                selectedStaff.employeeId,
+                            )
+                            .map((evidence, index) => (
+                              <div
+                                key={evidence.fileName}
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                                data-testid={`uploaded-file-${index}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm font-medium">
+                                    {evidence.fileName}
+                                  </span>
+                                  {evidence.description && (
+                                    <span className="text-xs text-gray-500 italic">
+                                      - {evidence.description}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  {evidence.createdAt
+                                    ? new Date(
+                                        evidence.createdAt,
+                                      ).toLocaleDateString()
+                                    : "Recently uploaded"}
                                 </span>
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {evidence.createdAt ? new Date(evidence.createdAt).toLocaleDateString() : 'Recently uploaded'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                              </div>
+                            ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
               </div>
             </div>
 
