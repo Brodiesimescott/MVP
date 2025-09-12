@@ -40,7 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertStaffSchema, staff } from "@shared/schema";
+import { insertStaffSchema, staff, AppraisalEvidence, insertAppraisalEvidenceSchema } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -87,29 +87,12 @@ export default function AppraisalManagement({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const { toast } = useToast();
-  const [uploadedFiles, setUploadedFiles] = useState<
-    Array<{
-      path: string;
-      fileName: string;
-      uploadedAt: Date;
-      description: string;
-      id: string;
-    }>
-  >([]);
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
   });
 
-  const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
-    Array<{
-      path: string;
-      fileName: string;
-      uploadedAt: Date;
-      description: string;
-      id: string;
-    }>
-  >({
+  const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<AppraisalEvidence[]>({
     queryKey: ["/api/hr/appraisals"],
   });
 
@@ -176,28 +159,19 @@ export default function AppraisalManagement({
 
   const uploadAppraisalMutation = useMutation({
     mutationFn: async (evidenceData: {
-      uploadedFile: {
-        path: string;
-        fileName: string;
-        uploadedAt: Date;
-        id: string;
-        description: string;
-      };
+      fileName: string;
+      path: string;
+      description?: string;
+      employeeId: string;
     }) => {
-      const response = await fetch("/api/hr/appraisal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(evidenceData),
-      });
-      if (!response.ok) throw new Error("Failed to upload evidence");
+      const response = await apiRequest("POST", "/api/hr/appraisal", evidenceData);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisal"] });
       queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisals"] });
       toast({
         title: "Success",
-        description: "Evidence uploaded successfully",
+        description: "Appraisal evidence uploaded successfully",
       });
     },
     onError: () => {
@@ -218,29 +192,20 @@ export default function AppraisalManagement({
     const fileName = prompt("Enter evidence name:");
     const description = prompt("Enter evidence description:");
     if (!selectedStaff) {
-      return; // or handle appropriately
+      return;
     }
 
-    // Create the new uploaded file object
-    const newUploadedFile = {
-      path: filePath,
+    const evidenceData = {
       fileName: fileName || `Appraisal_${new Date().toLocaleString()}`,
-      uploadedAt: new Date(),
-      description:
-        description ||
-        `Appraisal_of_${selectedStaff.firstName}_${selectedStaff.lastName}_${new Date().toLocaleString()}`,
-      id: selectedStaff.employeeId,
+      path: filePath,
+      description: description || `Appraisal of ${selectedStaff.firstName} ${selectedStaff.lastName} - ${new Date().toLocaleString()}`,
+      employeeId: selectedStaff.employeeId,
     };
 
-    // Add to state
-    setUploadedFiles((prev) => [...prev, newUploadedFile]);
-
-    uploadAppraisalMutation.mutate({
-      uploadedFile: newUploadedFile,
-    });
+    uploadAppraisalMutation.mutate(evidenceData);
     updateStaffMutation.mutate({
       employeeId: selectedStaff.employeeId,
-      data: { ...selectedStaff, appraisalDate: new Date().toDateString() },
+      data: { ...selectedStaff, appraisalDate: new Date().toISOString().split('T')[0] },
     });
   };
 
@@ -414,27 +379,34 @@ export default function AppraisalManagement({
                   </div>
                 </Card>
 
-                {uploadedFiles.length > 0 && (
+                {appraisals && appraisals.filter(appraisal => appraisal.employeeId === selectedStaff.employeeId).length > 0 && (
                   <Card data-testid="card-uploaded-files">
                     <CardHeader>
-                      <CardTitle>Recently Uploaded</CardTitle>
+                      <CardTitle>Appraisal Evidence</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        {uploadedFiles.map((file, index) => (
+                        {appraisals
+                          .filter(appraisal => appraisal.employeeId === selectedStaff.employeeId)
+                          .map((evidence, index) => (
                           <div
-                            key={index}
+                            key={evidence.fileName}
                             className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                             data-testid={`uploaded-file-${index}`}
                           >
                             <div className="flex items-center gap-2">
                               <FileText className="w-4 h-4 text-gray-500" />
                               <span className="text-sm font-medium">
-                                {file.fileName}
+                                {evidence.fileName}
                               </span>
+                              {evidence.description && (
+                                <span className="text-xs text-gray-500 italic">
+                                  - {evidence.description}
+                                </span>
+                              )}
                             </div>
                             <span className="text-xs text-gray-500">
-                              {file.uploadedAt.toLocaleDateString()}
+                              {evidence.createdAt ? new Date(evidence.createdAt).toLocaleDateString() : 'Recently uploaded'}
                             </span>
                           </div>
                         ))}

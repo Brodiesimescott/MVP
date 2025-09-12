@@ -55,6 +55,9 @@ export interface IStorage {
   deleteStaff(id: string): Promise<boolean>;
 
   getAppraisalsByPractice(practiceId: string): Promise<AppraisalEvidence[]>;
+  createAppraisal(
+    evidence: InsertAppraisalEvidence,
+  ): Promise<AppraisalEvidence>;
 
   // CQC methods
   getCqcStandards(): Promise<CqcStandard[]>;
@@ -304,8 +307,6 @@ export class MemStorage implements IStorage {
     const appraisal: AppraisalEvidence = {
       ...evidence,
       description: evidence.description ?? null,
-      reviewStatus: evidence.reviewStatus ?? "needs_review",
-      submittedAt: new Date(),
       createdAt: new Date(),
     };
     this.appraisals.set(appraisal.fileName, appraisal);

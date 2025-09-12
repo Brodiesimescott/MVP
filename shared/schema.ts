@@ -169,8 +169,6 @@ export const appraisalEvidence = pgTable("appraisal_evidence", {
   employeeId: text("employee_id")
     .references(() => people.id, { onDelete: "no action" })
     .notNull(),
-  reviewStatus: reviewStatusEnum("review_status").notNull().default("needs_review"),
-  submittedAt: timestamp("submitted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -327,6 +325,10 @@ export const insertVatReturnSchema = createInsertSchema(vatReturns).omit({
 
 export const insertShiftSchema = createInsertSchema(shifts);
 
+export const insertAppraisalEvidenceSchema = createInsertSchema(appraisalEvidence).omit({
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -369,4 +371,4 @@ export type Shift = typeof shifts.$inferSelect;
 export type InsertShift = z.infer<typeof insertShiftSchema>;
 
 export type AppraisalEvidence = typeof appraisalEvidence.$inferSelect;
-export type InsertAppraisalEvidence = typeof appraisalEvidence.$inferInsert;
+export type InsertAppraisalEvidence = z.infer<typeof insertAppraisalEvidenceSchema>;
