@@ -87,6 +87,15 @@ export default function AppraisalManagement({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const { toast } = useToast();
+  const [uploadedFiles, setUploadedFiles] = useState<
+    Array<{
+      path: string;
+      fileName: string;
+      uploadedAt: Date;
+      description: string;
+      id: string;
+    }>
+  >([]);
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
@@ -94,12 +103,11 @@ export default function AppraisalManagement({
 
   const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
     Array<{
-      employeeId: string;
-      practiceId: string;
       path: string;
       fileName: string;
-      description: string | null;
-      createdAt: Date | null;
+      uploadedAt: Date;
+      description: string;
+      id: string;
     }>
   >({
     queryKey: ["/api/hr/appraisals"],
@@ -168,10 +176,13 @@ export default function AppraisalManagement({
 
   const uploadAppraisalMutation = useMutation({
     mutationFn: async (evidenceData: {
-      employeeId: string;
-      path: string;
-      fileName: string;
-      description: string;
+      uploadedFile: {
+        path: string;
+        fileName: string;
+        uploadedAt: Date;
+        id: string;
+        description: string;
+      };
     }) => {
       const response = await fetch("/api/hr/appraisal", {
         method: "POST",
@@ -182,6 +193,7 @@ export default function AppraisalManagement({
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisal"] });
       queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisals"] });
       toast({
         title: "Success",
@@ -209,17 +221,23 @@ export default function AppraisalManagement({
       return; // or handle appropriately
     }
 
-    // Create the appraisal evidence data
-    const evidenceData = {
-      employeeId: selectedStaff.employeeId,
+    // Create the new uploaded file object
+    const newUploadedFile = {
       path: filePath,
       fileName: fileName || `Appraisal_${new Date().toLocaleString()}`,
+      uploadedAt: new Date(),
       description:
         description ||
         `Appraisal_of_${selectedStaff.firstName}_${selectedStaff.lastName}_${new Date().toLocaleString()}`,
+      id: selectedStaff.employeeId,
     };
 
-    uploadAppraisalMutation.mutate(evidenceData);
+    // Add to state
+    setUploadedFiles((prev) => [...prev, newUploadedFile]);
+
+    uploadAppraisalMutation.mutate({
+      uploadedFile: newUploadedFile,
+    });
     updateStaffMutation.mutate({
       employeeId: selectedStaff.employeeId,
       data: { ...selectedStaff, appraisalDate: new Date().toDateString() },
@@ -396,76 +414,34 @@ export default function AppraisalManagement({
                   </div>
                 </Card>
 
-                {appraisals &&
-                  appraisals.filter(
-                    (appraisal) =>
-                      appraisal.employeeId === selectedStaff?.employeeId,
-                  ).length > 0 && (
-                    <Card data-testid="card-uploaded-files">
-                      <CardHeader>
-                        <CardTitle>Appraisal Evidence</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          {appraisals
-                            .filter(
-                              (appraisal) =>
-                                appraisal.employeeId ===
-                                selectedStaff?.employeeId,
-                            )
-                            .map((file, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                                data-testid={`uploaded-file-${index}`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <FileText className="w-4 h-4 text-gray-500" />
-                                  <div>
-                                    <span className="text-sm font-medium">
-                                      {file.fileName}
-                                    </span>
-                                    {file.description && (
-                                      <p className="text-xs text-gray-500">
-                                        {file.description}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`px-2 py-1 text-xs rounded-full ${
-                                      file.reviewStatus === "compliant"
-                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                        : file.reviewStatus === "non_compliant"
-                                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                    }`}
-                                  >
-                                    {file.reviewStatus === "needs_review"
-                                      ? "Needs Review"
-                                      : file.reviewStatus === "compliant"
-                                        ? "Compliant"
-                                        : "Non-Compliant"}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {file.submittedAt
-                                      ? new Date(
-                                          file.submittedAt,
-                                        ).toLocaleDateString()
-                                      : file.createdAt
-                                        ? new Date(
-                                            file.createdAt,
-                                          ).toLocaleDateString()
-                                        : "Unknown"}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                {uploadedFiles.length > 0 && (
+                  <Card data-testid="card-uploaded-files">
+                    <CardHeader>
+                      <CardTitle>Recently Uploaded</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {uploadedFiles.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                            data-testid={`uploaded-file-${index}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm font-medium">
+                                {file.fileName}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {file.uploadedAt.toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
 
