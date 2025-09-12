@@ -383,6 +383,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const person = await storage.getPerson(employee.employeeId);
 
+      if (!person) {
+        res
+          .status(500)
+          .json({ message: "Failed to create or retrieve person data" });
+        return;
+      }
+
       const newStaff = await storage.createStaff(staffData);
 
       const newEmployee = {
@@ -442,6 +449,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     const person = await storage.getPerson(req.params.id);
 
+    if (!person) {
+      res.status(404).json({ message: "Person not found" });
+      return;
+    }
+
     const employee = {
       employeeId: staff.employeeId,
       title: staff.title,
@@ -486,7 +498,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingPerson = await storage.getPerson(req.params.id);
       if (
         !existingStaff ||
-        existingStaff.practiceId !== currentUser.practiceId
+        existingStaff.practiceId !== currentUser.practiceId ||
+        !existingPerson
       ) {
         res.status(404).json({ message: "Staff member not found" });
         return;
@@ -497,6 +510,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.params.id,
         updateName,
       );
+
+      if (!updatedStaff || !updatedPerson) {
+        res.status(404).json({ message: "Failed to update staff member" });
+        return;
+      }
+
       const employee = {
         employeeId: updatedStaff.employeeId,
         title: updatedStaff.title,
@@ -554,6 +573,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Staff member deleted successfully" });
     } else {
       res.status(500).json({ message: "Failed to delete staff member" });
+    }
+  });
+
+  app.get("/api/hr/appraisals", async (req, res) => {
+    const currentUser = getCurrentUser();
+    const appraisals = await storage.getAppraisalsByPractice(
+      currentUser.practiceId,
+    );
+    res.json(appraisals);
+  });
+
+  app.post("/api/hr/appraisal", async (req, res) => {
+    try {
+      const currentUser = getCurrentUser();
+      const appraisalEvidence = {
+        ...req.body,
+        practiceId: currentUser.practiceId,
+      };
+
+      const evidence = await storage.createAppraisal(appraisalEvidence);
+      res.json(evidence);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create evidence" });
     }
   });
 
@@ -1133,14 +1175,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/files/uploaded", async (req, res) => {
     try {
       const { fileURL, fileName, fileType, fileSize } = req.body;
-      
+
       if (!fileURL) {
         return res.status(400).json({ error: "fileURL is required" });
       }
 
       const currentUser = getCurrentUser();
       const objectStorageService = new ObjectStorageService();
-      
+
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         fileURL,
         {
@@ -1175,18 +1217,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const currentUser = getCurrentUser();
       const objectStorageService = new ObjectStorageService();
-      
-      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
         userId: currentUser.id,
         requestedPermission: ObjectPermission.READ,
       });
-      
+
       if (!canAccess) {
         return res.status(403).json({ error: "Access denied" });
       }
-      
+
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error accessing file:", error);

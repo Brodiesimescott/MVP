@@ -9,6 +9,7 @@ import {
   jsonb,
   pgEnum,
   primaryKey,
+  date,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -110,11 +111,11 @@ export const staff = pgTable("staff", {
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
-  dateOfBirth: text("date_of_birth"),
+  dateOfBirth: date("date_of_birth"),
   niNumber: text("ni_number"),
   position: jobEnum("position").notNull(),
   department: text("department").notNull(),
-  startDate: text("start_date").notNull(),
+  startDate: date("start_date").notNull(),
   contract: staffContractTypeEnum("contract").notNull(),
   salary: decimal("salary", { precision: 10, scale: 2 }),
   workingHours: shiftEnum("working_hours").array(5),
@@ -123,7 +124,7 @@ export const staff = pgTable("staff", {
   otherLeave: integer("other_leave").default(0),
   professionalBody: text("professional_body"),
   professionalBodyNumber: text("professional_body_number"),
-  appraisalDate: text("appraisal_date"),
+  appraisalDate: date("appraisal_date"),
   revalidationInfo: text("revalidation_info"),
   dbsCheckExpiry: text("dbs_check_expiry"),
   emergencyContactName: text("emergency_contact_name"),
@@ -154,6 +155,22 @@ export const practiceEvidence = pgTable("practice_evidence", {
   uploadDate: timestamp("upload_date").defaultNow(),
   reviewStatus: reviewStatusEnum("status").notNull().default("needs_review"),
   standardIds: text("standard_ids").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Appraisal Evidence table
+export const appraisalEvidence = pgTable("appraisal_evidence", {
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  fileName: text("file_name").notNull().primaryKey(),
+  path: text("file_path").notNull(),
+  description: text("description"),
+  employeeId: text("employee_id")
+    .references(() => people.id, { onDelete: "no action" })
+    .notNull(),
+  reviewStatus: reviewStatusEnum("review_status").notNull().default("needs_review"),
+  submittedAt: timestamp("submitted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -192,7 +209,7 @@ export const transactions = pgTable("transactions", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   category: transactionCategoryEnum("category").notNull(),
   subcategory: text("subcategory"),
-  date: text("date").notNull(),
+  date: date("date").notNull(),
   bankReference: text("bank_reference"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -211,8 +228,8 @@ export const invoices = pgTable("invoices", {
   vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: text("status").default("draft"),
-  dueDate: text("due_date"),
-  paidDate: text("paid_date"),
+  dueDate: date("due_date"),
+  paidDate: date("paid_date"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -229,7 +246,7 @@ export const purchases = pgTable("purchases", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   category: text("category").notNull(),
   receiptUrl: text("receipt_url"),
-  date: text("date").notNull(),
+  date: date("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -239,8 +256,8 @@ export const vatReturns = pgTable("vat_returns", {
   practiceId: text("practice_id")
     .references(() => practices.email, { onDelete: "no action" })
     .notNull(),
-  periodStart: text("period_start").notNull(),
-  periodEnd: text("period_end").notNull(),
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
   vatDue: decimal("vat_due", { precision: 10, scale: 2 }).notNull(),
   vatReclaimed: decimal("vat_reclaimed", { precision: 10, scale: 2 }).notNull(),
   netVat: decimal("net_vat", { precision: 10, scale: 2 }).notNull(),
@@ -350,3 +367,6 @@ export type InsertPerson = z.infer<typeof insertPersonSchema>;
 
 export type Shift = typeof shifts.$inferSelect;
 export type InsertShift = z.infer<typeof insertShiftSchema>;
+
+export type AppraisalEvidence = typeof appraisalEvidence.$inferSelect;
+export type InsertAppraisalEvidence = typeof appraisalEvidence.$inferInsert;

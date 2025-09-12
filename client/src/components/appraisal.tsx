@@ -40,7 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertStaffSchema, insertPersonSchema, staff } from "@shared/schema";
+import { insertStaffSchema, staff } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +54,13 @@ const staffSchema = createInsertSchema(staff).extend({
 });
 
 type StaffData = z.infer<typeof staffSchema>;
+
+const getNextAppraisalDate = (dateString: string | null | undefined) => {
+  if (!dateString) return "Now";
+  const date = new Date(dateString);
+  date.setFullYear(date.getFullYear() + 1);
+  return date.toDateString();
+};
 
 const staffFormSchema = insertStaffSchema
   .extend({
@@ -80,18 +87,22 @@ export default function AppraisalManagement({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const { toast } = useToast();
-  const [uploadedFiles, setUploadedFiles] = useState<
-    Array<{
-      path: string;
-      fileName: string;
-      uploadedAt: string;
-      description: string;
-      id: string;
-    }>
-  >([]);
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
+  });
+
+  const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
+    Array<{
+      employeeId: string;
+      practiceId: string;
+      path: string;
+      fileName: string;
+      description: string | null;
+      createdAt: Date | null;
+    }>
+  >({
+    queryKey: ["/api/hr/appraisals"],
   });
 
   const form = useForm<StaffFormData>({
@@ -120,30 +131,6 @@ export default function AppraisalManagement({
       emergencyContactName: "",
       emergencyContactPhone: "",
       emergencyContactRelation: "",
-    },
-  });
-
-  const createStaffMutation = useMutation({
-    mutationFn: async (data: StaffFormData) => {
-      const response = await apiRequest("POST", "/api/hr/staff", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/metrics"] });
-      toast({
-        title: "Success",
-        description: "Staff member added successfully",
-      });
-      setShowAddDialog(false);
-      form.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to add staff member",
-        variant: "destructive",
-      });
     },
   });
 
@@ -179,38 +166,12 @@ export default function AppraisalManagement({
     },
   });
 
-  const deleteStaffMutation = useMutation({
-    mutationFn: async (employeeId: string) => {
-      await apiRequest("DELETE", `/api/hr/staff/${employeeId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/metrics"] });
-      toast({
-        title: "Success",
-        description: "Staff member deleted successfully",
-      });
-      setViewMode("list");
-      setSelectedStaff(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete staff member",
-        variant: "destructive",
-      });
-    },
-  });
-
   const uploadAppraisalMutation = useMutation({
     mutationFn: async (evidenceData: {
-      uploadedFile: {
-        path: string;
-        fileName: string;
-        uploadedAt: string;
-        id: string;
-        description: string;
-      };
+      employeeId: string;
+      path: string;
+      fileName: string;
+      description: string;
     }) => {
       const response = await fetch("/api/hr/appraisal", {
         method: "POST",
@@ -221,7 +182,7 @@ export default function AppraisalManagement({
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisal"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisals"] });
       toast({
         title: "Success",
         description: "Evidence uploaded successfully",
@@ -236,69 +197,32 @@ export default function AppraisalManagement({
     },
   });
 
-  const onSubmit = (data: StaffFormData) => {
-    if (viewMode === "edit" && selectedStaff) {
-      updateStaffMutation.mutate({
-        employeeId: selectedStaff.employeeId,
-        data,
-      });
-    } else {
-      createStaffMutation.mutate(data);
-    }
-  };
-
   const handleViewStaff = (staffMember: StaffData) => {
     setSelectedStaff(staffMember);
     setViewMode("view");
   };
 
-  const handleEditStaff = (staffMember: StaffData) => {
-    setSelectedStaff(staffMember);
-    setViewMode("edit");
-    // Populate form with staff data
-    form.reset(staffMember);
-  };
-
   const handleUploadComplete = (filePath: string) => {
-    console.log("🚀 Upload complete called with filePath:", filePath);
-    console.log("📁 selectedStaff:", selectedStaff);
-    
     const fileName = prompt("Enter evidence name:");
     const description = prompt("Enter evidence description:");
-    
     if (!selectedStaff) {
-      console.error("❌ selectedStaff is null - cannot process upload");
-      toast({
-        title: "Error",
-        description: "Please select a staff member first",
-        variant: "destructive",
-      });
-      return;
+      return; // or handle appropriately
     }
 
-    // Create the new uploaded file object
-    const newUploadedFile = {
+    // Create the appraisal evidence data
+    const evidenceData = {
+      employeeId: selectedStaff.employeeId,
       path: filePath,
       fileName: fileName || `Appraisal_${new Date().toLocaleString()}`,
-      uploadedAt: new Date().toLocaleString(),
       description:
         description ||
         `Appraisal_of_${selectedStaff.firstName}_${selectedStaff.lastName}_${new Date().toLocaleString()}`,
-      id: selectedStaff.employeeId,
     };
 
-    console.log("📄 Adding new uploaded file:", newUploadedFile);
-
-    // Add to state
-    setUploadedFiles((prev) => {
-      console.log("📂 Previous uploadedFiles:", prev);
-      const newArray = [...prev, newUploadedFile];
-      console.log("📂 New uploadedFiles:", newArray);
-      return newArray;
-    });
-
-    uploadAppraisalMutation.mutate({
-      uploadedFile: newUploadedFile,
+    uploadAppraisalMutation.mutate(evidenceData);
+    updateStaffMutation.mutate({
+      employeeId: selectedStaff.employeeId,
+      data: { ...selectedStaff, appraisalDate: new Date().toDateString() },
     });
   };
 
@@ -320,25 +244,6 @@ export default function AppraisalManagement({
               <h1 className="text-xl font-semibold text-slate-900">
                 Staff Profile
               </h1>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => handleEditStaff(selectedStaff)}
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() =>
-                  deleteStaffMutation.mutate(selectedStaff.employeeId)
-                }
-                disabled={deleteStaffMutation.isPending}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
             </div>
           </div>
         </header>
@@ -460,7 +365,8 @@ export default function AppraisalManagement({
                         Next Appraisal:
                       </span>
                       <span className="text-slate-900">
-                        {selectedStaff.appraisalDate || "Not scheduled"}
+                        {getNextAppraisalDate(selectedStaff.appraisalDate) ||
+                          "Now"}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -474,34 +380,92 @@ export default function AppraisalManagement({
                   </div>
                 </Card>
 
-                {uploadedFiles.length > 0 && (
-                  <Card data-testid="card-uploaded-files">
-                    <CardHeader>
-                      <CardTitle>Recently Uploaded</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {uploadedFiles.map((file, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                            data-testid={`uploaded-file-${index}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm font-medium">
-                                {file.fileName}
-                              </span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {file.uploadedAt}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <Card className="p-6">
+                  <h3 className="font-semibold text-slate-900 mb-4">
+                    Add Appraisal
+                  </h3>
+                  <div className="flex space-x-2">
+                    <div>
+                      <FileUploader
+                        onUploadComplete={handleUploadComplete}
+                        maxFileSize={25}
+                        acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                        disabled={uploadAppraisalMutation.isPending}
+                      />
+                    </div>
+                  </div>
+                </Card>
+
+                {appraisals &&
+                  appraisals.filter(
+                    (appraisal) =>
+                      appraisal.employeeId === selectedStaff?.employeeId,
+                  ).length > 0 && (
+                    <Card data-testid="card-uploaded-files">
+                      <CardHeader>
+                        <CardTitle>Appraisal Evidence</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {appraisals
+                            .filter(
+                              (appraisal) =>
+                                appraisal.employeeId ===
+                                selectedStaff?.employeeId,
+                            )
+                            .map((file, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                                data-testid={`uploaded-file-${index}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-4 h-4 text-gray-500" />
+                                  <div>
+                                    <span className="text-sm font-medium">
+                                      {file.fileName}
+                                    </span>
+                                    {file.description && (
+                                      <p className="text-xs text-gray-500">
+                                        {file.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`px-2 py-1 text-xs rounded-full ${
+                                      file.reviewStatus === "compliant"
+                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                        : file.reviewStatus === "non_compliant"
+                                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                    }`}
+                                  >
+                                    {file.reviewStatus === "needs_review"
+                                      ? "Needs Review"
+                                      : file.reviewStatus === "compliant"
+                                        ? "Compliant"
+                                        : "Non-Compliant"}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {file.submittedAt
+                                      ? new Date(
+                                          file.submittedAt,
+                                        ).toLocaleDateString()
+                                      : file.createdAt
+                                        ? new Date(
+                                            file.createdAt,
+                                          ).toLocaleDateString()
+                                        : "Unknown"}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
               </div>
             </div>
 
@@ -570,7 +534,7 @@ export default function AppraisalManagement({
             </Card>
 
             {/* Staff Grid */}
-            {isLoading ? (
+            {isAppraisalsLoading || isLoading ? (
               <div className="text-center py-8">
                 <p className="text-clinical-gray">Loading staff...</p>
               </div>
@@ -582,81 +546,86 @@ export default function AppraisalManagement({
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {staff.map((staffMember) => (
-                  <Card key={staffMember.employeeId} className="p-6">
-                    <CardContent className="p-0">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">
-                            {staffMember.firstName[0]}
-                            {staffMember.lastName[0]}
-                          </span>
+                {staff
+                  .sort((a, b) => {
+                    // Priority order: No date first, then oldest dates
+                    if (!a.appraisalDate && !b.appraisalDate) return 0;
+                    if (!a.appraisalDate) return -1; // Staff without dates go FIRST
+                    if (!b.appraisalDate) return 1; // Staff without dates go FIRST
+                    return (
+                      new Date(a.appraisalDate).getTime() -
+                      new Date(b.appraisalDate).getTime()
+                    );
+                  })
+                  .map((staffMember) => (
+                    <Card key={staffMember.employeeId} className="p-6">
+                      <CardContent className="p-0">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold">
+                              {staffMember.firstName[0]}
+                              {staffMember.lastName[0]}
+                            </span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-slate-900">
+                              {staffMember.firstName} {staffMember.lastName}
+                            </h3>
+                            <p className="text-sm text-clinical-gray">
+                              {staffMember.position}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-slate-900">
-                            {staffMember.firstName} {staffMember.lastName}
-                          </h3>
-                          <p className="text-sm text-clinical-gray">
-                            {staffMember.position}
-                          </p>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-clinical-gray">
+                              Employee ID:
+                            </span>
+                            <span className="text-slate-900">
+                              {staffMember.employeeId}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-clinical-gray">
+                              Department:
+                            </span>
+                            <span className="text-slate-900">
+                              {staffMember.department}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-clinical-gray">
+                              Last Appraisal:
+                            </span>
+                            <Badge className="bg-medical-green text-white">
+                              {staffMember.appraisalDate || "None"}
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-clinical-gray">
+                              Next Appraisal:
+                            </span>
+                            <Badge className="bg-medical-green text-white">
+                              {getNextAppraisalDate(
+                                staffMember.appraisalDate,
+                              ) || "Now"}
+                            </Badge>
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Employee ID:
-                          </span>
-                          <span className="text-slate-900">
-                            {staffMember.employeeId}
-                          </span>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleViewStaff(staffMember)}
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            View Appraisal
+                          </Button>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Department:
-                          </span>
-                          <span className="text-slate-900">
-                            {staffMember.department}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Last Appraisal:
-                          </span>
-                          <Badge className="bg-medical-green text-white">
-                            {staffMember.appraisalDate || "Needed"}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Next Appraisal:
-                          </span>
-                          <Badge className="bg-medical-green text-white">
-                            {staffMember.appraisalDate || "Now"}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleViewStaff(staffMember)}
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          View Appraisal
-                        </Button>
-                      </div>
-                      <div>
-                        <FileUploader
-                          onUploadComplete={handleUploadComplete}
-                          maxFileSize={25}
-                          acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
-                          disabled={uploadAppraisalMutation.isPending}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
             )}
           </div>

@@ -22,6 +22,8 @@ import {
   type Practice,
   type Person,
   type InsertPerson,
+  type AppraisalEvidence,
+  type InsertAppraisalEvidence,
   type Shift,
   type InsertShift,
 } from "@shared/schema";
@@ -51,6 +53,8 @@ export interface IStorage {
     staff: Partial<InsertStaff>,
   ): Promise<Staff | undefined>;
   deleteStaff(id: string): Promise<boolean>;
+
+  getAppraisalsByPractice(practiceId: string): Promise<AppraisalEvidence[]>;
 
   // CQC methods
   getCqcStandards(): Promise<CqcStandard[]>;
@@ -94,6 +98,7 @@ export class MemStorage implements IStorage {
   private people: Map<string, Person>;
   private practices: Map<string, Practice>;
   private staff: Map<string, Staff>;
+  private appraisals: Map<string, AppraisalEvidence>;
   private cqcStandards: Map<string, CqcStandard>;
   private practiceEvidence: Map<string, PracticeEvidence>;
   private conversations: Map<string, Conversation>;
@@ -108,6 +113,7 @@ export class MemStorage implements IStorage {
     this.people = new Map();
     this.practices = new Map();
     this.staff = new Map();
+    this.appraisals = new Map();
     this.cqcStandards = new Map();
     this.practiceEvidence = new Map();
     this.conversations = new Map();
@@ -280,6 +286,32 @@ export class MemStorage implements IStorage {
 
   async deleteStaff(id: string): Promise<boolean> {
     return this.staff.delete(id);
+  }
+
+  //Appraisal methods
+  async getAppraisalsByPractice(
+    practiceId: string,
+  ): Promise<AppraisalEvidence[]> {
+    return Array.from(this.appraisals.values()).filter(
+      (appraisal) => appraisal.practiceId === practiceId,
+    );
+  }
+
+  // Method to create an appraisal
+  async createAppraisal(
+    evidence: InsertAppraisalEvidence,
+  ): Promise<AppraisalEvidence> {
+    const appraisal: AppraisalEvidence = {
+      ...evidence,
+      description: evidence.description ?? null,
+      reviewStatus: evidence.reviewStatus ?? "needs_review",
+      submittedAt: new Date(),
+      createdAt: new Date(),
+    };
+    this.appraisals.set(appraisal.fileName, appraisal);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(appraisalEvidence).values(appraisal);
+    return appraisal;
   }
 
   // CQC methods
