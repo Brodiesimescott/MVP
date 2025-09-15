@@ -58,7 +58,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             </Button>
             <div className="w-px h-6 bg-slate-200"></div>
             <h1 className="text-xl font-semibold text-slate-900">
-              Appraisal Management
+              Rota Management
             </h1>
           </div>
         </div>

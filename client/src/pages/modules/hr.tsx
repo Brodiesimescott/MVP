@@ -252,7 +252,7 @@ export default function ChironHR() {
                 <p className="text-2xl font-bold text-slate-900">
                   {metricsLoading ? "..." : metrics?.totalStaff}
                 </p>
-                <p className="text-sm text-medical-green">+2 this month</p>
+                <p className="text-sm text-medical-green"></p>
               </Card>
 
               <Card className="p-6">
@@ -265,7 +265,13 @@ export default function ChironHR() {
                 <p className="text-2xl font-bold text-slate-900">
                   {metricsLoading ? "..." : metrics?.onDuty}
                 </p>
-                <p className="text-sm text-clinical-gray">75% capacity</p>
+                <p className="text-sm text-clinical-gray">
+                  {metricsLoading
+                    ? "..."
+                    : ((metrics?.onDuty || 0) / (metrics?.totalStaff || 1)) *
+                      100}
+                  {"% of capacity"}
+                </p>
               </Card>
 
               <Card className="p-6">
