@@ -289,10 +289,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const currentUser = getCurrentUser();
     const allStaff = await storage.getStaffByPractice(currentUser.practiceId);
 
+    const reviewdates = allStaff.map(x => x.appraisalDate)
+    
+    const dateTo = new Date(echeq.validUntilUtc);
+    const dateFrom = new Date(dateTo.setMonth(dateTo.getMonth() - 1));
+    var needsReview = 0;
+    for (var dateCheck in reviewdates){
+
+    var check = Date.parse(dateCheck);
+
+    if((check <= dateTo && check >= dateFrom))      
+        needsReview = needsReview + 1;
+    }
+  
     res.json({
       totalStaff: allStaff.length,
       onDuty: Math.floor(allStaff.length * 0.75),
-      pendingReviews: Math.floor(allStaff.length * 0.125),
+      pendingReviews: ,
       leaveRequests: Math.floor(allStaff.length * 0.3),
     });
   });
