@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import LLMGuide from "@/components/llm-guide";
 import StaffManagement from "@/components/staff-management";
 import AppraisalManagement from "@/components/appraisal";
+import RotaManagement from "@/components/rota";
 import ModuleLogo from "@/components/module-logo";
 import { useState } from "react";
 
@@ -188,7 +189,7 @@ function markAsAvailable(event: any) {
 
 export default function ChironHR() {
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "staff" | "appraisals"
+    "dashboard" | "staff" | "appraisals" | "rota"
   >("dashboard");
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<HRMetrics>({
@@ -201,6 +202,10 @@ export default function ChironHR() {
 
   if (currentView === "appraisals") {
     return <AppraisalManagement onBack={() => setCurrentView("dashboard")} />;
+  }
+
+  if (currentView === "rota") {
+    return <RotaManagement onBack={() => setCurrentView("dashboard")} />;
   }
 
   return (
@@ -310,7 +315,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
+                  onClick={() => setCurrentView("rota")}
                 >
                   <Calendar className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">
