@@ -325,7 +325,9 @@ export const insertVatReturnSchema = createInsertSchema(vatReturns).omit({
 
 export const insertShiftSchema = createInsertSchema(shifts);
 
-export const insertAppraisalEvidenceSchema = createInsertSchema(appraisalEvidence).omit({
+export const insertAppraisalEvidenceSchema = createInsertSchema(
+  appraisalEvidence,
+).omit({
   createdAt: true,
 });
 
@@ -371,4 +373,6 @@ export type Shift = typeof shifts.$inferSelect;
 export type InsertShift = z.infer<typeof insertShiftSchema>;
 
 export type AppraisalEvidence = typeof appraisalEvidence.$inferSelect;
-export type InsertAppraisalEvidence = z.infer<typeof insertAppraisalEvidenceSchema>;
+export type InsertAppraisalEvidence = z.infer<
+  typeof insertAppraisalEvidenceSchema
+>;

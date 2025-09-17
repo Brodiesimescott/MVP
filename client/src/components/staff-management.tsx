@@ -74,6 +74,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
+  const [search, setSearch] = useState<String | null>(null);
   const { toast } = useToast();
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
@@ -108,6 +109,10 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       emergencyContactRelation: "",
     },
   });
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.currentTarget.value);
+  };
 
   const createStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {
@@ -1220,6 +1225,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                   <Input
                     placeholder="Search staff members..."
                     className="pl-10"
+                    onChange={onChange}
                   />
                 </div>
                 <Select>
@@ -1258,71 +1264,89 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {staff.map((staffMember) => (
-                  <Card key={staffMember.employeeId} className="p-6">
-                    <CardContent className="p-0">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">
-                            {staffMember.firstName[0]}
-                            {staffMember.lastName[0]}
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-slate-900">
-                            {staffMember.firstName} {staffMember.lastName}
-                          </h3>
-                          <p className="text-sm text-clinical-gray">
-                            {staffMember.position}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Employee ID:
-                          </span>
-                          <span className="text-slate-900">
-                            {staffMember.employeeId}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Department:
-                          </span>
-                          <span className="text-slate-900">
-                            {staffMember.department}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">Status:</span>
-                          <Badge className="bg-medical-green text-white">
-                            {staffMember.status || "Active"}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleViewStaff(staffMember)}
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-chiron-blue hover:bg-blue-800"
-                          onClick={() => handleEditStaff(staffMember)}
-                        >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {staff.map((staffMember) => {
+                  if (
+                    search == null ||
+                    staffMember.firstName
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    search == "" ||
+                    staffMember.lastName
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    staffMember.employeeId
+                      .toLowerCase()
+                      .includes(search.toLowerCase())
+                  ) {
+                    return (
+                      <Card key={staffMember.employeeId} className="p-6">
+                        <CardContent className="p-0">
+                          <div className="flex items-center space-x-4 mb-4">
+                            <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold">
+                                {staffMember.firstName[0]}
+                                {staffMember.lastName[0]}
+                              </span>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-slate-900">
+                                {staffMember.firstName} {staffMember.lastName}
+                              </h3>
+                              <p className="text-sm text-clinical-gray">
+                                {staffMember.position}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-clinical-gray">
+                                Employee ID:
+                              </span>
+                              <span className="text-slate-900">
+                                {staffMember.employeeId}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-clinical-gray">
+                                Department:
+                              </span>
+                              <span className="text-slate-900">
+                                {staffMember.department}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-clinical-gray">
+                                Status:
+                              </span>
+                              <Badge className="bg-medical-green text-white">
+                                {staffMember.status || "Active"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleViewStaff(staffMember)}
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-chiron-blue hover:bg-blue-800"
+                              onClick={() => handleEditStaff(staffMember)}
+                            >
+                              <Edit className="w-3 h-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                })}
               </div>
             )}
           </div>
