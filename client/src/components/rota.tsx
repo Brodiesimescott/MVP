@@ -122,11 +122,11 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     ],
     rows: staff?.map((staff) => ({
       name: `${staff.firstName} ${staff.lastName}`,
-      monday: staff.workingHours[0] || { monday: "not in" },
-      tuesday: staff.workingHours[1] || { tuesday: "not in" },
-      wednesday: staff.workingHours[2] || { wednesday: "not in" },
-      thursday: staff.workingHours[3] || { thursday: "not in" },
-      friday: staff.workingHours[4] || { friday: "not in" },
+      monday: staff?.workingHours[0] || { monday: "not in" },
+      tuesday: staff?.workingHours[1] || { tuesday: "not in" },
+      wednesday: staff?.workingHours[2] || { wednesday: "not in" },
+      thursday: staff?.workingHours[3] || { thursday: "not in" },
+      friday: staff?.workingHours[4] || { friday: "not in" },
     })),
   };
 
