@@ -92,6 +92,7 @@ export default function AppraisalManagement({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const [search, setSearch] = useState<String | null>(null);
+  const [department, setDepartment] = useState<String | null>(null);
   const { toast } = useToast();
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({

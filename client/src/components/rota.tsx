@@ -1,6 +1,14 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Plus, Search, Eye, Edit, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +53,7 @@ import { insertStaffSchema, staff } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createInsertSchema } from "drizzle-zod";
 
 interface RotaManagementProps {
@@ -73,9 +81,17 @@ const staffFormSchema = insertStaffSchema
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
 
+const rotaFormSchema = z.object({
+  workingHours: z.array(z.string().nullable()).length(5),
+});
+
+type RotaFormData = z.infer<typeof rotaFormSchema>;
+
 export default function RotaManagement({ onBack }: RotaManagementProps) {
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
   });
@@ -111,6 +127,33 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     },
   });
 
+  const rotaForm = useForm<RotaFormData>({
+    resolver: zodResolver(rotaFormSchema),
+    defaultValues: {
+      workingHours: [null, null, null, null, null],
+    },
+  });
+
+  // Filter staff based on search query
+  const filteredStaff = useMemo(() => {
+    if (!staff) return [];
+    if (!searchQuery.trim()) return staff;
+
+    const query = searchQuery.toLowerCase().trim();
+    return staff.filter((staffMember) => {
+      const fullName =
+        `${staffMember.firstName} ${staffMember.lastName}`.toLowerCase();
+      const position = staffMember.position?.toLowerCase() || "";
+      const email = staffMember.email?.toLowerCase() || "";
+
+      return (
+        fullName.includes(query) ||
+        position.includes(query) ||
+        email.includes(query)
+      );
+    });
+  }, [staff, searchQuery]);
+
   const table = {
     headers: [
       "Employee",
@@ -120,14 +163,16 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       "Thursday",
       "Friday",
     ],
-    rows: staff?.map((staff) => ({
-      name: `${staff.firstName} ${staff.lastName}`,
-      monday: staff?.workingHours[0] || { monday: "not in" },
-      tuesday: staff?.workingHours[1] || { tuesday: "not in" },
-      wednesday: staff?.workingHours[2] || { wednesday: "not in" },
-      thursday: staff?.workingHours[3] || { thursday: "not in" },
-      friday: staff?.workingHours[4] || { friday: "not in" },
-    })),
+    rows:
+      staff?.map((staffMember) => ({
+        id: staffMember.employeeId,
+        name: `${staffMember.firstName} ${staffMember.lastName}`,
+        monday: staffMember.workingHours?.[0] || "not in",
+        tuesday: staffMember.workingHours?.[1] || "not in",
+        wednesday: staffMember.workingHours?.[2] || "not in",
+        thursday: staffMember.workingHours?.[3] || "not in",
+        friday: staffMember.workingHours?.[4] || "not in",
+      })) || [],
   };
 
   const createStaffMutation = useMutation({
@@ -142,7 +187,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
         title: "Success",
         description: "Staff member added successfully",
       });
-      setShowAddDialog(false);
+      setShowEditDialog(false);
       form.reset();
     },
     onError: (error) => {
@@ -175,8 +220,8 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
         title: "Success",
         description: "Staff member updated successfully",
       });
-
-      setShowAddDialog(false);
+      setShowEditDialog(false);
+      setSelectedStaff(null);
     },
     onError: (error) => {
       toast({
@@ -187,12 +232,107 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     },
   });
 
+  const updateRotaMutation = useMutation({
+    mutationFn: async ({
+      employeeId,
+      workingHours,
+    }: {
+      employeeId: string;
+      workingHours: (string | null)[];
+    }) => {
+      const response = await apiRequest("PUT", `/api/hr/staff/${employeeId}`, {
+        workingHours,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
+      toast({
+        title: "Success",
+        description: "Rota updated successfully",
+      });
+      setShowEditDialog(false);
+      setSelectedStaff(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update rota",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: StaffFormData) => {
+    if (!selectedStaff?.employeeId) {
+      toast({
+        title: "Error",
+        description: "No staff member selected",
+        variant: "destructive",
+      });
+      return;
+    }
     updateStaffMutation.mutate({
       employeeId: selectedStaff.employeeId,
       data,
     });
   };
+
+  const onRotaSubmit = (data: RotaFormData) => {
+    if (!selectedStaff?.employeeId) {
+      toast({
+        title: "Error",
+        description: "No staff member selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateRotaMutation.mutate({
+      employeeId: selectedStaff.employeeId,
+      workingHours: data.workingHours,
+    });
+  };
+
+  const handleEditRota = (staffMember: StaffData) => {
+    setSelectedStaff(staffMember);
+    rotaForm.reset({
+      workingHours: staffMember.workingHours || [null, null, null, null, null],
+    });
+    setShowEditDialog(true);
+  };
+
+  const getStatusBadge = (hours: string) => {
+    if (hours === "not in") {
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-red-50 text-red-700 border-red-200"
+        >
+          Not In
+        </Badge>
+      );
+    }
+    return (
+      <Badge
+        variant="secondary"
+        className="bg-green-50 text-green-700 border-green-200"
+      >
+        {hours}
+      </Badge>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-slate-600">Loading staff data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -211,83 +351,136 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             <h1 className="text-xl font-semibold text-slate-900">
               Rota Management
             </h1>
+            <div className="flex items-center space-x-2 text-sm text-slate-600">
+              <span>
+                {filteredStaff?.length || 0} of {staff?.length || 0} staff
+                members
+              </span>
+            </div>
           </div>
-          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-            <DialogTrigger asChild>
-              <Button className="bg-chiron-blue hover:bg-blue-800">
-                <Plus className="w-4 h-4 mr-2" />
-                Edit Rota
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Edit Rota</DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
-                >
-                  <div className="flex justify-end space-x-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowAddDialog(false)}
-                    >
-                      Cancel
-                    </Button>
-                    {/**<Button type="submit" disabled={createStaffMutation.isPending}>
-                  {createStaffMutation.isPending
-                    ? "Adding..."
-                    : "Add Staff Member"}
-                </Button>*/}
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
         </div>
       </header>
-      <main>
-        <Table>
-          <TableHeader>
-            <TableRow key={0}>
-              {table.headers.map((header, index) => (
-                <TableHead
-                  key={index}
-                  className="px-6 py-4 text-sm font-medium text-gray-900"
-                >
-                  {header}
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Search and Filters */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Search staff by name, position, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          {searchQuery && (
+            <Button
+              variant="outline"
+              onClick={() => setSearchQuery("")}
+              className="shrink-0"
+            >
+              Clear Search
+            </Button>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {table.headers.map((header, index) => (
+                  <TableHead
+                    key={index}
+                    className="px-6 py-4 text-sm font-medium text-gray-900"
+                  >
+                    {header}
+                  </TableHead>
+                ))}
+                <TableHead className="px-6 py-4 text-sm font-medium text-gray-900">
+                  Actions
                 </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {table.rows?.map((row, index) => (
-              <TableRow key={index} className='border-b" bg-white'>
-                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
-                  {row.name}
-                </TableCell>
-                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
-                  {row.monday}
-                </TableCell>
-                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
-                  {row.tuesday}
-                </TableCell>
-                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
-                  {row.wednesday}
-                </TableCell>
-                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
-                  {row.thursday}
-                </TableCell>
-                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
-                  {row.friday}
-                </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <div className="lg:col-span-1">
+            </TableHeader>
+            <TableBody>
+              {table.rows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-12 text-slate-500"
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      {searchQuery ? (
+                        <>
+                          <Search className="w-8 h-8 text-slate-300" />
+                          <p>No staff members match your search</p>
+                          <p className="text-sm">
+                            Try adjusting your search terms
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <Users className="w-8 h-8 text-slate-300" />
+                          <p>No staff members found</p>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.rows.map((row, index) => {
+                  const staffMember = filteredStaff?.[index];
+                  return (
+                    <TableRow
+                      key={row.id || index}
+                      className="border-b bg-white hover:bg-slate-50"
+                    >
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                        <div>
+                          <div className="font-medium">{row.name}</div>
+                          {staffMember?.position && (
+                            <div className="text-xs text-slate-500">
+                              {staffMember.position}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {getStatusBadge(row.monday)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {getStatusBadge(row.tuesday)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {getStatusBadge(row.wednesday)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {getStatusBadge(row.thursday)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {getStatusBadge(row.friday)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {staffMember && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditRota(staffMember)}
+                            className="flex items-center space-x-1"
+                          >
+                            <Edit className="w-3 h-3" />
+                            <span>Edit</span>
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="mt-8">
           <LLMGuide
             title="Staff Guide"
             subtitle="Management assistance"
@@ -296,6 +489,72 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
           />
         </div>
       </main>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Edit Rota -{" "}
+              {selectedStaff
+                ? `${selectedStaff.firstName} ${selectedStaff.lastName}`
+                : "Staff Member"}
+            </DialogTitle>
+          </DialogHeader>
+          <Form {...rotaForm}>
+            <form
+              onSubmit={rotaForm.handleSubmit(onRotaSubmit)}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 gap-4">
+                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
+                  (day, index) => (
+                    <FormField
+                      key={day}
+                      control={rotaForm.control}
+                      name={`workingHours.${index}` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{day}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g., 9:00 AM - 5:00 PM or leave empty for not in"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) =>
+                                field.onChange(e.target.value || null)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ),
+                )}
+              </div>
+              <div className="flex justify-end space-x-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditDialog(false);
+                    setSelectedStaff(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateRotaMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {updateRotaMutation.isPending ? "Updating..." : "Update Rota"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
