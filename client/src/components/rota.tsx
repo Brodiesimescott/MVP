@@ -121,12 +121,12 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       "Friday",
     ],
     rows: staff?.map((staff) => ({
-      1: `${staff.firstName} ${staff.lastName}`,
-      2: staff?.workingHours[0] || "not in",
-      3: staff?.workingHours[1] || "not in",
-      4: staff?.workingHours[2] || "not in",
-      5: staff?.workingHours[3] || "not in",
-      6: staff?.workingHours[4] || "not in",
+      name: `${staff.firstName} ${staff.lastName}`,
+      monday: staff.workingHours[0] || { monday: "not in" },
+      tuesday: staff.workingHours[1] || { tuesday: "not in" },
+      wednesday: staff.workingHours[2] || { wednesday: "not in" },
+      thursday: staff.workingHours[3] || { thursday: "not in" },
+      friday: staff.workingHours[4] || { friday: "not in" },
     })),
   };
 
@@ -263,20 +263,28 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {
-              table.rows.map((row,index) => (
+            {table.rows?.map((row, index) => (
               <TableRow key={index} className='border-b" bg-white'>
-                {row.cells.map((c index) => (
-                  <TableCell
-                    className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900"
-                    key={index}
-                  >
-                    cell.
-                  </TableCell>
-                ))}
+                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
+                  {row.name}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
+                  {row.monday}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
+                  {row.tuesday}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
+                  {row.wednesday}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
+                  {row.thursday}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-light text-gray-900">
+                  {row.friday}
+                </TableCell>
               </TableRow>
-              ))}
-            }
+            ))}
           </TableBody>
         </Table>
         <div className="lg:col-span-1">
