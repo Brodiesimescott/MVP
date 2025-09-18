@@ -86,7 +86,7 @@ type UserData = z.infer<typeof userSchema>;
 
 export default function ChironMessaging() {
   const [selectedConversation, setSelectedConversation] = useState<
-    string | null
+    number | null
   >(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showAnouncementDialog, setShowAnouncementDialog] = useState(false);
@@ -186,8 +186,8 @@ export default function ChironMessaging() {
     resolver: zodResolver(insertConversationSchema),
     defaultValues: {
       title: undefined,
-      practiceId: user.practiceId,
-      participantIds: [user.id],
+      practiceId: user?.practiceId,
+      participantIds: [user?.id],
     },
   });
 
@@ -285,7 +285,7 @@ export default function ChironMessaging() {
 
     sendMessageMutation.mutate({
       content: newMessage.trim(),
-      conversationId: selectedConversation,
+      conversationId: selectedConversation.toString(),
     });
   };
 
@@ -296,9 +296,10 @@ export default function ChironMessaging() {
     const announcements = conversations?.find(
       (obj) => obj.title == "Announcements",
     );
+    const conversationid = announcements?.id.toString();
     sendMessageMutation.mutate({
       content: newMessage.trim(),
-      conversationId: announcements?.id,
+      conversationId: conversationid!,
     });
   };
 
@@ -315,7 +316,9 @@ export default function ChironMessaging() {
       value: contact.id,
       label: `${contact.firstName} ${contact.lastName}`,
     }))
-    .concat([{ value: user.id, label: `${user.firstName} ${user.lastName}` }]);
+    .concat([
+      { value: user!.id, label: `${user!.firstName} ${user!.lastName}` },
+    ]);
 
   type contactType = { label: string; value: string };
 
@@ -455,7 +458,7 @@ export default function ChironMessaging() {
                                 <Select
                                   isMulti={true}
                                   name="participantIds"
-                                  value={contactTags.filter((el) =>
+                                  value={contactTags?.filter((el) =>
                                     value?.includes(el.value),
                                   )}
                                   onChange={(
@@ -591,8 +594,8 @@ export default function ChironMessaging() {
                         {conversations !== undefined
                           ? getContactInitials(
                               conversations.find(
-                                (i) => i.id == selectedConversation,
-                              ).participantIds[0],
+                                (i) => i.id! == selectedConversation,
+                              )!.participantIds[0],
                             )
                           : ""}
                       </span>
@@ -600,16 +603,16 @@ export default function ChironMessaging() {
                     <div>
                       <h3 className="font-semibold text-slate-900">
                         {conversations !== undefined &&
-                        conversations.find((i) => i.id == selectedConversation)
+                        conversations.find((i) => i.id == selectedConversation)!
                           .title !== null
                           ? conversations.find(
                               (i) => i.id == selectedConversation,
-                            ).title
+                            )!.title
                           : conversations !== undefined
                             ? getContactName(
                                 conversations.find(
                                   (i) => i.id == selectedConversation,
-                                ).participantIds[0],
+                                )!.participantIds[0],
                               )
                             : "error"}
                       </h3>
