@@ -92,6 +92,7 @@ export default function ChironMessaging() {
   const [showAnouncementDialog, setShowAnouncementDialog] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
@@ -339,6 +340,24 @@ export default function ChironMessaging() {
     return contact ? `${contact.firstName[0]}${contact.lastName[0]}` : "help";
   };
 
+  // Filter conversations based on search query
+  const filteredConversations = conversations?.filter((conversation) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    
+    // Search by conversation title
+    if (conversation.title && conversation.title.toLowerCase().includes(query)) {
+      return true;
+    }
+    
+    // Search by participant names
+    const participantNames = conversation.participantIds.map(participantId => {
+      return getContactName(participantId).toLowerCase();
+    });
+    
+    return participantNames.some(name => name.includes(query));
+  });
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -382,6 +401,8 @@ export default function ChironMessaging() {
                   <Input
                     placeholder="Search conversations..."
                     className="pl-10 text-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 {/* new converstaion*/}
@@ -475,94 +496,50 @@ export default function ChironMessaging() {
                   </DialogContent>
                 </Dialog>
               </div>
+              {searchQuery && (
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-xs text-clinical-gray">
+                    {filteredConversations?.length || 0} of {conversations?.length || 0} conversations
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSearchQuery("")}
+                    className="text-xs h-6 px-2"
+                  >
+                    Clear
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="overflow-y-auto h-full">
               <div className="p-2 space-y-1">
-                {conversations?.length === 0 ? (
+                {filteredConversations?.length === 0 ? (
                   <div className="text-center py-8">
                     <MessageSquare className="w-8 h-8 text-clinical-gray mx-auto mb-2" />
-                    <p className="text-sm text-clinical-gray">
-                      No conversations yet
-                    </p>
-                    <p className="text-xs text-clinical-gray">
-                      Start messaging with your team
-                    </p>
+                    {searchQuery ? (
+                      <>
+                        <p className="text-sm text-clinical-gray">
+                          No conversations found
+                        </p>
+                        <p className="text-xs text-clinical-gray">
+                          Try adjusting your search terms
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-clinical-gray">
+                          No conversations yet
+                        </p>
+                        <p className="text-xs text-clinical-gray">
+                          Start messaging with your team
+                        </p>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <>
-                    {/* Mock conversations for demo */}
-                    {/** <div
-                      className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === "mock-1" ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
-                      onClick={() => setSelectedConversation("mock-1")}
-                    >
-                      <div className="flex items-center space-x-3 mb-1">
-                        <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
-                          <span className="text-white font-medium text-xs">
-                            SS
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900 truncate">
-                            Sister Jane Smith
-                          </p>
-                          <p className="text-xs text-clinical-gray">
-                            2 mins ago
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-clinical-gray truncate ml-11">
-                        Test results are ready for review...
-                      </p>
-                    </div>*/}
-
-                    {/**<div
-                      className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === "mock-2" ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
-                      onClick={() => setSelectedConversation("mock-2")}
-                    >
-                      <div className="flex items-center space-x-3 mb-1">
-                        <div className="w-8 h-8 bg-chiron-orange rounded-full flex items-center justify-center">
-                          <span className="text-white font-medium text-xs">
-                            MB
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900 truncate">
-                            Mark Brown
-                          </p>
-                          <p className="text-xs text-clinical-gray">
-                            1 hour ago
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-clinical-gray truncate ml-11">
-                        Can we schedule a team meeting?
-                      </p>
-                    </div>*/}
-
-                    {/** <div
-                      className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === "mock-3" ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
-                      onClick={() => setSelectedConversation("mock-3")}
-                    >
-                      <div className="flex items-center space-x-3 mb-1">
-                        <div className="w-8 h-8 bg-clinical-gray rounded-full flex items-center justify-center">
-                          <span className="text-white font-medium text-xs">
-                            TC
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900 truncate">
-                            Team Chat
-                          </p>
-                          <p className="text-xs text-clinical-gray">
-                            Yesterday
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-clinical-gray truncate ml-11">
-                        CQC inspection preparation...
-                      </p>
-                    </div>*/}
-                    {conversations?.map((conversation) => (
+                    {filteredConversations?.map((conversation) => (
                       <div
                         key={conversation.id}
                         className={`p-3 hover:bg-slate-50 rounded-lg cursor-pointer ${selectedConversation === conversation.id ? "border-l-4 border-chiron-blue bg-blue-50" : ""}`}
