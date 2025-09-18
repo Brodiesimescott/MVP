@@ -248,7 +248,7 @@ export default function ChironMessaging() {
       conversationId,
     }: {
       content: string;
-      conversationId: string;
+      conversationId: number;
     }) => {
       const response = await fetch("/api/messaging/messages", {
         method: "POST",
@@ -285,7 +285,7 @@ export default function ChironMessaging() {
 
     sendMessageMutation.mutate({
       content: newMessage.trim(),
-      conversationId: selectedConversation.toString(),
+      conversationId: selectedConversation,
     });
   };
 
@@ -296,7 +296,7 @@ export default function ChironMessaging() {
     const announcements = conversations?.find(
       (obj) => obj.title == "Announcements",
     );
-    const conversationid = announcements?.id.toString();
+    const conversationid = announcements?.id!;
     sendMessageMutation.mutate({
       content: newMessage.trim(),
       conversationId: conversationid!,
@@ -440,7 +440,7 @@ export default function ChironMessaging() {
                               <FormItem>
                                 <FormLabel>title *</FormLabel>
                                 <FormControl>
-                                  <Input {...field} />
+                                  <Input {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -618,7 +618,11 @@ export default function ChironMessaging() {
                       </h3>
                       <p className="text-sm text-medical-green flex items-center">
                         <span className="w-2 h-2 bg-medical-green rounded-full mr-2"></span>
-                        Online
+                        {conversations
+                          ?.find((i) => i.id! == selectedConversation)!
+                          .participantIds.map((x) =>
+                            getContactName(x).concat(" "),
+                          )}
                       </p>
                     </div>
                   </div>
@@ -637,6 +641,9 @@ export default function ChironMessaging() {
                             {message.content}
                           </p>
                           <p className="text-xs text-clinical-gray mt-1">
+                            {getContactName(message.senderId)}
+                          </p>
+                          <p className="text-xs text-clinical-gray mt-1">
                             {message.createdAt}
                           </p>
                         </div>
@@ -645,6 +652,9 @@ export default function ChironMessaging() {
                       <div key={message.id} className="flex justify-end">
                         <div className="bg-chiron-blue text-white rounded-lg p-3 max-w-xs">
                           <p className="text-sm">{message.content}</p>
+                          <p className="text-xs text-blue-200 mt-1">
+                            {getContactName(message.senderId)}
+                          </p>
                           <p className="text-xs text-blue-200 mt-1">
                             {message.createdAt}
                           </p>
