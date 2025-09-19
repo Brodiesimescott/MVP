@@ -93,6 +93,7 @@ export default function ChironMessaging() {
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchMessageQuery, setSearchMessageQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
@@ -366,6 +367,24 @@ export default function ChironMessaging() {
 
     return participantNames.some((name) => name.includes(query));
   });
+
+  // Filter messages based on search query
+  const filteredMessages = convomessages?.filter((message) => {
+    if (!searchMessageQuery.trim()) return true;
+
+    const query = searchMessageQuery.toLowerCase();
+
+    // Search by message contents
+    if (message.content && message.content.toLowerCase().includes(query)) {
+      return true;
+    }
+
+    // Search by participant names
+    const participantNames = getContactName(message.senderId).toLowerCase();
+
+    return participantNames.includes(query);
+  });
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -627,6 +646,7 @@ export default function ChironMessaging() {
                     </div>
                   </div>
                 </div>
+
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {convomessages?.map((message) =>
                     message.senderId !== user?.id ? (
@@ -714,6 +734,31 @@ export default function ChironMessaging() {
                     Messages are encrypted and monitored for patient data
                     protection
                   </p>
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-clinical-gray" />
+                    <Input
+                      placeholder="Search conversations..."
+                      className="pl-10 text-sm"
+                      value={searchMessageQuery}
+                      onChange={(e) => setSearchMessageQuery(e.target.value)}
+                    />
+                  </div>
+                  {searchMessageQuery && (
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-xs text-clinical-gray">
+                        {filteredMessages?.length || 0} of{" "}
+                        {convomessages?.length || 0} message
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchMessageQuery("")}
+                        className="text-xs h-6 px-2"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
