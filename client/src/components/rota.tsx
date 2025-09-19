@@ -130,7 +130,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
   const rotaForm = useForm<RotaFormData>({
     resolver: zodResolver(rotaFormSchema),
     defaultValues: {
-      workingHours: [null, null, null, null, null],
+      workingHours: ["not in", "not in", "not in", "not in", "not in"],
     },
   });
 
@@ -164,7 +164,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       "Friday",
     ],
     rows:
-      staff?.map((staffMember) => ({
+      filteredStaff?.map((staffMember) => ({
         id: staffMember.employeeId,
         name: `${staffMember.firstName} ${staffMember.lastName}`,
         monday: staffMember.workingHours?.[0] || "not in",
@@ -238,7 +238,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       workingHours,
     }: {
       employeeId: string;
-      workingHours: (string | null)[];
+      workingHours: (string | "not in")[];
     }) => {
       const response = await apiRequest("PUT", `/api/hr/staff/${employeeId}`, {
         workingHours,
@@ -297,7 +297,13 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
   const handleEditRota = (staffMember: StaffData) => {
     setSelectedStaff(staffMember);
     rotaForm.reset({
-      workingHours: staffMember.workingHours || [null, null, null, null, null],
+      workingHours: staffMember.workingHours || [
+        "not in",
+        "not in",
+        "not in",
+        "not in",
+        "not in",
+      ],
     });
     setShowEditDialog(true);
   };
@@ -342,7 +348,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             <Button
               variant="ghost"
               onClick={onBack}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 hover:bg-slate-100"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to HR</span>
@@ -377,7 +383,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             <Button
               variant="outline"
               onClick={() => setSearchQuery("")}
-              className="shrink-0"
+              className="shrink-0 hover:bg-slate-50"
             >
               Clear Search
             </Button>
@@ -391,12 +397,12 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                 {table.headers.map((header, index) => (
                   <TableHead
                     key={index}
-                    className="px-6 py-4 text-sm font-medium text-gray-900"
+                    className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50"
                   >
                     {header}
                   </TableHead>
                 ))}
-                <TableHead className="px-6 py-4 text-sm font-medium text-gray-900">
+                <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
                   Actions
                 </TableHead>
               </TableRow>
@@ -408,19 +414,30 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                     colSpan={7}
                     className="text-center py-12 text-slate-500"
                   >
-                    <div className="flex flex-col items-center space-y-2">
+                    <div className="flex flex-col items-center space-y-3">
                       {searchQuery ? (
                         <>
-                          <Search className="w-8 h-8 text-slate-300" />
-                          <p>No staff members match your search</p>
-                          <p className="text-sm">
-                            Try adjusting your search terms
-                          </p>
+                          <Search className="w-12 h-12 text-slate-300" />
+                          <div>
+                            <p className="text-lg font-medium">
+                              No matches found
+                            </p>
+                            <p className="text-sm">
+                              Try adjusting your search terms
+                            </p>
+                          </div>
                         </>
                       ) : (
                         <>
-                          <Users className="w-8 h-8 text-slate-300" />
-                          <p>No staff members found</p>
+                          <Users className="w-12 h-12 text-slate-300" />
+                          <div>
+                            <p className="text-lg font-medium">
+                              No staff members found
+                            </p>
+                            <p className="text-sm">
+                              Add staff members to get started
+                            </p>
+                          </div>
                         </>
                       )}
                     </div>
@@ -432,43 +449,45 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                   return (
                     <TableRow
                       key={row.id || index}
-                      className="border-b bg-white hover:bg-slate-50"
+                      className="border-b hover:bg-slate-50/50 transition-colors"
                     >
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      <TableCell className="px-6 py-4">
                         <div>
-                          <div className="font-medium">{row.name}</div>
+                          <div className="font-medium text-slate-900">
+                            {row.name}
+                          </div>
                           {staffMember?.position && (
-                            <div className="text-xs text-slate-500">
+                            <div className="text-sm text-slate-500 capitalize">
                               {staffMember.position}
                             </div>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <TableCell className="px-6 py-4">
                         {getStatusBadge(row.monday)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <TableCell className="px-6 py-4">
                         {getStatusBadge(row.tuesday)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <TableCell className="px-6 py-4">
                         {getStatusBadge(row.wednesday)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <TableCell className="px-6 py-4">
                         {getStatusBadge(row.thursday)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <TableCell className="px-6 py-4">
                         {getStatusBadge(row.friday)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <TableCell className="px-6 py-4">
                         {staffMember && (
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditRota(staffMember)}
-                            className="flex items-center space-x-1"
+                            className="flex items-center space-x-2 hover:bg-blue-50 hover:border-blue-200"
                           >
                             <Edit className="w-3 h-3" />
-                            <span>Edit</span>
+                            <span>Edit Rota</span>
                           </Button>
                         )}
                       </TableCell>
@@ -482,10 +501,10 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
 
         <div className="mt-8">
           <LLMGuide
-            title="Staff Guide"
-            subtitle="Management assistance"
-            initialMessage="I can help you with onboarding new staff, managing contracts, and ensuring compliance. What would you like to know?"
-            placeholder="Ask about staff..."
+            title="Rota Management Guide"
+            subtitle="Get help with scheduling and staff management"
+            initialMessage="I can help you with staff scheduling, managing working hours, handling time conflicts, and optimizing your rota. What would you like assistance with?"
+            placeholder="Ask about rota management..."
           />
         </div>
       </main>
@@ -493,7 +512,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
               Edit Rota -{" "}
               {selectedStaff
                 ? `${selectedStaff.firstName} ${selectedStaff.lastName}`
@@ -503,7 +522,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
           <Form {...rotaForm}>
             <form
               onSubmit={rotaForm.handleSubmit(onRotaSubmit)}
-              className="space-y-4"
+              className="space-y-6"
             >
               <div className="grid grid-cols-1 gap-4">
                 {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
@@ -514,17 +533,25 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                       name={`workingHours.${index}` as const}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{day}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., 9:00 AM - 5:00 PM or leave empty for not in"
-                              {...field}
-                              value={field.value || ""}
-                              onChange={(e) =>
-                                field.onChange(e.target.value || null)
-                              }
-                            />
-                          </FormControl>
+                          <FormLabel className="text-sm font-medium text-slate-700">
+                            {day}
+                          </FormLabel>
+                          <Select
+                            onValueChange={(value) => field.onChange(value)}
+                            value={field.value || "not in"}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select working hours" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="am">Morning (AM)</SelectItem>
+                              <SelectItem value="pm">Afternoon (PM)</SelectItem>
+                              <SelectItem value="all day">All Day</SelectItem>
+                              <SelectItem value="not in">Not In</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -532,7 +559,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                   ),
                 )}
               </div>
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200">
                 <Button
                   type="button"
                   variant="outline"
@@ -546,9 +573,16 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                 <Button
                   type="submit"
                   disabled={updateRotaMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {updateRotaMutation.isPending ? "Updating..." : "Update Rota"}
+                  {updateRotaMutation.isPending ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      <span>Updating...</span>
+                    </div>
+                  ) : (
+                    "Update Rota"
+                  )}
                 </Button>
               </div>
             </form>
