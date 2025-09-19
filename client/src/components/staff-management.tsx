@@ -572,7 +572,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                                   Dental therapist
                                 </SelectItem>
                                 <SelectItem value="hygienist">
-                                  hygienist
+                                  Hygienist
                                 </SelectItem>
                               </SelectContent>
                             </Select>
