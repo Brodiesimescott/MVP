@@ -11,6 +11,23 @@ import {
   Clipboard,
   TrendingUp,
 } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,73 +36,19 @@ import StaffManagement from "@/components/staff-management";
 import AppraisalManagement from "@/components/appraisal";
 import RotaManagement from "@/components/rota";
 import ModuleLogo from "@/components/module-logo";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { z } from "zod";
+import { insertStaffSchema, staff } from "@shared/schema";
+import { createInsertSchema } from "drizzle-zod";
 
-//import { createStaff } from "@/lib/api/staff";
 import { useMutation } from "@tanstack/react-query";
 
-interface StaffData {
-  name: string;
-  title: string;
-  workingHours: string;
-}
+const staffSchema = createInsertSchema(staff).extend({
+  firstName: z.string(),
+  lastName: z.string(),
+});
 
-window.onload = () => {
-  const hiddenDiv1 = document.getElementById("3");
-  const hiddenDiv2 = document.getElementById("4");
-
-  if (hiddenDiv1 && hiddenDiv2) {
-    hiddenDiv1.style.display = "none";
-    hiddenDiv2.style.display = "none";
-  }
-};
-
-const initialStaff: StaffData[] = [
-  {
-    name: "Dr. Sarah Wilson",
-    title: "General Practitioner",
-    workingHours: "08:00 - 18:00",
-  },
-  {
-    name: "Sister Jane Smith",
-    title: "Practice Nurse",
-    workingHours: "09:00 - 17:00",
-  },
-  {
-    name: "Mark Brown",
-    title: "Receptionist",
-    workingHours: "08:30 - 16:30",
-  },
-];
-
-const replacementStaff: StaffData[] = [
-  {
-    name: "Emily Carter",
-    title: "Practice Nurse",
-    workingHours: "10:00 - 18:00",
-  },
-  {
-    name: "Olivia Davis",
-    title: "Practice Nurse",
-    workingHours: "09:30 - 17:30",
-  },
-];
-
-const useCreateInitialStaff = () => {
-  return useMutation({
-    mutationFn: async () => {
-      for (const staffData of initialStaff) {
-        await createStaff({
-          name: staffData.name,
-          title: staffData.title,
-          workingHours: staffData.workingHours,
-          department: "default", // Replace with appropriate default
-          onDuty: false, // Or true, depending on default
-        });
-      }
-    },
-  });
-};
+type StaffData = z.infer<typeof staffSchema>;
 
 interface HRMetrics {
   totalStaff: number;
@@ -94,107 +57,53 @@ interface HRMetrics {
   leaveRequests: number;
 }
 
-function markAsUnavailable(event: any) {
-  const button = event.target;
-  const parentDiv = button.closest(".bg-slate-50");
-
-  const mainSection = document.getElementById("Rota-Section");
-  const divToToggle1 = document.getElementById("3");
-  const divToToggle2 = document.getElementById("4");
-  const p = document.getElementById("p" + parentDiv.id);
-  const p3 = document.getElementById("p3");
-  const p4 = document.getElementById("p4");
-  const b3 = document.getElementById("button3");
-  const b4 = document.getElementById("button4");
-
-  if (parentDiv && divToToggle1 && divToToggle2) {
-    const currentColor = parentDiv.style.backgroundColor;
-    const defaultColor = "";
-
-    if (currentColor === "rgb(173, 173, 173)") {
-      parentDiv.style.backgroundColor = defaultColor;
-      button.textContent = "Mark as Unavailable";
-      p.textContent = "On duty";
-      p.style.color = "#04af74";
-
-      divToToggle1.style.display = "none";
-      divToToggle2.style.display = "none";
-
-      divToToggle1.style.backgroundColor = defaultColor;
-      divToToggle2.style.backgroundColor = defaultColor;
-
-      p3.textContent = "Off duty";
-      p3.style.color = "#000000";
-      p4.textContent = "Off duty";
-      p4.style.color = "#000000";
-
-      b3.textContent = "Mark as Available";
-      b4.textContent = "Mark as Available";
-    } else {
-      parentDiv.style.backgroundColor = "#ADADAD";
-      button.textContent = "Mark as Available";
-      p.textContent = "Off duty";
-      p.style.color = "red";
-
-      divToToggle1.style.display = "";
-      divToToggle2.style.display = "";
-    }
-  }
-}
-
-function markAsAvailable(event: any) {
-  const button = event.target;
-  const parentDiv = button.closest(".bg-slate-50");
-
-  const mainSection = document.getElementById("Rota-Section");
-  const divToToggle1 = document.getElementById("3");
-  const divToToggle2 = document.getElementById("4");
-  const p = document.getElementById("p" + parentDiv.id);
-
-  if (parentDiv && p && divToToggle1 && divToToggle2) {
-    const currentColor = parentDiv.style.backgroundColor;
-    const defaultColor = "";
-
-    if (currentColor === "rgb(179, 230, 165)") {
-      parentDiv.style.backgroundColor = defaultColor;
-      button.textContent = "Mark as Available";
-      p.textContent = "Off duty";
-      p.style.color = "#000000";
-    } else {
-      parentDiv.style.backgroundColor = "#B3E6A5";
-      button.textContent = "Mark as Unavailable";
-      p.textContent = "On duty";
-      p.style.color = "#04af74";
-    }
-
-    if (divToToggle1 && divToToggle2) {
-      if (parentDiv.id == "3") {
-        // Check if the section is hidden
-        const isHidden2 = divToToggle2.style.display === "none";
-
-        // Toggle the display between none and block (visible)
-        divToToggle2.style.display = isHidden2 ? "" : "none";
-      }
-
-      if (parentDiv.id == "4") {
-        // Check if the section is hidden
-        const isHidden1 = divToToggle1.style.display === "none";
-
-        // Toggle the display between none and block (visible)Mask
-        divToToggle1.style.display = isHidden1 ? "" : "none";
-      }
-    }
-  }
-}
-
 export default function ChironHR() {
   const [currentView, setCurrentView] = useState<
     "dashboard" | "staff" | "appraisals" | "rota"
   >("dashboard");
+  var weekday = new Array(7);
+  weekday[0] = "Monday";
+  weekday[1] = "Tuesday";
+  weekday[2] = "Wednesday";
+  weekday[3] = "Thursday";
+  weekday[4] = "Friday";
+  const [selectedDay, setSelectedDay] = useState<string>(
+    weekday[new Date().getDay()] || "Monday",
+  );
+
+  const { data: staff, isLoading } = useQuery<StaffData[]>({
+    queryKey: ["/api/hr/staff"],
+  });
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<HRMetrics>({
     queryKey: ["/api/hr/metrics"],
   });
+
+  // Get staff working on selected day
+  const dailySchedule = useMemo(() => {
+    if (!staff) return [];
+
+    const dayIndex = weekday.indexOf(selectedDay);
+    if (dayIndex === -1) return [];
+
+    return staff
+      .filter((staffMember) => {
+        const workingHours = staffMember.workingHours?.[dayIndex];
+        return workingHours && workingHours !== "not in";
+      })
+      .map((staffMember) => ({
+        ...staffMember,
+        workingHours: staffMember.workingHours?.[dayIndex] || "not in",
+      }))
+      .sort((a, b) => {
+        // Sort by working hours: all day first, then am, then pm
+        const order = { "all day": 0, am: 1, pm: 2 };
+        return (
+          (order[a.workingHours as keyof typeof order] || 3) -
+          (order[b.workingHours as keyof typeof order] || 3)
+        );
+      });
+  }, [staff, selectedDay]);
 
   if (currentView === "staff") {
     return <StaffManagement onBack={() => setCurrentView("dashboard")} />;
@@ -207,6 +116,27 @@ export default function ChironHR() {
   if (currentView === "rota") {
     return <RotaManagement onBack={() => setCurrentView("dashboard")} />;
   }
+
+  const getStatusBadge = (hours: string) => {
+    if (hours === "not in") {
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-red-50 text-red-700 border-red-200"
+        >
+          Not In
+        </Badge>
+      );
+    }
+    return (
+      <Badge
+        variant="secondary"
+        className="bg-green-50 text-green-700 border-green-200"
+      >
+        {hours}
+      </Badge>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -362,187 +292,105 @@ export default function ChironHR() {
               </h3>
 
               <div>
-                <div
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                  id="1"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 bg-chiron-blue rounded-full flex items-center justify-center`}
-                    >
-                      <span className="text-white font-medium text-sm">DS</span>
+                {/* Daily Schedule Table */}
+                <div className="mt-8">
+                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-slate-900">
+                          Daily Schedule
+                        </h2>
+                        <Select
+                          value={selectedDay}
+                          onValueChange={setSelectedDay}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Select day" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {weekday.map((day) => (
+                              <SelectItem key={day} value={day}>
+                                {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        Dr. Sarah Wilson
-                      </p>
-                      <p className="text-sm text-clinical-gray">
-                        General Practitioner
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      08:00 - 18:00
-                    </p>
-                    <p className="text-xs text-medical-green" id="p1">
-                      On duty
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      onClick={(event) => markAsUnavailable(event)}
-                    >
-                      Mark as Unavailable
-                    </button>
-                  </div>
-                </div>
 
-                <div
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                  id="2"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 bg-medical-green rounded-full flex items-center justify-center`}
-                    >
-                      <span className="text-white font-medium text-sm">SJ</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        Sister Jane Smith
-                      </p>
-                      <p className="text-sm text-clinical-gray">
-                        Practice Nurse
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      09:00 - 17:00
-                    </p>
-                    <p className="text-xs text-medical-green" id="p2">
-                      On duty
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      onClick={(event) => markAsUnavailable(event)}
-                    >
-                      Mark as Unavailable
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                  id="3"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 bg-medical-green rounded-full flex items-center justify-center`}
-                    >
-                      <span className="text-white font-medium text-sm">EC</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">Emily Carte</p>
-                      <p className="text-sm text-clinical-gray">
-                        Practice Nurse
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      10:00 - 18:00
-                    </p>
-                    <p className="text-xs text-red" id="p3">
-                      Off duty
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      id="button3"
-                      onClick={(event) => markAsAvailable(event)}
-                    >
-                      Mark as Available
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                  id="4"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 bg-medical-green rounded-full flex items-center justify-center`}
-                    >
-                      <span className="text-white font-medium text-sm">OD</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">Olivia Davis</p>
-                      <p className="text-sm text-clinical-gray">
-                        Practice Nurse
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      09:30 - 17:30
-                    </p>
-                    <p className="text-xs text-red" id="p4">
-                      Off duty
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      id="button4"
-                      onClick={(event) => markAsAvailable(event)}
-                    >
-                      Mark as Available
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                  id="5"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 bg-clinical-gray rounded-full flex items-center justify-center`}
-                    >
-                      <span className="text-white font-medium text-sm">MB</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">Mark Brown</p>
-                      <p className="text-sm text-clinical-gray">Receptionist</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      08:30 - 16:30
-                    </p>
-                    <p className="text-xs text-medical-green" id="p3">
-                      On duty
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      onClick={(event) => markAsUnavailable(event)}
-                    >
-                      Mark as Unavailable
-                    </button>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Staff Member
+                          </TableHead>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Position
+                          </TableHead>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Department
+                          </TableHead>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Working Hours
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {dailySchedule.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={4}
+                              className="text-center py-12 text-slate-500"
+                            >
+                              <div className="flex flex-col items-center space-y-3">
+                                <Users className="w-12 h-12 text-slate-300" />
+                                <div>
+                                  <p className="text-lg font-medium">
+                                    No staff scheduled
+                                  </p>
+                                  <p className="text-sm">
+                                    No staff members are working on{" "}
+                                    {selectedDay}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          dailySchedule.map((staffMember) => (
+                            <TableRow
+                              key={staffMember.employeeId}
+                              className="border-b hover:bg-slate-50/50 transition-colors"
+                            >
+                              <TableCell className="px-6 py-4">
+                                <div className="font-medium text-slate-900">
+                                  {staffMember.firstName} {staffMember.lastName}
+                                </div>
+                                <div className="text-sm text-slate-500">
+                                  {staffMember.employeeId}
+                                </div>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <Badge
+                                  variant="outline"
+                                  className="capitalize bg-blue-50 text-blue-700 border-blue-200"
+                                >
+                                  {staffMember.position}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <span className="text-slate-700">
+                                  {staffMember.department || "Not specified"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                {getStatusBadge(staffMember.workingHours)}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               </div>

@@ -91,6 +91,15 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  var weekday = new Array(7);
+  weekday[0] = "Monday";
+  weekday[1] = "Tuesday";
+  weekday[2] = "Wednesday";
+  weekday[3] = "Thursday";
+  weekday[4] = "Friday";
+  const [selectedDay, setSelectedDay] = useState<string>(
+    weekday[new Date().getDay()] || "Monday",
+  );
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
@@ -153,6 +162,32 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       );
     });
   }, [staff, searchQuery]);
+
+  // Get staff working on selected day
+  const dailySchedule = useMemo(() => {
+    if (!staff) return [];
+
+    const dayIndex = weekday.indexOf(selectedDay);
+    if (dayIndex === -1) return [];
+
+    return staff
+      .filter((staffMember) => {
+        const workingHours = staffMember.workingHours?.[dayIndex];
+        return workingHours && workingHours !== "not in";
+      })
+      .map((staffMember) => ({
+        ...staffMember,
+        workingHours: staffMember.workingHours?.[dayIndex] || "not in",
+      }))
+      .sort((a, b) => {
+        // Sort by working hours: all day first, then am, then pm
+        const order = { "all day": 0, am: 1, pm: 2 };
+        return (
+          (order[a.workingHours as keyof typeof order] || 3) -
+          (order[b.workingHours as keyof typeof order] || 3)
+        );
+      });
+  }, [staff, selectedDay]);
 
   const table = {
     headers: [
@@ -497,6 +532,104 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Daily Schedule Table */}
+        <div className="mt-8">
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Daily Schedule
+                </h2>
+                <Select value={selectedDay} onValueChange={setSelectedDay}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {weekday.map((day) => (
+                      <SelectItem key={day} value={day}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                    Staff Member
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                    Position
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                    Department
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                    Working Hours
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dailySchedule.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="text-center py-12 text-slate-500"
+                    >
+                      <div className="flex flex-col items-center space-y-3">
+                        <Users className="w-12 h-12 text-slate-300" />
+                        <div>
+                          <p className="text-lg font-medium">
+                            No staff scheduled
+                          </p>
+                          <p className="text-sm">
+                            No staff members are working on {selectedDay}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  dailySchedule.map((staffMember) => (
+                    <TableRow
+                      key={staffMember.employeeId}
+                      className="border-b hover:bg-slate-50/50 transition-colors"
+                    >
+                      <TableCell className="px-6 py-4">
+                        <div className="font-medium text-slate-900">
+                          {staffMember.firstName} {staffMember.lastName}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          {staffMember.employeeId}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <Badge
+                          variant="outline"
+                          className="capitalize bg-blue-50 text-blue-700 border-blue-200"
+                        >
+                          {staffMember.position}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <span className="text-slate-700">
+                          {staffMember.department || "Not specified"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        {getStatusBadge(staffMember.workingHours)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         <div className="mt-8">
