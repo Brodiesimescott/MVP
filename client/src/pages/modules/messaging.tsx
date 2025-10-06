@@ -110,9 +110,12 @@ export default function ChironMessaging() {
       if (!user?.email) {
         throw new Error("No user email");
       }
-      const response = await fetch(`/api/home?email=${encodeURIComponent(user.email)}`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `/api/home?email=${encodeURIComponent(user.email)}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
@@ -152,7 +155,9 @@ export default function ChironMessaging() {
     queryKey: ["/api/messaging/conversations", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/messaging/conversations?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/messaging/conversations?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch conversations");
       return response.json();
     },
@@ -163,7 +168,9 @@ export default function ChironMessaging() {
     queryKey: ["/api/messaging/messages", selectedConversation, user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/messaging/messages?conversationId=${selectedConversation}&email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/messaging/messages?conversationId=${selectedConversation}&email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
     },
@@ -173,14 +180,22 @@ export default function ChironMessaging() {
   const { data: convomessages, refetch: refetchconvoMessages } = useQuery<
     Message[] | null
   >({
-    queryKey: ["/api/messaging/initConversation", selectedConversation, user?.email],
-    queryFn: selectedConversation && user?.email
-      ? async () => {
-          const response = await fetch(`/api/messaging/initConversation/${selectedConversation}?email=${encodeURIComponent(user.email)}`);
-          if (!response.ok) throw new Error("Failed to fetch conversation messages");
-          return response.json();
-        }
-      : async () => null,
+    queryKey: [
+      "/api/messaging/initConversation",
+      selectedConversation,
+      user?.email,
+    ],
+    queryFn:
+      selectedConversation && user?.email
+        ? async () => {
+            const response = await fetch(
+              `/api/messaging/initConversation/${selectedConversation}?email=${encodeURIComponent(user.email)}`,
+            );
+            if (!response.ok)
+              throw new Error("Failed to fetch conversation messages");
+            return response.json();
+          }
+        : async () => null,
     enabled: selectedConversation !== null && !!user?.email,
   });
 
@@ -190,7 +205,9 @@ export default function ChironMessaging() {
     queryKey: ["/api/messaging/announcements", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/messaging/announcements?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/messaging/announcements?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch announcements");
       return response.json();
     },
@@ -297,8 +314,8 @@ export default function ChironMessaging() {
       const response = await fetch("/api/messaging/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          content, 
+        body: JSON.stringify({
+          content,
           conversationId,
           email: user?.email,
         }),
@@ -386,7 +403,9 @@ export default function ChironMessaging() {
     refetchAnnouncements();
     const contact = contacts?.find((c) => c.id === userId);
     if (userId == userDetails?.id) {
-      return user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}` : "UU";
+      return user
+        ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`
+        : "UU";
     }
     return contact ? `${contact.firstName[0]}${contact.lastName[0]}` : "help";
   };
