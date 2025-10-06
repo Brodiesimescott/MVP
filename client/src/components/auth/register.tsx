@@ -30,7 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 type FormData = z.infer<typeof formSchema>;
 
 interface RegisterFormProps {
-  onRegister: (email: string) => void;
+  onRegister: (email: string, firstName?: string, lastName?: string) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -84,12 +84,11 @@ export default function RegisterForm({
 
       return response.json();
     },
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
+    onSuccess: (data, variables) => {
       toast({
         title: "Sign up successful!",
       });
-      setLocation("/");
+      onRegister(variables.email, variables.firstName, variables.lastName);
     },
     onError: (error: any) => {
       toast({

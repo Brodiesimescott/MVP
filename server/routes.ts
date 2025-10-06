@@ -78,14 +78,19 @@ async function getCurrentUser(userEmail: string) {
   if (userStr == null) return null;
   const user = await storage.getUserByEmail(userStr);
   const person = await storage.getPersonByEmail(userStr);
+  
+  if (!user || !person) {
+    return null;
+  }
+  
   const CurrentUser = {
-    id: user?.employeeId || "user1",
-    practiceId: user?.practiceId || "practice1",
-    role: user?.role || "poweruser",
-    email: person?.email || "testuser@email.com",
-    firstName: person?.firstName || "Dr. Sarah",
-    lastName: person?.lastName || "Wilson",
-    createdAt: user?.createdAt || new Date(),
+    id: user.employeeId,
+    practiceId: user.practiceId,
+    role: user.role,
+    email: person.email,
+    firstName: person.firstName,
+    lastName: person.lastName,
+    createdAt: user.createdAt,
   };
   return CurrentUser;
 }
@@ -151,6 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const currentUser = await getCurrentUser(req.body);
     if (currentUser == null) {
       res.status(400).json({ message: "Invalid user: Please login" });
+      return;
     }
     const database = db;
     res.status(200).json(currentUser);
@@ -219,11 +225,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      // empty
+      // Get person data for complete user info
+      const person = await storage.getPersonByEmail(email);
+      
+      if (!person) {
+        return res.status(400).json({ message: "User profile not found" });
+      }
 
-      res
-        .status(200)
-        .json({ message: "Login successful", userId: user.employeeId });
+      res.status(200).json({ 
+        message: "Login successful", 
+        email: person.email,
+        firstName: person.firstName,
+        lastName: person.lastName,
+        userId: user.employeeId,
+        practiceId: user.practiceId,
+        role: user.role
+      });
     } catch (error: any) {
       console.log("Error in login controller", error.message);
       res.status(500).json({ message: "Internal Server Error" });
