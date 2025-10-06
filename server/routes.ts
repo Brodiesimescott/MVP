@@ -703,6 +703,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rota endpoints
+  app.get("/api/hr/rota/:day", async (req, res) => {
+    try {
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { day } = req.params;
+      const rota = await storage.getRotaByDay(currentUser.practiceId, day);
+      
+      if (!rota) {
+        return res.status(404).json({ message: "Rota not found" });
+      }
+
+      res.json(rota);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch rota" });
+    }
+  });
+
   app.post("/api/hr/rota", async (req, res) => {
     try {
       const currentUser = await getCurrentUserFromRequest(req);
@@ -716,6 +736,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const rota = await storage.createRota(rotaData);
+
+      // Map day name to index (Sunday=0, Monday=1, etc.)
+      const dayMap: { [key: string]: number } = {
+        "Sunday": 0,
+        "Monday": 1,
+        "Tuesday": 2,
+        "Wednesday": 3,
+        "Thursday": 4,
+        "Friday": 5,
+        "Saturday": 6,
+      };
+
+      const dayIndex = dayMap[rota.day];
+
+      // Update workingHours for each assigned staff member
+      if (dayIndex !== undefined && rota.assignments) {
+        for (const assignment of rota.assignments) {
+          const staff = await storage.getStaff(assignment.employeeId);
+          if (staff) {
+            // Get existing workingHours or create default array
+            const workingHours = staff.workingHours || [
+              "not in", "not in", "not in", "not in", "not in", "not in", "not in"
+            ];
+
+            // Determine the shift value
+            let shiftValue = "not in";
+            if (assignment.shifts.includes("all-day")) {
+              shiftValue = "all day";
+            } else if (assignment.shifts.includes("am") && assignment.shifts.includes("pm")) {
+              shiftValue = "all day";
+            } else if (assignment.shifts.includes("am")) {
+              shiftValue = "am";
+            } else if (assignment.shifts.includes("pm")) {
+              shiftValue = "pm";
+            }
+
+            // Update the specific day
+            workingHours[dayIndex] = shiftValue;
+
+            // Update staff member
+            await storage.updateStaff(assignment.employeeId, { workingHours });
+          }
+        }
+      }
+
       res.json(rota);
     } catch (error) {
       if (error instanceof z.ZodError) {
