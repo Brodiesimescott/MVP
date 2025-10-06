@@ -102,6 +102,7 @@ export interface IStorage {
 
   // Rota methods
   getRotasByPractice(practiceId: string): Promise<Rota[]>;
+  getRotaByDay(practiceId: string, day: string): Promise<Rota | undefined>;
   createRota(rota: InsertRota): Promise<Rota>;
 }
 
@@ -622,6 +623,12 @@ export class MemStorage implements IStorage {
   async getRotasByPractice(practiceId: string): Promise<Rota[]> {
     return Array.from(this.rotas.values()).filter(
       (rota) => rota.practiceId === practiceId
+    );
+  }
+
+  async getRotaByDay(practiceId: string, day: string): Promise<Rota | undefined> {
+    return Array.from(this.rotas.values()).find(
+      (rota) => rota.practiceId === practiceId && rota.day === day
     );
   }
 
