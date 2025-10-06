@@ -91,27 +91,29 @@ export default function AppraisalManagement({
   const { toast } = useToast();
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
-    queryKey: ["/api/hr/staff"],
+    queryKey: ["/api/hr/staff", user?.email],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/hr/staff", user?.email);
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch");
       const result = await response.json();
       return result.data || [];
     },
+    enabled: !!user?.email,
   });
 
   const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
     AppraisalEvidence[]
   >({
-    queryKey: ["/api/hr/appraisals"],
+    queryKey: ["/api/hr/appraisals", user?.email],
     queryFn: async () => {
-      const response = await apiRequest(
-        "GET",
-        "/api/hr/appraisals",
-        user?.email,
-      );
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/appraisals?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch");
       const result = await response.json();
       return result.data || [];
     },
+    enabled: !!user?.email,
   });
 
   const form = useForm<StaffFormData>({

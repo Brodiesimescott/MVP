@@ -145,12 +145,15 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
   // https://stackoverflow.com/questions/66627655/how-do-i-map-several-controlled-input-checkboxes-from-an-array-in-react
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
-    queryKey: ["/api/hr/staff"],
+    queryKey: ["/api/hr/staff", user?.email],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/hr/staff", user?.email);
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch");
       const result = await response.json();
       return result.data || [];
     },
+    enabled: !!user?.email,
   });
 
   const { toast } = useToast();
