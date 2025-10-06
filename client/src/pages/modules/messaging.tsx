@@ -129,31 +129,52 @@ export default function ChironMessaging() {
   const { data: conversations, refetch: refetchConversations } = useQuery<
     Conversation[]
   >({
-    queryKey: ["/api/messaging/conversations"],
+    queryKey: ["/api/messaging/conversations", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/messaging/conversations?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch conversations");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const { data: messages, refetch: refetchMessages } = useQuery<Message[]>({
-    queryKey: ["/api/messaging/messages", selectedConversation],
-    enabled: selectedConversation !== null,
+    queryKey: ["/api/messaging/messages", selectedConversation, user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/messaging/messages?conversationId=${selectedConversation}&email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch messages");
+      return response.json();
+    },
+    enabled: selectedConversation !== null && !!user?.email,
   });
 
   const { data: convomessages, refetch: refetchconvoMessages } = useQuery<
     Message[] | null
   >({
-    queryKey: ["/api/messaging/initConversation", selectedConversation],
-    queryFn: selectedConversation
-      ? () =>
-          fetch(`/api/messaging/initConversation/${selectedConversation}`).then(
-            (res) => res.json(),
-          )
-      : () => null,
-    enabled: selectedConversation !== null,
+    queryKey: ["/api/messaging/initConversation", selectedConversation, user?.email],
+    queryFn: selectedConversation && user?.email
+      ? async () => {
+          const response = await fetch(`/api/messaging/initConversation/${selectedConversation}?email=${encodeURIComponent(user.email)}`);
+          if (!response.ok) throw new Error("Failed to fetch conversation messages");
+          return response.json();
+        }
+      : async () => null,
+    enabled: selectedConversation !== null && !!user?.email,
   });
 
   const { data: announcements, refetch: refetchAnnouncements } = useQuery<
     Message[] | null
   >({
-    queryKey: ["/api/messaging/announcements"],
+    queryKey: ["/api/messaging/announcements", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/messaging/announcements?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch announcements");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   // WebSocket connection for real-time messaging
@@ -256,7 +277,11 @@ export default function ChironMessaging() {
       const response = await fetch("/api/messaging/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, conversationId }),
+        body: JSON.stringify({ 
+          content, 
+          conversationId,
+          email: user?.email,
+        }),
       });
 
       if (!response.ok) {
