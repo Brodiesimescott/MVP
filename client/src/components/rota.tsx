@@ -9,6 +9,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,27 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useMemo } from "react";
 import { createInsertSchema } from "drizzle-zod";
+import { index } from "drizzle-orm/mysql-core";
+import { useAuth } from "@/components/auth/authProvider";
+
+interface RotaRequirement {
+  position: string;
+  am: number;
+  pm: number;
+  allDay: number;
+  checked: boolean;
+}
+
+interface StaffAssignment {
+  employeeId: string;
+  shifts: ("am" | "pm" | "all-day")[];
+}
+
+interface RotaDay {
+  day: string;
+  requirements: RotaRequirement[];
+  assignments: StaffAssignment[];
+}
 
 interface RotaManagementProps {
   onBack: () => void;
@@ -82,27 +104,53 @@ const staffFormSchema = insertStaffSchema
 type StaffFormData = z.infer<typeof staffFormSchema>;
 
 const rotaFormSchema = z.object({
-  workingHours: z.array(z.string().nullable()).length(5),
+  workingHours: z.array(z.string().nullable()).length(7),
 });
 
 type RotaFormData = z.infer<typeof rotaFormSchema>;
 
 export default function RotaManagement({ onBack }: RotaManagementProps) {
+  const { user, logout } = useAuth();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showCreateRotaDialog, setShowCreateRotaDialog] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   var weekday = new Array(7);
-  weekday[0] = "Monday";
-  weekday[1] = "Tuesday";
-  weekday[2] = "Wednesday";
-  weekday[3] = "Thursday";
-  weekday[4] = "Friday";
+  weekday[0] = "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
   const [selectedDay, setSelectedDay] = useState<string>(
-    weekday[new Date().getDay()] || "Monday",
+    weekday[new Date().getDay()],
   );
+  const [selectedRotaDay, setSelectedRotaDay] = useState<string>("Monday");
+  const [rotaRequirements, setRotaRequirements] = useState<RotaRequirement[]>([
+    { position: "admin", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "nurse", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "doctor", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "reception", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "business", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "pharmacy", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "physio", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "health visitor", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "dentist", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "dental therapist", am: 0, pm: 0, allDay: 0, checked: false },
+    { position: "hygienist", am: 0, pm: 0, allDay: 0, checked: false },
+  ]);
+  const [rotaAssignments, setRotaAssignments] = useState<StaffAssignment[]>([]);
+
+  // https://stackoverflow.com/questions/66627655/how-do-i-map-several-controlled-input-checkboxes-from-an-array-in-react
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/hr/staff", user?.email);
+      const result = await response.json();
+      return result.data || [];
+    },
   });
 
   const { toast } = useToast();
@@ -128,6 +176,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       professionalBody: "",
       professionalBodyNumber: "",
       appraisalDate: "",
+      nextAppraisal: "",
       revalidationInfo: "",
       dbsCheckExpiry: "",
       emergencyContactName: "",
@@ -139,7 +188,15 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
   const rotaForm = useForm<RotaFormData>({
     resolver: zodResolver(rotaFormSchema),
     defaultValues: {
-      workingHours: ["not in", "not in", "not in", "not in", "not in"],
+      workingHours: [
+        "not in",
+        "not in",
+        "not in",
+        "not in",
+        "not in",
+        "not in",
+        "not in",
+      ],
     },
   });
 
@@ -197,16 +254,20 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       "Wednesday",
       "Thursday",
       "Friday",
+      "Saturday",
+      "Sunday",
     ],
     rows:
       filteredStaff?.map((staffMember) => ({
         id: staffMember.employeeId,
         name: `${staffMember.firstName} ${staffMember.lastName}`,
-        monday: staffMember.workingHours?.[0] || "not in",
-        tuesday: staffMember.workingHours?.[1] || "not in",
-        wednesday: staffMember.workingHours?.[2] || "not in",
-        thursday: staffMember.workingHours?.[3] || "not in",
-        friday: staffMember.workingHours?.[4] || "not in",
+        sunday: staffMember.workingHours?.[0] || "not in",
+        monday: staffMember.workingHours?.[1] || "not in",
+        tuesday: staffMember.workingHours?.[2] || "not in",
+        wednesday: staffMember.workingHours?.[3] || "not in",
+        thursday: staffMember.workingHours?.[4] || "not in",
+        friday: staffMember.workingHours?.[5] || "not in",
+        saturday: staffMember.workingHours?.[6] || "not in",
       })) || [],
   };
 
@@ -325,7 +386,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
 
     updateRotaMutation.mutate({
       employeeId: selectedStaff.employeeId,
-      workingHours: data.workingHours,
+      workingHours: data.workingHours.map(hour => hour ?? "not in"),
     });
   };
 
@@ -338,9 +399,167 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
         "not in",
         "not in",
         "not in",
+        "not in",
+        "not in",
       ],
     });
     setShowEditDialog(true);
+  };
+
+  // Rota creation functions
+  const updateRequirement = (
+    position: string,
+    shift: "am" | "pm" | "allDay",
+    value: number,
+  ) => {
+    setRotaRequirements((prev) =>
+      prev.map((req) =>
+        req.position === position
+          ? { ...req, [shift]: Math.max(0, value) }
+          : req,
+      ),
+    );
+  };
+
+  const assignStaff = (employeeId: string, shift: "am" | "pm" | "all-day") => {
+    setRotaAssignments((prev) => {
+      const existing = prev.find((a) => a.employeeId === employeeId);
+
+      if (existing) {
+        // If assigning all-day, remove other shifts
+        if (shift === "all-day") {
+          return prev.map((a) =>
+            a.employeeId === employeeId ? { ...a, shifts: ["all-day"] } : a,
+          );
+        }
+
+        // If already has all-day, don't add other shifts
+        if (existing.shifts.includes("all-day")) {
+          return prev;
+        }
+
+        // Add shift if not already present
+        if (!existing.shifts.includes(shift)) {
+          return prev.map((a) =>
+            a.employeeId === employeeId
+              ? { ...a, shifts: [...a.shifts, shift] }
+              : a,
+          );
+        }
+        return prev;
+      } else {
+        return [...prev, { employeeId, shifts: [shift] }];
+      }
+    });
+  };
+
+  const removeStaffAssignment = (
+    employeeId: string,
+    shift?: "am" | "pm" | "all-day",
+  ) => {
+    setRotaAssignments((prev) => {
+      if (shift) {
+        // Remove specific shift
+        return prev
+          .map((a) =>
+            a.employeeId === employeeId
+              ? { ...a, shifts: a.shifts.filter((s) => s !== shift) }
+              : a,
+          )
+          .filter((a) => a.shifts.length > 0);
+      } else {
+        // Remove all assignments for this staff member
+        return prev.filter((a) => a.employeeId !== employeeId);
+      }
+    });
+  };
+
+  const calculateCoverage = (position: string) => {
+    const requirement = rotaRequirements.find((r) => r.position === position);
+    if (!requirement) return { am: 0, pm: 0, allDay: 0, amPmEquivalent: 0, effectiveAllDay: 0 };
+
+    const positionStaff =
+      filteredStaff?.filter((s) => s.position === position) || [];
+    const assignments = rotaAssignments.filter((a) =>
+      positionStaff.some((s) => s.employeeId === a.employeeId),
+    );
+
+    let amCovered = 0;
+    let pmCovered = 0;
+    let allDayCovered = 0;
+    let amPmEquivalent = 0;
+
+    assignments.forEach((assignment) => {
+      const hasAm = assignment.shifts.includes("am");
+      const hasPm = assignment.shifts.includes("pm");
+      const hasAllDay = assignment.shifts.includes("all-day");
+
+      if (hasAllDay) {
+        allDayCovered += 1;
+        amCovered += 1;
+        pmCovered += 1;
+      } else {
+        if (hasAm) amCovered += 1;
+        if (hasPm) pmCovered += 1;
+        if (hasAm && hasPm) amPmEquivalent += 1;
+      }
+    });
+
+    return {
+      am: amCovered,
+      pm: pmCovered,
+      allDay: allDayCovered,
+      amPmEquivalent,
+      effectiveAllDay: allDayCovered + amPmEquivalent,
+    };
+  };
+
+  const getStaffAssignment = (employeeId: string) => {
+    return rotaAssignments.find((a) => a.employeeId === employeeId);
+  };
+
+  const canAssignShift = (
+    employeeId: string,
+    shift: "am" | "pm" | "all-day",
+    position: string,
+  ) => {
+    const assignment = getStaffAssignment(employeeId);
+    const coverage = calculateCoverage(position);
+    const requirement = rotaRequirements.find((r) => r.position === position);
+
+    if (!requirement) return false;
+
+    // Check if already has this shift
+    if (assignment?.shifts.includes(shift)) return false;
+
+    // Check if already has all-day (can't add am/pm)
+    if (assignment?.shifts.includes("all-day") && shift !== "all-day")
+      return false;
+
+    // Check if requirements are already met
+    if (shift === "am" && coverage.am >= requirement.am) return false;
+    if (shift === "pm" && coverage.pm >= requirement.pm) return false;
+    if (shift === "all-day" && coverage.effectiveAllDay >= requirement.allDay)
+      return false;
+
+    return true;
+  };
+
+  const resetRotaForm = () => {
+    setRotaRequirements([
+      { position: "admin", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "nurse", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "doctor", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "reception", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "business", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "pharmacy", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "physio", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "health visitor", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "dentist", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "dental therapist", am: 0, pm: 0, allDay: 0, checked: false },
+      { position: "hygienist", am: 0, pm: 0, allDay: 0, checked: false },
+    ]);
+    setRotaAssignments([]);
   };
 
   const getStatusBadge = (hours: string) => {
@@ -398,6 +617,15 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                 members
               </span>
             </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button
+              onClick={() => setShowCreateRotaDialog(true)}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Rota</span>
+            </Button>
           </div>
         </div>
       </header>
@@ -512,6 +740,12 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         {getStatusBadge(row.friday)}
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        {getStatusBadge(row.saturday)}
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        {getStatusBadge(row.sunday)}
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         {staffMember && (
@@ -658,39 +892,37 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
               className="space-y-6"
             >
               <div className="grid grid-cols-1 gap-4">
-                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
-                  (day, index) => (
-                    <FormField
-                      key={day}
-                      control={rotaForm.control}
-                      name={`workingHours.${index}` as const}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-slate-700">
-                            {day}
-                          </FormLabel>
-                          <Select
-                            onValueChange={(value) => field.onChange(value)}
-                            value={field.value || "not in"}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select working hours" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="am">Morning (AM)</SelectItem>
-                              <SelectItem value="pm">Afternoon (PM)</SelectItem>
-                              <SelectItem value="all day">All Day</SelectItem>
-                              <SelectItem value="not in">Not In</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ),
-                )}
+                {weekday.map((day, index) => (
+                  <FormField
+                    key={day}
+                    control={rotaForm.control}
+                    name={`workingHours.${index}` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-slate-700">
+                          {day}
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => field.onChange(value)}
+                          value={field.value || "not in"}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select working hours" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="am">Morning (AM)</SelectItem>
+                            <SelectItem value="pm">Afternoon (PM)</SelectItem>
+                            <SelectItem value="all day">All Day</SelectItem>
+                            <SelectItem value="not in">Not In</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
               </div>
               <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200">
                 <Button
@@ -720,6 +952,471 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Rota Dialog */}
+      <Dialog
+        open={showCreateRotaDialog}
+        onOpenChange={setShowCreateRotaDialog}
+      >
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              Create Rota for {selectedRotaDay}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Day Selection */}
+            <div className="flex items-center space-x-4">
+              <label className="text-sm font-medium text-slate-700">Day:</label>
+              <Select
+                value={selectedRotaDay}
+                onValueChange={setSelectedRotaDay}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {weekday.map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Requirements Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Staff Requirements
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {rotaRequirements.map((req) => (
+                  <Card key={req.position} className="p-4">
+                    <h4 className="font-medium text-slate-900 capitalize mb-3">
+                      {req.position}
+                    </h4>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <Checkbox
+                        checked={req.checked}
+                        onCheckedChange={() => {
+                          const item = req.position;
+                          const isChecked = req.checked;
+
+                          const updatedReqs = rotaRequirements.map(
+                            (subject) => {
+                              if (subject.position === item) {
+                                return {
+                                  ...subject,
+                                  checked: !isChecked,
+                                };
+                              }
+
+                              return subject;
+                            },
+                          );
+
+                          setRotaRequirements(updatedReqs);
+                        }}
+                      />
+                      Show Card
+                    </label>
+                    {req.checked == true && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-slate-600">AM</label>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateRequirement(
+                                  req.position,
+                                  "am",
+                                  req.am - 1,
+                                )
+                              }
+                              disabled={req.am <= 0 && req.allDay <= 0}
+                              className="w-8 h-8 p-0"
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center text-sm font-medium">
+                              {req.am}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateRequirement(
+                                  req.position,
+                                  "am",
+                                  req.am + 1,
+                                )
+                              }
+                              className="w-8 h-8 p-0"
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-slate-600">PM</label>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateRequirement(
+                                  req.position,
+                                  "pm",
+                                  req.pm - 1,
+                                )
+                              }
+                              disabled={req.pm <= 0 && req.allDay <= 0}
+                              className="w-8 h-8 p-0"
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center text-sm font-medium">
+                              {req.pm}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateRequirement(
+                                  req.position,
+                                  "pm",
+                                  req.pm + 1,
+                                )
+                              }
+                              className="w-8 h-8 p-0"
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-slate-600">
+                            All Day
+                          </label>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateRequirement(
+                                  req.position,
+                                  "allDay",
+                                  req.allDay - 1,
+                                )
+                              }
+                              disabled={req.allDay <= 0}
+                              className="w-8 h-8 p-0"
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center text-sm font-medium">
+                              {req.allDay}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                updateRequirement(
+                                  req.position,
+                                  "allDay",
+                                  req.allDay + 1,
+                                )
+                              }
+                              className="w-8 h-8 p-0"
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Coverage Summary */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Coverage Status
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {rotaRequirements.map((req) => {
+                  const coverage = calculateCoverage(req.position);
+                  if (req.checked) {
+                    return (
+                      <Card key={req.position} className="p-4">
+                        <h4 className="font-medium text-slate-900 capitalize mb-3">
+                          {req.position}
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span>AM:</span>
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={
+                                  coverage.am >= req.am
+                                    ? "text-green-600"
+                                    : "text-amber-600"
+                                }
+                              >
+                                {coverage.am}/{req.am}
+                              </span>
+                              {coverage.am >= req.am ? (
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              ) : (
+                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>PM:</span>
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={
+                                  coverage.pm >= req.pm
+                                    ? "text-green-600"
+                                    : "text-amber-600"
+                                }
+                              >
+                                {coverage.pm}/{req.pm}
+                              </span>
+                              {coverage.pm >= req.pm ? (
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              ) : (
+                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>All Day:</span>
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={
+                                  coverage.effectiveAllDay >= req.allDay
+                                    ? "text-green-600"
+                                    : "text-amber-600"
+                                }
+                              >
+                                {coverage.effectiveAllDay}/{req.allDay}
+                              </span>
+                              {coverage.effectiveAllDay >= req.allDay ? (
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              ) : (
+                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                              )}
+                            </div>
+                          </div>
+                          {coverage.amPmEquivalent > 0 && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              {coverage.amPmEquivalent} AM+PM = All Day
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    );
+                  }
+                })}
+              </div>
+            </div>
+
+            {/* Staff Assignment */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Staff Assignment
+              </h3>
+              <div className="space-y-4">
+                {rotaRequirements.map((req, index) => {
+                  const positionStaff =
+                    filteredStaff?.filter((s) => s.position === req.position) ||
+                    [];
+                  if (positionStaff.length === 0) return null;
+
+                  if (req.checked) {
+                    return (
+                      <Card key={req.position} className="p-4">
+                        <h4 className="font-medium text-slate-900 capitalize mb-4">
+                          {req.position}s
+                        </h4>
+                        <div className="space-y-3">
+                          {positionStaff.map((staffMember) => {
+                            const assignment = getStaffAssignment(
+                              staffMember.employeeId,
+                            );
+                            return (
+                              <div
+                                key={staffMember.employeeId}
+                                className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <span className="font-medium text-slate-900">
+                                    {staffMember.firstName}{" "}
+                                    {staffMember.lastName}
+                                  </span>
+                                  <div className="flex space-x-1">
+                                    {assignment?.shifts.map((shift) => (
+                                      <div
+                                        key={shift}
+                                        className="flex items-center space-x-1"
+                                      >
+                                        <Badge
+                                          variant="secondary"
+                                          className="bg-green-100 text-green-800 border-green-200"
+                                        >
+                                          {shift === "all-day"
+                                            ? "All Day"
+                                            : shift.toUpperCase()}
+                                        </Badge>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() =>
+                                            removeStaffAssignment(
+                                              staffMember.employeeId,
+                                              shift,
+                                            )
+                                          }
+                                          className="w-4 h-4 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                        >
+                                          ×
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      assignStaff(staffMember.employeeId, "am")
+                                    }
+                                    disabled={
+                                      !canAssignShift(
+                                        staffMember.employeeId,
+                                        "am",
+                                        req.position,
+                                      )
+                                    }
+                                    className="text-xs"
+                                  >
+                                    AM
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      assignStaff(staffMember.employeeId, "pm")
+                                    }
+                                    disabled={
+                                      !canAssignShift(
+                                        staffMember.employeeId,
+                                        "pm",
+                                        req.position,
+                                      )
+                                    }
+                                    className="text-xs"
+                                  >
+                                    PM
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      assignStaff(
+                                        staffMember.employeeId,
+                                        "all-day",
+                                      )
+                                    }
+                                    disabled={
+                                      !canAssignShift(
+                                        staffMember.employeeId,
+                                        "all-day",
+                                        req.position,
+                                      )
+                                    }
+                                    className="text-xs"
+                                  >
+                                    All Day
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </Card>
+                    );
+                  }
+                })}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-between pt-6 border-t border-slate-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={resetRotaForm}
+                className="text-slate-600 hover:text-slate-800"
+              >
+                Reset Form
+              </Button>
+              <div className="flex space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateRotaDialog(false);
+                    resetRotaForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => {
+                    // Here you would save the rota
+                    toast({
+                      title: "Success",
+                      description: `Rota created for ${selectedRotaDay}`,
+                    });
+                    setShowCreateRotaDialog(false);
+                    resetRotaForm();
+                  }}
+                >
+                  Create Rota
+                </Button>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

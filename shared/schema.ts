@@ -118,13 +118,14 @@ export const staff = pgTable("staff", {
   startDate: date("start_date").notNull(),
   contract: staffContractTypeEnum("contract").notNull(),
   salary: decimal("salary", { precision: 10, scale: 2 }),
-  workingHours: shiftEnum("working_hours").array(5),
+  workingHours: shiftEnum("working_hours").array(7),
   annualLeave: integer("annual_leave").default(28),
   studyLeave: integer("study_leave").default(5),
   otherLeave: integer("other_leave").default(0),
   professionalBody: text("professional_body"),
   professionalBodyNumber: text("professional_body_number"),
   appraisalDate: date("appraisal_date"),
+  nextAppraisal: date("appraisal_next"),
   revalidationInfo: text("revalidation_info"),
   dbsCheckExpiry: text("dbs_check_expiry"),
   emergencyContactName: text("emergency_contact_name"),
@@ -169,6 +170,17 @@ export const appraisalEvidence = pgTable("appraisal_evidence", {
   employeeId: text("employee_id")
     .references(() => people.id, { onDelete: "no action" })
     .notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Policy table
+export const policy = pgTable("policy", {
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  fileName: text("file_name").notNull().primaryKey(),
+  path: text("file_path").notNull(),
+  description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -282,7 +294,9 @@ export const insertUserSchema = createInsertSchema(users).omit({
 
 export const insertPersonSchema = createInsertSchema(people);
 
-export const insertStaffSchema = createInsertSchema(staff).omit({
+export const insertStaffSchema = createInsertSchema(staff, {
+  employeeId: z.string().min(1, "Id is required"),
+}).omit({
   createdAt: true,
 });
 
@@ -331,6 +345,10 @@ export const insertAppraisalEvidenceSchema = createInsertSchema(
   createdAt: true,
 });
 
+export const insertPolicySchema = createInsertSchema(policy).omit({
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -376,3 +394,6 @@ export type AppraisalEvidence = typeof appraisalEvidence.$inferSelect;
 export type InsertAppraisalEvidence = z.infer<
   typeof insertAppraisalEvidenceSchema
 >;
+
+export type Policy = typeof policy.$inferSelect;
+export type InsertPolicy = z.infer<typeof insertPolicySchema>;

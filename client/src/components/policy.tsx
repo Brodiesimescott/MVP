@@ -21,22 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,6 +28,7 @@ import {
   insertStaffSchema,
   staff,
   AppraisalEvidence,
+  Policy,
   insertAppraisalEvidenceSchema,
 } from "@shared/schema";
 import { z } from "zod";
@@ -52,7 +37,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { createInsertSchema } from "drizzle-zod";
 import { FileUploader } from "@/components/FileUploader";
-import { useAuth } from "@/components/auth/authProvider";
 
 const staffSchema = createInsertSchema(staff).extend({
   firstName: z.string(),
@@ -75,14 +59,11 @@ const staffFormSchema = insertStaffSchema
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
 
-interface AppraisalManagementProps {
+interface PolicyManagementProps {
   onBack: () => void;
 }
 
-export default function AppraisalManagement({
-  onBack,
-}: AppraisalManagementProps) {
-  const { user, logout } = useAuth();
+export default function PolicyManagement({ onBack }: PolicyManagementProps) {
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
@@ -92,26 +73,12 @@ export default function AppraisalManagement({
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/hr/staff", user?.email);
-      const result = await response.json();
-      return result.data || [];
-    },
   });
 
   const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
     AppraisalEvidence[]
   >({
     queryKey: ["/api/hr/appraisals"],
-    queryFn: async () => {
-      const response = await apiRequest(
-        "GET",
-        "/api/hr/appraisals",
-        user?.email,
-      );
-      const result = await response.json();
-      return result.data || [];
-    },
   });
 
   const form = useForm<StaffFormData>({
