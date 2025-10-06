@@ -909,19 +909,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/messaging/createconversations", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body.creator);
-    const newconversation: InsertConversation = insertConversationSchema.parse({
-      ...req.body,
-    });
+    try {
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const newconversation: InsertConversation = insertConversationSchema.parse({
+        ...req.body,
+      });
 
-    console.log("create convo");
-    storage.createConversation(newconversation);
-    res.json(
-      await storage.getConversationsByUser(
-        currentUser!.id,
-        currentUser!.practiceId,
-      ),
-    );
+      await storage.createConversation(newconversation);
+      const conversations = await storage.getConversationsByUser(
+        currentUser.id,
+        currentUser.practiceId,
+      );
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ message: "Failed to create conversation" });
+    }
   });
 
   app.get("/api/messaging/announcements", async (req, res) => {
