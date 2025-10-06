@@ -18,6 +18,7 @@ import { Progress } from "@/components/ui/progress";
 import LLMGuide from "@/components/llm-guide";
 import ModuleLogo from "@/components/module-logo";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth/authProvider";
 
 interface CQCDashboardMetrics {
   complianceScore: number;
@@ -51,22 +52,44 @@ interface CQCActivity {
 
 export default function ChironCQC() {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data: metrics, isLoading: metricsLoading } =
     useQuery<CQCDashboardMetrics>({
-      queryKey: ["/api/cqc/dashboard"],
+      queryKey: ["/api/cqc/dashboard", user?.email],
+      queryFn: async () => {
+        if (!user?.email) throw new Error("Not authenticated");
+        const response = await fetch(`/api/cqc/dashboard?email=${encodeURIComponent(user.email)}`);
+        if (!response.ok) throw new Error("Failed to fetch dashboard");
+        return response.json();
+      },
+      enabled: !!user?.email,
     });
 
   const { data: standards, isLoading: standardsLoading } = useQuery<
     CQCStandard[]
   >({
-    queryKey: ["/api/cqc/standards"],
+    queryKey: ["/api/cqc/standards", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/cqc/standards?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch standards");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const { data: activities, isLoading: activitiesLoading } = useQuery<
     CQCActivity[]
   >({
-    queryKey: ["/api/cqc/activity"],
+    queryKey: ["/api/cqc/activity", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/cqc/activity?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch activity");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const uploadEvidenceMutation = useMutation({
@@ -78,7 +101,10 @@ export default function ChironCQC() {
       const response = await fetch("/api/cqc/evidence", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(evidenceData),
+        body: JSON.stringify({
+          ...evidenceData,
+          email: user?.email,
+        }),
       });
       if (!response.ok) throw new Error("Failed to upload evidence");
       return response.json();

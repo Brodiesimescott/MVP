@@ -95,6 +95,15 @@ async function getCurrentUser(userEmail: string) {
   return CurrentUser;
 }
 
+// Helper to get current user from request
+async function getCurrentUserFromRequest(req: any) {
+  const email = req.query.email || req.body.email;
+  if (!email) {
+    return null;
+  }
+  return getCurrentUser(email);
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
@@ -320,8 +329,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // HR endpoints
   app.get("/api/hr/metrics", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
-    const allStaff = await storage.getStaffByPractice(currentUser!.practiceId);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const allStaff = await storage.getStaffByPractice(currentUser.practiceId);
 
     const reviewdates = allStaff.map((x) => x.nextAppraisal || "now");
 
@@ -345,8 +357,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/hr/staff", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
-    const staff = await storage.getStaffByPractice(currentUser!.practiceId);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const staff = await storage.getStaffByPractice(currentUser.practiceId);
 
     const employees = [];
     for (const employee of staff) {
@@ -380,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           emergencyContactRelation: employee.emergencyContactRelation,
           status: employee.status,
           createdAt: employee.createdAt,
-          practiceId: currentUser!.practiceId,
+          practiceId: currentUser.practiceId,
           firstName: person.firstName,
           lastName: person.lastName,
         });
@@ -612,10 +627,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/hr/staff/:id", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const staff = await storage.getStaff(req.params.id);
 
-    if (!staff || staff.practiceId !== currentUser!.practiceId) {
+    if (!staff || staff.practiceId !== currentUser.practiceId) {
       res.status(404).json({ message: "Staff member not found" });
       return;
     }
@@ -629,19 +647,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/hr/appraisals", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const appraisals = await storage.getAppraisalsByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
     res.json(appraisals);
   });
 
   app.post("/api/hr/appraisal", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const appraisalEvidence = {
         ...req.body,
-        practiceId: currentUser!.practiceId,
+        practiceId: currentUser.practiceId,
       };
 
       const evidence = await storage.createAppraisal(appraisalEvidence);
@@ -652,9 +676,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/hr/policy", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const policies = await storage.getPoliciesByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
     res.json(policies);
   });
@@ -676,9 +703,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // CQC endpoints
   app.get("/api/cqc/dashboard", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const standards = await storage.getCqcStandards();
-    const evidence = await storage.getPracticeEvidence(currentUser!.practiceId);
+    const evidence = await storage.getPracticeEvidence(currentUser.practiceId);
 
     res.json({
       complianceScore: 98,
@@ -735,11 +765,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Messaging endpoints
   app.get("/api/messaging/contacts", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
-      const users = await storage.getUsersByPractice(currentUser!.practiceId);
+      const users = await storage.getUsersByPractice(currentUser.practiceId);
       const contactusers = users.filter(
-        (u) => u.employeeId !== currentUser!.id,
+        (u) => u.employeeId !== currentUser.id,
       );
 
       const contacts = [];
@@ -764,7 +797,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/messaging/conversations", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     /** const newconversations: InsertConversation[] = [
       {
         practiceId: "practice1",
@@ -776,8 +812,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("create convo");
     storage.createConversation(newconversations[0]);*/
     const testdata = await storage.getConversationsByUser(
-      currentUser!.id,
-      currentUser!.practiceId,
+      currentUser.id,
+      currentUser.practiceId,
     );
     if (testdata.length < 2) {
       const newuser0 = await storage.createUser({
@@ -865,8 +901,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const conversations = await storage.getConversationsByUser(
-      currentUser!.id,
-      currentUser!.practiceId,
+      currentUser.id,
+      currentUser.practiceId,
     );
 
     res.json(conversations);
@@ -890,31 +926,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/messaging/announcements", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const UserbyPractice = await storage.getUsersByPractice(
-        currentUser!.practiceId,
+        currentUser.practiceId,
       );
       //fix when current user fix
       const ids = UserbyPractice.map((user) => user.employeeId).concat(
-        currentUser!.id,
+        currentUser.id,
       );
       const newconversation: InsertConversation =
         insertConversationSchema.parse({
-          practiceId: currentUser!.practiceId,
+          practiceId: currentUser.practiceId,
           title: "Announcements",
           participantIds: ids,
         });
 
       const testcreate = await storage.getConversationsByUser(
-        currentUser!.id,
-        currentUser!.practiceId,
+        currentUser.id,
+        currentUser.practiceId,
       );
       if (testcreate.find((obj) => obj.title == "Announcements") == null) {
         await storage.createConversation(newconversation);
       }
       const conversations = await storage.getConversationsByUser(
-        currentUser!.id,
-        currentUser!.practiceId,
+        currentUser.id,
+        currentUser.practiceId,
       );
       const announcements = conversations.find(
         (obj) => obj.title == "Announcements",
@@ -1047,12 +1086,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Money endpoints
   app.get("/api/money/dashboard", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const transactions = await storage.getTransactionsByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
     const invoices = await storage.getInvoicesByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
 
     const revenue = transactions
@@ -1077,9 +1119,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/transactions", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const transactions = await storage.getTransactionsByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
     res.json(transactions);
   });
@@ -1106,9 +1151,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/invoices", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const invoices = await storage.getInvoicesByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
     res.json(invoices);
   });
@@ -1135,9 +1183,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/purchases", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const purchases = await storage.getPurchasesByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
     res.json(purchases);
   });
@@ -1164,9 +1215,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/reports/profit-and-loss", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const transactions = await storage.getTransactionsByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
 
     const income = transactions
@@ -1186,9 +1240,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/calculations/corporation-tax", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const transactions = await storage.getTransactionsByPractice(
-      currentUser!.practiceId,
+      currentUser.practiceId,
     );
 
     const profit =
@@ -1258,19 +1315,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "fileURL is required" });
       }
 
-      const currentUser = await getCurrentUser(req.body);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const objectStorageService = new ObjectStorageService();
 
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         fileURL,
         {
-          owner: currentUser!.id,
+          owner: currentUser.id,
           visibility: "private", // Healthcare files should be private
           aclRules: [
             {
               group: {
                 type: "practice_members" as any,
-                id: currentUser!.practiceId,
+                id: currentUser.practiceId,
               },
               permission: ObjectPermission.READ,
             },

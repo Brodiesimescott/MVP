@@ -75,11 +75,25 @@ export default function ChironHR() {
   const { user, logout } = useAuth();
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
-    queryKey: ["/api/hr/staff"],
+    queryKey: ["/api/hr/staff", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch staff");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<HRMetrics>({
-    queryKey: ["/api/hr/metrics"],
+    queryKey: ["/api/hr/metrics", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/metrics?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch metrics");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   // Get staff working on selected day

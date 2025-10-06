@@ -17,6 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useAuth } from "@/components/auth/authProvider";
 
 interface MoneyDashboardMetrics {
   monthlyRevenue: number;
@@ -77,17 +78,39 @@ export default function ChironMoney() {
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<MoneyDashboardMetrics>({
-    queryKey: ['/api/money/dashboard']
+    queryKey: ['/api/money/dashboard', user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/money/dashboard?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch dashboard");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const { data: transactions } = useQuery<Transaction[]>({
-    queryKey: ['/api/money/transactions']
+    queryKey: ['/api/money/transactions', user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/money/transactions?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch transactions");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const { data: taxCalculation } = useQuery<TaxCalculation>({
-    queryKey: ['/api/money/calculations/corporation-tax']
+    queryKey: ['/api/money/calculations/corporation-tax', user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/money/calculations/corporation-tax?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch tax calculation");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const transactionForm = useForm<TransactionFormData>({
@@ -119,7 +142,10 @@ export default function ChironMoney() {
       const response = await fetch('/api/money/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          email: user?.email,
+        }),
       });
       if (!response.ok) throw new Error('Failed to create transaction');
       return response.json();
@@ -145,7 +171,11 @@ export default function ChironMoney() {
       const response = await fetch('/api/money/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, totalAmount }),
+        body: JSON.stringify({ 
+          ...data, 
+          totalAmount,
+          email: user?.email,
+        }),
       });
       if (!response.ok) throw new Error('Failed to create invoice');
       return response.json();
