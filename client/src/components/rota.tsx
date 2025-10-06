@@ -54,7 +54,7 @@ import { insertStaffSchema, staff } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createInsertSchema } from "drizzle-zod";
 import { index } from "drizzle-orm/mysql-core";
 import { useAuth } from "@/components/auth/authProvider";
@@ -155,7 +155,29 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     enabled: !!user?.email,
   });
 
+  const { data: existingRota, isLoading: isRotaLoading } = useQuery<RotaDay | null>({
+    queryKey: ["/api/hr/rota", selectedRotaDay, user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/hr/rota/${selectedRotaDay}?email=${encodeURIComponent(user.email)}`
+      );
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error("Failed to fetch");
+      return await response.json();
+    },
+    enabled: !!user?.email && !!selectedRotaDay,
+  });
+
   const { toast } = useToast();
+
+  // Populate form with existing rota data when it changes
+  useEffect(() => {
+    if (existingRota) {
+      setRotaRequirements(existingRota.requirements || rotaRequirements);
+      setRotaAssignments(existingRota.assignments || []);
+    }
+  }, [existingRota]);
 
   const form = useForm<StaffFormData>({
     resolver: zodResolver(staffFormSchema),
@@ -386,6 +408,8 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/rota"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
       toast({
         title: "Success",
         description: `Rota created for ${selectedRotaDay}`,
@@ -1005,8 +1029,13 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       >
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              Create Rota for {selectedRotaDay}
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+              {existingRota ? "Edit" : "Create"} Rota for {selectedRotaDay}
+              {existingRota && (
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+                  Existing
+                </Badge>
+              )}
             </DialogTitle>
           </DialogHeader>
 
@@ -1455,7 +1484,9 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                   disabled={createRotaMutation.isPending}
                   data-testid="button-create-rota"
                 >
-                  {createRotaMutation.isPending ? "Creating..." : "Create Rota"}
+                  {createRotaMutation.isPending 
+                    ? (existingRota ? "Updating..." : "Creating...") 
+                    : (existingRota ? "Update Rota" : "Create Rota")}
                 </Button>
               </div>
             </div>

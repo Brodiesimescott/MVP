@@ -751,17 +751,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dayIndex = dayMap[rota.day];
 
       // Update workingHours for each assigned staff member
-      if (dayIndex !== undefined && rota.assignments) {
-        for (const assignment of rota.assignments) {
+      if (dayIndex !== undefined && rota.assignments && Array.isArray(rota.assignments)) {
+        for (const assignment of rota.assignments as Array<{employeeId: string; shifts: string[]}>) {
           const staff = await storage.getStaff(assignment.employeeId);
           if (staff) {
             // Get existing workingHours or create default array
             const workingHours = staff.workingHours || [
               "not in", "not in", "not in", "not in", "not in", "not in", "not in"
-            ];
+            ] as ("am" | "pm" | "all day" | "not in")[];
 
             // Determine the shift value
-            let shiftValue = "not in";
+            let shiftValue: "am" | "pm" | "all day" | "not in" = "not in";
             if (assignment.shifts.includes("all-day")) {
               shiftValue = "all day";
             } else if (assignment.shifts.includes("am") && assignment.shifts.includes("pm")) {

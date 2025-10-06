@@ -635,8 +635,11 @@ export class MemStorage implements IStorage {
   async createRota(insertRota: InsertRota): Promise<Rota> {
     const id = this.rotaIdCounter++;
     const rota: Rota = {
+      practiceId: insertRota.practiceId,
+      day: insertRota.day,
+      requirements: insertRota.requirements,
+      assignments: insertRota.assignments,
       id,
-      ...insertRota,
       createdAt: new Date(),
     };
     this.rotas.set(id, rota);

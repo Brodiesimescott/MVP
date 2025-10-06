@@ -362,7 +362,6 @@ export const insertPolicySchema = createInsertSchema(policy).omit({
 });
 
 export const insertRotaSchema = createInsertSchema(rotas).omit({
-  id: true,
   createdAt: true,
 });
 
