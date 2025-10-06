@@ -150,8 +150,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       if (!user?.email) throw new Error("Not authenticated");
       const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
       if (!response.ok) throw new Error("Failed to fetch");
-      const result = await response.json();
-      return result.data || [];
+      return await response.json();
     },
     enabled: !!user?.email,
   });
