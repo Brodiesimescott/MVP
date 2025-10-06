@@ -1453,7 +1453,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve protected files
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body.creator);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       const objectStorageService = new ObjectStorageService();
 
       const objectFile = await objectStorageService.getObjectEntityFile(
@@ -1461,7 +1465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
-        userId: currentUser!.id,
+        userId: currentUser.id,
         requestedPermission: ObjectPermission.READ,
       });
 
