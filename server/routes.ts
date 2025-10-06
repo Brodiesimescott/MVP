@@ -151,14 +151,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return randomBytes(128).toString("base64");
   }
 
-  //Home api add omit(salt when current user is fixed)
+  //Home api - returns user info if email is provided via query parameter
   app.get("/api/home", async (req, res) => {
-    const currentUser = await getCurrentUser(req.body);
-    if (currentUser == null) {
-      res.status(400).json({ message: "Invalid user: Please login" });
+    const email = req.query.email as string;
+    
+    if (!email) {
+      res.status(400).json({ message: "Email parameter required" });
       return;
     }
-    const database = db;
+    
+    const currentUser = await getCurrentUser(email);
+    if (currentUser == null) {
+      res.status(401).json({ message: "Invalid user: Please login" });
+      return;
+    }
     res.status(200).json(currentUser);
   });
 
