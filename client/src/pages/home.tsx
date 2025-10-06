@@ -33,15 +33,21 @@ export default function Home() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["/api/home"],
+    queryKey: ["/api/home", user?.email],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/home", user?.email);
+      if (!user?.email) {
+        throw new Error("No user email");
+      }
+      const response = await fetch(`/api/home?email=${encodeURIComponent(user.email)}`, {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
       return (await response.json()) as UserData;
     },
     retry: false,
+    enabled: !!user?.email,
   });
 
   if (isLoading) {
