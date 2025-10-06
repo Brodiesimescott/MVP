@@ -37,6 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { createInsertSchema } from "drizzle-zod";
 import { FileUploader } from "@/components/FileUploader";
+import { useAuth } from "@/components/auth/authProvider";
 
 const staffSchema = createInsertSchema(staff).extend({
   firstName: z.string(),
@@ -64,6 +65,7 @@ interface PolicyManagementProps {
 }
 
 export default function PolicyManagement({ onBack }: PolicyManagementProps) {
+  const { user, logout } = useAuth();
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
@@ -72,13 +74,29 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
   const { toast } = useToast();
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
-    queryKey: ["/api/hr/staff"],
+    queryKey: ["/api/hr/staff", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch");
+      const result = await response.json();
+      return result.data || [];
+    },
+    enabled: !!user?.email,
   });
 
   const { data: appraisals, isLoading: isAppraisalsLoading } = useQuery<
     AppraisalEvidence[]
   >({
-    queryKey: ["/api/hr/appraisals"],
+    queryKey: ["/api/hr/appraisals", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/hr/appraisals?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch");
+      const result = await response.json();
+      return result.data || [];
+    },
+    enabled: !!user?.email,
   });
 
   const form = useForm<StaffFormData>({
