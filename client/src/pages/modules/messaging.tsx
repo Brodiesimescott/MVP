@@ -100,30 +100,50 @@ export default function ChironMessaging() {
 
   const { toast } = useToast();
 
-  const { data: userDetails } = useQuery({
-    queryKey: ["/api/home"],
+  const {
+    data: userDetails,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["/api/home", user?.email],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/home", user?.email);
-
+      if (!user?.email) {
+        throw new Error("No user email");
+      }
+      const response = await fetch(`/api/home?email=${encodeURIComponent(user.email)}`, {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
       return (await response.json()) as UserData;
     },
     retry: false,
+    enabled: !!user?.email,
   });
 
-  const { data: contacts, refetch: refetchContacts } = useQuery<User[]>({
-    queryKey: ["/api/messaging/contacts"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/messaging/contacts");
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
-      if (!response.ok) {
-        throw new Error("Authentication failed");
-      }
-      return (await response.json()) as UserData[];
+  if (error || !userDetails) {
+    return null;
+  }
+
+  const { data: contacts, refetch: refetchContacts } = useQuery<User[]>({
+    queryKey: ["/api/messaging/contacts", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(`/api/messaging/contacts?email=${encodeURIComponent(user.email)}`);
+      if (!response.ok) throw new Error("Failed to fetch contacts");
+      return response.json();
     },
     retry: false,
+    enabled: !!user?.email,
   });
 
   const { data: conversations, refetch: refetchConversations } = useQuery<
