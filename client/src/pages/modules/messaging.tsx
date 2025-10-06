@@ -42,6 +42,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertConversationSchema, insertMessageSchema } from "@shared/schema";
 import Select from "react-select";
+import { useAuth } from "@/components/auth/authProvider";
 
 interface ContactOption {
   value: string;
@@ -95,13 +96,14 @@ export default function ChironMessaging() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMessageQuery, setSearchMessageQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useAuth();
 
   const { toast } = useToast();
 
-  const { data: user } = useQuery({
+  const { data: userDetails } = useQuery({
     queryKey: ["/api/home"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/home");
+      const response = await apiRequest("GET", "/api/home", user?.email);
 
       if (!response.ok) {
         throw new Error("Authentication failed");
@@ -187,8 +189,8 @@ export default function ChironMessaging() {
     resolver: zodResolver(insertConversationSchema),
     defaultValues: {
       title: undefined,
-      practiceId: user?.practiceId,
-      participantIds: [user?.id],
+      practiceId: userDetails?.practiceId,
+      participantIds: [userDetails?.id],
     },
   });
 
@@ -318,14 +320,14 @@ export default function ChironMessaging() {
       label: `${contact.firstName} ${contact.lastName}`,
     }))
     .concat([
-      { value: user!.id, label: `${user!.firstName} ${user!.lastName}` },
+      { value: userDetails!.id, label: `${user!.firstName} ${user!.lastName}` },
     ]);
 
   type contactType = { label: string; value: string };
 
   const getContactName = (userId: string) => {
     const contact = contacts?.find((c) => c.id === userId);
-    if (userId == user?.id) {
+    if (userId == userDetails?.id) {
       return user ? `${user.firstName} ${user.lastName}` : "UU";
     }
     return contact
@@ -338,8 +340,8 @@ export default function ChironMessaging() {
     refetchConversations();
     refetchAnnouncements();
     const contact = contacts?.find((c) => c.id === userId);
-    if (userId == user?.id) {
-      return user ? `${user.firstName[0]}${user.lastName[0]}` : "UU";
+    if (userId == userDetails?.id) {
+      return user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}` : "UU";
     }
     return contact ? `${contact.firstName[0]}${contact.lastName[0]}` : "help";
   };
@@ -649,7 +651,7 @@ export default function ChironMessaging() {
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {convomessages?.map((message) =>
-                    message.senderId !== user?.id ? (
+                    message.senderId !== userDetails?.id ? (
                       <div key={message.id} className="flex">
                         <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                           <span className="text-white font-medium text-xs">
@@ -737,7 +739,7 @@ export default function ChironMessaging() {
                   <div className="relative flex-1">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-clinical-gray" />
                     <Input
-                      placeholder="Search conversations..."
+                      placeholder="Search Messages..."
                       className="pl-10 text-sm"
                       value={searchMessageQuery}
                       onChange={(e) => setSearchMessageQuery(e.target.value)}
@@ -848,7 +850,7 @@ export default function ChironMessaging() {
                             type="submit"
                             disabled={
                               sendMessageMutation.isPending ||
-                              user?.role === "staff"
+                              userDetails?.role === "staff"
                             }
                           >
                             {sendMessageMutation.isPending

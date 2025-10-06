@@ -40,7 +40,7 @@ import { useState, useMemo } from "react";
 import { z } from "zod";
 import { insertStaffSchema, staff } from "@shared/schema";
 import { createInsertSchema } from "drizzle-zod";
-
+import { useAuth } from "@/components/auth/authProvider";
 import { useMutation } from "@tanstack/react-query";
 
 const staffSchema = createInsertSchema(staff).extend({
@@ -62,14 +62,17 @@ export default function ChironHR() {
     "dashboard" | "staff" | "appraisals" | "rota"
   >("dashboard");
   var weekday = new Array(7);
-  weekday[0] = "Monday";
-  weekday[1] = "Tuesday";
-  weekday[2] = "Wednesday";
-  weekday[3] = "Thursday";
-  weekday[4] = "Friday";
+  weekday[0] = "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
   const [selectedDay, setSelectedDay] = useState<string>(
-    weekday[new Date().getDay()] || "Monday",
+    weekday[new Date().getDay()],
   );
+  const { user, logout } = useAuth();
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],

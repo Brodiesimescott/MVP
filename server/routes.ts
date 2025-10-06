@@ -28,6 +28,7 @@ import { log } from "./vite";
 import { db, verifyConnection } from "@shared/index";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
+import { Cookie } from "lucide-react";
 
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
@@ -69,17 +70,25 @@ async function analyzeMessageForPII(
 /**
  * user = storage.getUser(token.id)
  */
-const getCurrentUser = () => ({
-  id: "user1",
-  practiceId: "practice1",
-  role: "poweruser" as const,
-  email: "user@example.com",
-  firstName: "Dr. Sarah",
-  lastName: "Wilson",
-  createdAt: new Date(),
-  hashedPassword: "string",
-  salt: "string",
-});
+
+const ACTIVE_USER = "active_user";
+
+async function getCurrentUser(userEmail: string) {
+  var userStr = userEmail;
+  if (userStr == null) return null;
+  const user = await storage.getUserByEmail(userStr);
+  const person = await storage.getPersonByEmail(userStr);
+  const CurrentUser = {
+    id: user?.employeeId || "user1",
+    practiceId: user?.practiceId || "practice1",
+    role: user?.role || "poweruser",
+    email: person?.email || "testuser@email.com",
+    firstName: person?.firstName || "Dr. Sarah",
+    lastName: person?.lastName || "Wilson",
+    createdAt: user?.createdAt || new Date(),
+  };
+  return CurrentUser;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -139,7 +148,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //Home api add omit(salt when current user is fixed)
   app.get("/api/home", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
+    if (currentUser == null) {
+      res.status(400).json({ message: "Invalid user: Please login" });
+    }
     const database = db;
     res.status(200).json(currentUser);
   });
@@ -176,9 +188,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "User creation failed" });
       }
 
-      //empty
-      generateToken(newuser.employeeId);
-
       res.status(201).json({
         message: "User created successfully",
         userId: newuser.employeeId,
@@ -211,7 +220,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // empty
-      generateToken(user.employeeId);
 
       res
         .status(200)
@@ -277,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description:
           "Facility management, maintenance tracking, and asset management for your practice.",
         icon: "building",
-        status: "good",
+        status: "attention",
       },
     ];
 
@@ -286,10 +294,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // HR endpoints
   app.get("/api/hr/metrics", async (req, res) => {
-    const currentUser = getCurrentUser();
-    const allStaff = await storage.getStaffByPractice(currentUser.practiceId);
+    const currentUser = await getCurrentUser(req.body);
+    const allStaff = await storage.getStaffByPractice(currentUser!.practiceId);
 
-    const reviewdates = allStaff.map((x) => x.appraisalDate || "now");
+    const reviewdates = allStaff.map((x) => x.nextAppraisal || "now");
 
     const dateTo = new Date();
     const dateFrom = new Date(dateTo.setMonth(dateTo.getMonth() - 1));
@@ -311,8 +319,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/hr/staff", async (req, res) => {
-    const currentUser = getCurrentUser();
-    const staff = await storage.getStaffByPractice(currentUser.practiceId);
+    const currentUser = await getCurrentUser(req.body);
+    const staff = await storage.getStaffByPractice(currentUser!.practiceId);
 
     const employees = [];
     for (const employee of staff) {
@@ -338,6 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           professionalBody: employee.professionalBody,
           professionalBodyNumber: employee.professionalBodyNumber,
           appraisalDate: employee.appraisalDate,
+          nextAppraisal: employee.nextAppraisal,
           revalidationInfo: employee.revalidationInfo,
           dbsCheckExpiry: employee.dbsCheckExpiry,
           emergencyContactName: employee.emergencyContactName,
@@ -345,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           emergencyContactRelation: employee.emergencyContactRelation,
           status: employee.status,
           createdAt: employee.createdAt,
-          practiceId: currentUser.practiceId,
+          practiceId: currentUser!.practiceId,
           firstName: person.firstName,
           lastName: person.lastName,
         });
@@ -354,10 +363,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(employees);
   });
 
-  app.post("/api/hr/staff", async (req, res) => {
+  app.post("/api/hr/createstaff", async (req, res) => {
     try {
       const employee = req.body;
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(employee.creator);
       const staffData = insertStaffSchema.parse({
         employeeId: employee.employeeId,
         title: employee.title,
@@ -377,12 +386,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         professionalBody: employee.professionalBody,
         professionalBodyNumber: employee.professionalBodyNumber,
         appraisalDate: employee.appraisalDate,
+        nextAppraisal: employee.nextAppraisal,
         revalidationInfo: employee.revalidationInfo,
         dbsCheckExpiry: employee.dbsCheckExpiry,
         emergencyContactName: employee.emergencyContactName,
         emergencyContactPhone: employee.emergencyContactPhone,
         emergencyContactRelation: employee.emergencyContactRelation,
-        practiceId: currentUser.practiceId,
+        practiceId: currentUser!.practiceId,
       });
 
       if ((await storage.getPerson(employee.employeeId)) == undefined) {
@@ -425,6 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         professionalBody: newStaff.professionalBody,
         professionalBodyNumber: newStaff.professionalBodyNumber,
         appraisalDate: newStaff.appraisalDate,
+        nextAppraisal: newStaff.nextAppraisal,
         revalidationInfo: newStaff.revalidationInfo,
         dbsCheckExpiry: newStaff.dbsCheckExpiry,
         emergencyContactName: newStaff.emergencyContactName,
@@ -455,8 +466,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return;
     }
 
-    const currentUser = getCurrentUser();
-    if (staff.practiceId !== currentUser.practiceId) {
+    const currentUser = await getCurrentUser(req.body.creator);
+    if (staff.practiceId !== currentUser!.practiceId) {
       res.status(403).json({ message: "Access denied" });
       return;
     }
@@ -487,6 +498,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       professionalBody: staff.professionalBody,
       professionalBodyNumber: staff.professionalBodyNumber,
       appraisalDate: staff.appraisalDate,
+      nextAppraisal: staff.nextAppraisal,
       revalidationInfo: staff.revalidationInfo,
       dbsCheckExpiry: staff.dbsCheckExpiry,
       emergencyContactName: staff.emergencyContactName,
@@ -503,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/hr/staff/:id", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
       const updates = insertStaffSchema.partial().parse(req.body);
       const updateName = insertPersonSchema.partial().parse(req.body);
 
@@ -511,7 +523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingPerson = await storage.getPerson(req.params.id);
       if (
         !existingStaff ||
-        existingStaff.practiceId !== currentUser.practiceId ||
+        existingStaff.practiceId !== currentUser!.practiceId ||
         !existingPerson
       ) {
         res.status(404).json({ message: "Staff member not found" });
@@ -549,6 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         professionalBody: updatedStaff.professionalBody,
         professionalBodyNumber: updatedStaff.professionalBodyNumber,
         appraisalDate: updatedStaff.appraisalDate,
+        nextAppraisal: updatedStaff.nextAppraisal,
         revalidationInfo: updatedStaff.revalidationInfo,
         dbsCheckExpiry: updatedStaff.dbsCheckExpiry,
         emergencyContactName: updatedStaff.emergencyContactName,
@@ -573,10 +586,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/hr/staff/:id", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const staff = await storage.getStaff(req.params.id);
 
-    if (!staff || staff.practiceId !== currentUser.practiceId) {
+    if (!staff || staff.practiceId !== currentUser!.practiceId) {
       res.status(404).json({ message: "Staff member not found" });
       return;
     }
@@ -590,19 +603,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/hr/appraisals", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const appraisals = await storage.getAppraisalsByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
     res.json(appraisals);
   });
 
   app.post("/api/hr/appraisal", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body);
       const appraisalEvidence = {
         ...req.body,
-        practiceId: currentUser.practiceId,
+        practiceId: currentUser!.practiceId,
       };
 
       const evidence = await storage.createAppraisal(appraisalEvidence);
@@ -612,11 +625,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/hr/policy", async (req, res) => {
+    const currentUser = await getCurrentUser(req.body);
+    const policies = await storage.getPoliciesByPractice(
+      currentUser!.practiceId,
+    );
+    res.json(policies);
+  });
+
+  app.post("/api/hr/policy", async (req, res) => {
+    try {
+      const currentUser = await getCurrentUser(req.body.creator);
+      const policy = {
+        ...req.body,
+        practiceId: currentUser!.practiceId,
+      };
+
+      const evidence = await storage.createPolicy(policy);
+      res.json(evidence);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create evidence" });
+    }
+  });
+
   // CQC endpoints
   app.get("/api/cqc/dashboard", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const standards = await storage.getCqcStandards();
-    const evidence = await storage.getPracticeEvidence(currentUser.practiceId);
+    const evidence = await storage.getPracticeEvidence(currentUser!.practiceId);
 
     res.json({
       complianceScore: 98,
@@ -640,10 +676,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/cqc/evidence", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
       const evidenceData = {
         ...req.body,
-        practiceId: currentUser.practiceId,
+        practiceId: currentUser!.practiceId,
       };
 
       const evidence = await storage.createPracticeEvidence(evidenceData);
@@ -673,9 +709,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Messaging endpoints
   app.get("/api/messaging/contacts", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
-      const users = await storage.getUsersByPractice(currentUser.practiceId);
-      const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
+      const currentUser = await getCurrentUser(req.body);
+
+      const users = await storage.getUsersByPractice(currentUser!.practiceId);
+      const contactusers = users.filter(
+        (u) => u.employeeId !== currentUser!.id,
+      );
 
       const contacts = [];
       for (const contactuser of contactusers) {
@@ -699,7 +738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/messaging/conversations", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     /** const newconversations: InsertConversation[] = [
       {
         practiceId: "practice1",
@@ -711,8 +750,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("create convo");
     storage.createConversation(newconversations[0]);*/
     const testdata = await storage.getConversationsByUser(
-      currentUser.id,
-      currentUser.practiceId,
+      currentUser!.id,
+      currentUser!.practiceId,
     );
     if (testdata.length < 2) {
       const newuser0 = await storage.createUser({
@@ -800,15 +839,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const conversations = await storage.getConversationsByUser(
-      currentUser.id,
-      currentUser.practiceId,
+      currentUser!.id,
+      currentUser!.practiceId,
     );
 
     res.json(conversations);
   });
 
   app.post("/api/messaging/createconversations", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body.creator);
     const newconversation: InsertConversation = insertConversationSchema.parse({
       ...req.body,
     });
@@ -817,39 +856,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     storage.createConversation(newconversation);
     res.json(
       await storage.getConversationsByUser(
-        currentUser.id,
-        currentUser.practiceId,
+        currentUser!.id,
+        currentUser!.practiceId,
       ),
     );
   });
 
   app.get("/api/messaging/announcements", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body);
       const UserbyPractice = await storage.getUsersByPractice(
-        currentUser.practiceId,
+        currentUser!.practiceId,
       );
       //fix when current user fix
       const ids = UserbyPractice.map((user) => user.employeeId).concat(
-        currentUser.id,
+        currentUser!.id,
       );
       const newconversation: InsertConversation =
         insertConversationSchema.parse({
-          practiceId: currentUser.practiceId,
+          practiceId: currentUser!.practiceId,
           title: "Announcements",
           participantIds: ids,
         });
 
       const testcreate = await storage.getConversationsByUser(
-        currentUser.id,
-        currentUser.practiceId,
+        currentUser!.id,
+        currentUser!.practiceId,
       );
       if (testcreate.find((obj) => obj.title == "Announcements") == null) {
         await storage.createConversation(newconversation);
       }
       const conversations = await storage.getConversationsByUser(
-        currentUser.id,
-        currentUser.practiceId,
+        currentUser!.id,
+        currentUser!.practiceId,
       );
       const announcements = conversations.find(
         (obj) => obj.title == "Announcements",
@@ -922,11 +961,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/messaging/messages", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
 
       var messageData = insertMessageSchema.parse({
         ...req.body,
-        senderId: currentUser.id,
+        senderId: currentUser!.id,
       });
 
       /**if (messageData.conversationId == "Anouncement") {
@@ -956,7 +995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify conversation belongs to user's practice
       const conversation = await storage.getConversation(
         messageData.conversationId,
-        currentUser.practiceId,
+        currentUser!.practiceId,
       );
       if (!conversation) {
         res.status(404).json({ message: "Conversation not found" });
@@ -982,12 +1021,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Money endpoints
   app.get("/api/money/dashboard", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const transactions = await storage.getTransactionsByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
     const invoices = await storage.getInvoicesByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
 
     const revenue = transactions
@@ -1012,19 +1051,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/transactions", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const transactions = await storage.getTransactionsByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
     res.json(transactions);
   });
 
   app.post("/api/money/transactions", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
       const transactionData = insertTransactionSchema.parse({
         ...req.body,
-        practiceId: currentUser.practiceId,
+        practiceId: currentUser!.practiceId,
       });
 
       const transaction = await storage.createTransaction(transactionData);
@@ -1041,19 +1080,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/invoices", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const invoices = await storage.getInvoicesByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
     res.json(invoices);
   });
 
   app.post("/api/money/invoices", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
       const invoiceData = insertInvoiceSchema.parse({
         ...req.body,
-        practiceId: currentUser.practiceId,
+        practiceId: currentUser!.practiceId,
       });
 
       const invoice = await storage.createInvoice(invoiceData);
@@ -1070,19 +1109,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/purchases", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const purchases = await storage.getPurchasesByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
     res.json(purchases);
   });
 
   app.post("/api/money/purchases", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
       const purchaseData = insertPurchaseSchema.parse({
         ...req.body,
-        practiceId: currentUser.practiceId,
+        practiceId: currentUser!.practiceId,
       });
 
       const purchase = await storage.createPurchase(purchaseData);
@@ -1099,9 +1138,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/reports/profit-and-loss", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const transactions = await storage.getTransactionsByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
 
     const income = transactions
@@ -1121,9 +1160,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/money/calculations/corporation-tax", async (req, res) => {
-    const currentUser = getCurrentUser();
+    const currentUser = await getCurrentUser(req.body);
     const transactions = await storage.getTransactionsByPractice(
-      currentUser.practiceId,
+      currentUser!.practiceId,
     );
 
     const profit =
@@ -1193,19 +1232,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "fileURL is required" });
       }
 
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body);
       const objectStorageService = new ObjectStorageService();
 
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         fileURL,
         {
-          owner: currentUser.id,
+          owner: currentUser!.id,
           visibility: "private", // Healthcare files should be private
           aclRules: [
             {
               group: {
                 type: "practice_members" as any,
-                id: currentUser.practiceId,
+                id: currentUser!.practiceId,
               },
               permission: ObjectPermission.READ,
             },
@@ -1228,7 +1267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve protected files
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
-      const currentUser = getCurrentUser();
+      const currentUser = await getCurrentUser(req.body.creator);
       const objectStorageService = new ObjectStorageService();
 
       const objectFile = await objectStorageService.getObjectEntityFile(
@@ -1236,7 +1275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
-        userId: currentUser.id,
+        userId: currentUser!.id,
         requestedPermission: ObjectPermission.READ,
       });
 

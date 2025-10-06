@@ -24,8 +24,8 @@ import {
   type InsertPerson,
   type AppraisalEvidence,
   type InsertAppraisalEvidence,
-  type Shift,
-  type InsertShift,
+  type Policy,
+  type InsertPolicy,
 } from "@shared/schema";
 import { db } from "@shared/index";
 
@@ -58,6 +58,9 @@ export interface IStorage {
   createAppraisal(
     evidence: InsertAppraisalEvidence,
   ): Promise<AppraisalEvidence>;
+
+  getPoliciesByPractice(practiceId: string): Promise<Policy[]>;
+  createPolicy(evidence: InsertPolicy): Promise<Policy>;
 
   // CQC methods
   getCqcStandards(): Promise<CqcStandard[]>;
@@ -102,6 +105,7 @@ export class MemStorage implements IStorage {
   private practices: Map<string, Practice>;
   private staff: Map<string, Staff>;
   private appraisals: Map<string, AppraisalEvidence>;
+  private policies: Map<string, Policy>;
   private cqcStandards: Map<string, CqcStandard>;
   private practiceEvidence: Map<string, PracticeEvidence>;
   private conversations: Map<string, Conversation>;
@@ -117,6 +121,7 @@ export class MemStorage implements IStorage {
     this.practices = new Map();
     this.staff = new Map();
     this.appraisals = new Map();
+    this.policies = new Map();
     this.cqcStandards = new Map();
     this.practiceEvidence = new Map();
     this.conversations = new Map();
@@ -261,6 +266,7 @@ export class MemStorage implements IStorage {
       professionalBody: insertStaff.professionalBody ?? null,
       professionalBodyNumber: insertStaff.professionalBodyNumber ?? null,
       appraisalDate: insertStaff.appraisalDate ?? null,
+      nextAppraisal: insertStaff.nextAppraisal ?? null,
       revalidationInfo: insertStaff.revalidationInfo ?? null,
       dbsCheckExpiry: insertStaff.dbsCheckExpiry ?? null,
       emergencyContactName: insertStaff.emergencyContactName ?? null,
@@ -313,6 +319,26 @@ export class MemStorage implements IStorage {
     // Note: Uncomment the line below when using actual database
     // await db.insert(appraisalEvidence).values(appraisal);
     return appraisal;
+  }
+
+  //policy methods
+  async getPoliciesByPractice(practiceId: string): Promise<Policy[]> {
+    return Array.from(this.policies.values()).filter(
+      (policy) => policy.practiceId === practiceId,
+    );
+  }
+
+  // Method to create a policy
+  async createPolicy(evidence: InsertPolicy): Promise<Policy> {
+    const policy: Policy = {
+      ...evidence,
+      description: evidence.description ?? null,
+      createdAt: new Date(),
+    };
+    this.policies.set(policy.fileName, policy);
+    // Note: Uncomment the line below when using actual database
+    // await db.insert(appraisalEvidence).values(appraisal);
+    return policy;
   }
 
   // CQC methods

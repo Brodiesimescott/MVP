@@ -37,6 +37,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { createInsertSchema } from "drizzle-zod";
+import { useAuth } from "@/components/auth/authProvider";
 
 const staffSchema = createInsertSchema(staff).extend({
   firstName: z.string(),
@@ -45,15 +46,9 @@ const staffSchema = createInsertSchema(staff).extend({
 
 type StaffData = z.infer<typeof staffSchema>;
 
-const getNextAppraisalDate = (dateString: string | null | undefined) => {
-  if (!dateString) return "Now";
-  const date = new Date(dateString);
-  date.setFullYear(date.getFullYear() + 1);
-  return date.toDateString();
-};
-
 const staffFormSchema = insertStaffSchema
   .extend({
+    creator: z.string(),
     practiceId: z.string().optional(),
     // Person fields from insertPersonSchema
     firstName: z.string().min(1, "First name is required"),
@@ -71,6 +66,7 @@ interface StaffManagementProps {
 }
 
 export default function StaffManagement({ onBack }: StaffManagementProps) {
+  const { user, logout } = useAuth();
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
@@ -79,6 +75,11 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const { data: staff, isLoading } = useQuery<StaffData[]>({
     queryKey: ["/api/hr/staff"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/hr/staff", user?.email);
+      const result = await response.json();
+      return result.data || [];
+    },
   });
 
   const form = useForm<StaffFormData>({
@@ -102,11 +103,13 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       professionalBody: "",
       professionalBodyNumber: "",
       appraisalDate: "",
+      nextAppraisal: "",
       revalidationInfo: "",
       dbsCheckExpiry: "",
       emergencyContactName: "",
       emergencyContactPhone: "",
       emergencyContactRelation: "",
+      creator: user?.email,
     },
   });
 
@@ -116,7 +119,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const createStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {
-      const response = await apiRequest("POST", "/api/hr/staff", data);
+      const response = await apiRequest("POST", "/api/hr/createstaff", data);
       return response.json();
     },
     onSuccess: () => {
@@ -172,7 +175,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const deleteStaffMutation = useMutation({
     mutationFn: async (employeeId: string) => {
-      await apiRequest("DELETE", `/api/hr/staff/${employeeId}`);
+      await apiRequest("DELETE", `/api/hr/staff/${employeeId}`, user?.email);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
@@ -382,8 +385,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                         Next Appraisal:
                       </span>
                       <span className="text-slate-900">
-                        {getNextAppraisalDate(selectedStaff.appraisalDate) ||
-                          "Needed"}
+                        {selectedStaff.nextAppraisal || "Now"}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">

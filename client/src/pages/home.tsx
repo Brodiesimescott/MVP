@@ -11,6 +11,7 @@ import { useLocation } from "wouter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/components/auth/authProvider";
 
 const userSchema = z.object({
   id: z.string(),
@@ -25,15 +26,16 @@ type UserData = z.infer<typeof userSchema>;
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const { user, logout } = useAuth();
 
   const {
-    data: user,
+    data: userData,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["/api/home"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/home");
+      const response = await apiRequest("GET", "/api/home", user?.email);
       if (!response.ok) {
         throw new Error("Authentication failed");
       }
@@ -50,8 +52,8 @@ export default function Home() {
     );
   }
 
-  if (error || !user) {
-    setLocation("/login");
+  if (error || !userData) {
+    //setLocation("/login");
     return null;
   }
 
@@ -84,7 +86,7 @@ export default function Home() {
                 <User className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-slate-700">
-                {user?.firstName} {user?.lastName}
+                {userData?.firstName} {userData?.lastName}
               </span>
             </div>
           </div>
