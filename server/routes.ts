@@ -177,9 +177,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const salt = makeSalt();
+      
+      // Generate unique employee ID
+      const employeeId = `EMP-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
       const userTemplate: InsertUser = {
-        employeeId: user.id,
+        employeeId: employeeId,
         hashedPassword: dohash(user.password, salt).toString("base64"),
         salt: salt,
         practiceId: user.practiceId,
@@ -187,9 +190,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       const personTemplate: InsertPerson = {
         email: user.email,
-        firstName: user.firstname,
-        lastName: user.lastname,
-        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        id: employeeId,
       };
       await storage.createPerson(personTemplate);
       await storage.createUser(userTemplate);
