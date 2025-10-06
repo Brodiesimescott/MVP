@@ -214,7 +214,9 @@ export class MemStorage implements IStorage {
   }
 
   async getPersonByEmail(email: string): Promise<Person | undefined> {
-    return this.people.get(email);
+    return Array.from(this.people.values()).find(
+      (person) => person.email === email
+    );
   }
 
   async createPerson(insertPerson: InsertPerson): Promise<Person> {
