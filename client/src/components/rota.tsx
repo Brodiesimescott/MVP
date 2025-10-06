@@ -361,6 +361,47 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     },
   });
 
+  const createRotaMutation = useMutation({
+    mutationFn: async (data: {
+      day: string;
+      requirements: RotaRequirement[];
+      assignments: StaffAssignment[];
+    }) => {
+      if (!user?.email) throw new Error("Not authenticated");
+      
+      const response = await fetch(
+        `/api/hr/rota?email=${encodeURIComponent(user.email)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create rota");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: `Rota created for ${selectedRotaDay}`,
+      });
+      setShowCreateRotaDialog(false);
+      resetRotaForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create rota",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: StaffFormData) => {
     if (!selectedStaff?.employeeId) {
       toast({
@@ -1405,16 +1446,16 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                   type="button"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                   onClick={() => {
-                    // Here you would save the rota
-                    toast({
-                      title: "Success",
-                      description: `Rota created for ${selectedRotaDay}`,
+                    createRotaMutation.mutate({
+                      day: selectedRotaDay,
+                      requirements: rotaRequirements,
+                      assignments: rotaAssignments,
                     });
-                    setShowCreateRotaDialog(false);
-                    resetRotaForm();
                   }}
+                  disabled={createRotaMutation.isPending}
+                  data-testid="button-create-rota"
                 >
-                  Create Rota
+                  {createRotaMutation.isPending ? "Creating..." : "Create Rota"}
                 </Button>
               </div>
             </div>

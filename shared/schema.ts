@@ -287,6 +287,18 @@ export const userPersonRelation = pgTable("user_person_relation", {
     .notNull(),
 });
 
+// Rotas table
+export const rotas = pgTable("rotas", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  day: text("day").notNull(),
+  requirements: jsonb("requirements").notNull(),
+  assignments: jsonb("assignments").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -349,6 +361,11 @@ export const insertPolicySchema = createInsertSchema(policy).omit({
   createdAt: true,
 });
 
+export const insertRotaSchema = createInsertSchema(rotas).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -397,3 +414,6 @@ export type InsertAppraisalEvidence = z.infer<
 
 export type Policy = typeof policy.$inferSelect;
 export type InsertPolicy = z.infer<typeof insertPolicySchema>;
+
+export type Rota = typeof rotas.$inferSelect;
+export type InsertRota = z.infer<typeof insertRotaSchema>;
