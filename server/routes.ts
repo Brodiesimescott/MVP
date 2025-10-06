@@ -1033,11 +1033,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/messaging/messages", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body.creator);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
       var messageData = insertMessageSchema.parse({
         ...req.body,
-        senderId: currentUser!.id,
+        senderId: currentUser.id,
       });
 
       /**if (messageData.conversationId == "Anouncement") {
@@ -1067,7 +1070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify conversation belongs to user's practice
       const conversation = await storage.getConversation(
         messageData.conversationId,
-        currentUser!.practiceId,
+        currentUser.practiceId,
       );
       if (!conversation) {
         res.status(404).json({ message: "Conversation not found" });

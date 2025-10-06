@@ -255,11 +255,22 @@ export default function ChironMessaging() {
   // create conversation
   const createConvoMutation = useMutation({
     mutationFn: async (data: ConvoFormData) => {
-      const response = await apiRequest(
-        "POST",
-        "/api/messaging/createconversations",
-        data,
+      if (!user?.email) throw new Error("Not authenticated");
+      
+      const response = await fetch(
+        `/api/messaging/createconversations?email=${encodeURIComponent(user.email)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          credentials: "include",
+        },
       );
+      
+      if (!response.ok) {
+        throw new Error("Failed to create conversation");
+      }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -311,15 +322,19 @@ export default function ChironMessaging() {
       content: string;
       conversationId: number;
     }) => {
-      const response = await fetch("/api/messaging/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content,
-          conversationId,
-          email: user?.email,
-        }),
-      });
+      if (!user?.email) throw new Error("Not authenticated");
+      
+      const response = await fetch(
+        `/api/messaging/messages?email=${encodeURIComponent(user.email)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content,
+            conversationId,
+          }),
+        },
+      );
 
       if (!response.ok) {
         const error = await response.json();
