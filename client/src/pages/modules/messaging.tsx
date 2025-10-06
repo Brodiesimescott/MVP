@@ -134,19 +134,21 @@ export default function ChironMessaging() {
   }
 
   if (error || !userDetails) {
+    //setLocation("/login");
     return null;
   }
 
   const { data: contacts, refetch: refetchContacts } = useQuery<User[]>({
-    queryKey: ["/api/messaging/contacts", user?.email],
+    queryKey: ["/api/messaging/contacts"],
     queryFn: async () => {
-      if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/messaging/contacts?email=${encodeURIComponent(user.email)}`);
-      if (!response.ok) throw new Error("Failed to fetch contacts");
-      return response.json();
+      const response = await apiRequest("GET", "/api/messaging/contacts");
+
+      if (!response.ok) {
+        throw new Error("Authentication failed");
+      }
+      return (await response.json()) as UserData[];
     },
     retry: false,
-    enabled: !!user?.email,
   });
 
   const { data: conversations, refetch: refetchConversations } = useQuery<
