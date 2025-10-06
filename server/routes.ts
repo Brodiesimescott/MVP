@@ -19,6 +19,7 @@ import {
   InsertConversation,
   conversations,
   people,
+  insertRotaSchema,
 } from "@shared/schema";
 import { generateToken } from "@/lib/utils";
 import { z } from "zod";
@@ -698,6 +699,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(evidence);
     } catch (error) {
       res.status(500).json({ message: "Failed to create evidence" });
+    }
+  });
+
+  // Rota endpoints
+  app.post("/api/hr/rota", async (req, res) => {
+    try {
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const rotaData = insertRotaSchema.parse({
+        ...req.body,
+        practiceId: currentUser.practiceId,
+      });
+
+      const rota = await storage.createRota(rotaData);
+      res.json(rota);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid rota data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create rota" });
+      }
     }
   });
 

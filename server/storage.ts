@@ -26,6 +26,8 @@ import {
   type InsertAppraisalEvidence,
   type Policy,
   type InsertPolicy,
+  type Rota,
+  type InsertRota,
 } from "@shared/schema";
 import { db } from "@shared/index";
 
@@ -97,6 +99,10 @@ export interface IStorage {
   createPurchase(purchase: InsertPurchase): Promise<Purchase>;
   getVatReturnsByPractice(practiceId: string): Promise<VatReturn[]>;
   createVatReturn(vatReturn: InsertVatReturn): Promise<VatReturn>;
+
+  // Rota methods
+  getRotasByPractice(practiceId: string): Promise<Rota[]>;
+  createRota(rota: InsertRota): Promise<Rota>;
 }
 
 export class MemStorage implements IStorage {
@@ -114,6 +120,8 @@ export class MemStorage implements IStorage {
   private invoices: Map<string, Invoice>;
   private purchases: Map<string, Purchase>;
   private vatReturns: Map<string, VatReturn>;
+  private rotas: Map<number, Rota>;
+  private rotaIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -130,6 +138,8 @@ export class MemStorage implements IStorage {
     this.invoices = new Map();
     this.purchases = new Map();
     this.vatReturns = new Map();
+    this.rotas = new Map();
+    this.rotaIdCounter = 1;
 
     // Initialize with some default CQC standards
     this.initializeCqcStandards();
@@ -606,6 +616,24 @@ export class MemStorage implements IStorage {
     messagelist.forEach((message) => {
       this.messages.set(message.id.toString(), message);
     });
+  }
+
+  // Rota methods
+  async getRotasByPractice(practiceId: string): Promise<Rota[]> {
+    return Array.from(this.rotas.values()).filter(
+      (rota) => rota.practiceId === practiceId
+    );
+  }
+
+  async createRota(insertRota: InsertRota): Promise<Rota> {
+    const id = this.rotaIdCounter++;
+    const rota: Rota = {
+      id,
+      ...insertRota,
+      createdAt: new Date(),
+    };
+    this.rotas.set(id, rota);
+    return rota;
   }
 }
 
