@@ -107,7 +107,7 @@ export default function RegisterForm({
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="mx-auto w-12 h-12 bg-yellow-200 rounded-lg flex items-center justify-center">
             <ChironLogo />
           </div>
           <CardTitle className="text-2xl font-bold text-slate-900">
