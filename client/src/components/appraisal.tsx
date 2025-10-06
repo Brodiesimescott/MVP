@@ -471,10 +471,10 @@ export default function AppraisalManagement({
                             .map((evidence, index) => (
                               <div
                                 key={evidence.fileName}
-                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 data-testid={`uploaded-file-${index}`}
                               >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-1">
                                   <FileText className="w-4 h-4 text-gray-500" />
                                   <span className="text-sm font-medium">
                                     {evidence.fileName}
@@ -485,13 +485,29 @@ export default function AppraisalManagement({
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-xs text-gray-500">
-                                  {evidence.createdAt
-                                    ? new Date(
-                                        evidence.createdAt,
-                                      ).toLocaleDateString()
-                                    : "Recently uploaded"}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xs text-gray-500">
+                                    {evidence.createdAt
+                                      ? new Date(
+                                          evidence.createdAt,
+                                        ).toLocaleDateString()
+                                      : "Recently uploaded"}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      if (user?.email) {
+                                        const url = `${evidence.path}?email=${encodeURIComponent(user.email)}`;
+                                        window.open(url, '_blank');
+                                      }
+                                    }}
+                                    className="h-8 w-8 p-0"
+                                    data-testid={`button-view-file-${index}`}
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </div>
                             ))}
                         </div>
