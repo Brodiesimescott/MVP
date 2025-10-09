@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/components/auth/authProvider";
 
 interface FileUploaderProps {
   onUploadComplete?: (filePath: string) => void;
@@ -26,6 +27,7 @@ export function FileUploader({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -75,6 +77,7 @@ export function FileUploader({
 
       // Set ACL policy for the uploaded file
       const aclResponse = await apiRequest("PUT", "/api/files/uploaded", {
+        email: user?.email,
         fileURL: uploadURL.split("?")[0], // Remove query parameters
         fileName: selectedFile.name,
         fileType: selectedFile.type,

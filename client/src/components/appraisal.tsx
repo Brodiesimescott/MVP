@@ -187,22 +187,11 @@ export default function AppraisalManagement({
       description?: string;
       employeeId: string;
     }) => {
-      if (!user?.email) throw new Error("Not authenticated");
-      
-      const response = await fetch(
-        `/api/hr/appraisal?email=${encodeURIComponent(user.email)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(evidenceData),
-          credentials: "include",
-        },
+      const response = await apiRequest(
+        "POST",
+        `/api/hr/appraisal?email=${encodeURIComponent(user?.email || "")}`,
+        evidenceData,
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to upload appraisal evidence");
-      }
-
       return response.json();
     },
     onSuccess: () => {
