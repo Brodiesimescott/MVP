@@ -94,7 +94,9 @@ export default function AppraisalManagement({
     queryKey: ["/api/hr/staff", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/hr/staff?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch");
       return await response.json();
     },
@@ -107,7 +109,9 @@ export default function AppraisalManagement({
     queryKey: ["/api/hr/appraisals", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/hr/appraisals?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/hr/appraisals?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch");
       return await response.json();
     },
@@ -488,7 +492,7 @@ export default function AppraisalManagement({
                                     onClick={() => {
                                       if (user?.email) {
                                         const url = `${evidence.path}?email=${encodeURIComponent(user.email)}`;
-                                        window.open(url, '_blank');
+                                        window.open(url, "_blank");
                                       }
                                     }}
                                     className="h-8 w-8 p-0"
