@@ -158,7 +158,7 @@ export default function AppraisalManagement({
     }) => {
       const response = await apiRequest(
         "PUT",
-        `/api/hr/staff/${employeeId}`,
+        `/api/hr/staff/${employeeId}?email=${encodeURIComponent(user?.email || "")}`,
         data,
       );
       return response.json();

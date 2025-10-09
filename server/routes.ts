@@ -557,7 +557,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/hr/staff/:id", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body.creator);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const updates = insertStaffSchema.partial().parse(req.body);
       const updateName = insertPersonSchema.partial().parse(req.body);
 
@@ -565,7 +569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingPerson = await storage.getPerson(req.params.id);
       if (
         !existingStaff ||
-        existingStaff.practiceId !== currentUser!.practiceId ||
+        existingStaff.practiceId !== currentUser.practiceId ||
         !existingPerson
       ) {
         res.status(404).json({ message: "Staff member not found" });
