@@ -26,6 +26,8 @@ import { apiRequest } from "@/lib/queryClient";
 import ChironLogo from "@/lib/logo";
 import { Eye, EyeOff, Mail, Lock, User, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createInsertSchema } from "drizzle-zod";
+import { insertStaffSchema, staff } from "@shared/schema";
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -34,8 +36,31 @@ interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
+const staffSchema = createInsertSchema(staff).extend({
+  firstName: z.string(),
+  lastName: z.string(),
+});
+
+type StaffData = z.infer<typeof staffSchema>;
+
+const staffFormSchema = insertStaffSchema
+  .extend({
+    creator: z.string(),
+    practiceId: z.string().optional(),
+    // Person fields from insertPersonSchema
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    // Use contract field directly from schema instead of contractType
+  })
+  .omit({
+    // Remove fields that will be handled separately
+  });
+
+type StaffFormData = z.infer<typeof staffFormSchema>;
+
 const formSchema = z
   .object({
+    employeeId: z.string().min(1, "Employee ID is required"),
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Please enter a valid email address"),
@@ -59,10 +84,10 @@ export default function RegisterForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: { 
+      employeeId: "",
       firstName: "",
       lastName: "",
       email: "",
@@ -75,6 +100,7 @@ export default function RegisterForm({
 
   const signUpMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // First create the user account
       const response = await apiRequest("POST", "/api/signup", data);
 
       if (!response.ok) {
@@ -82,11 +108,49 @@ export default function RegisterForm({
         throw new Error(errorData.message || "Sign Up failed");
       }
 
-      return response.json();
+      const userData = await response.json();
+      
+      // Then create the staff member record
+      const staffData = {
+        employeeId: data.employeeId,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        creator: data.email,
+        title: "",
+        phone: "",
+        address: "",
+        dateOfBirth: "",
+        niNumber: "",
+        position: "admin",
+        department: "",
+        startDate: new Date().toISOString().split("T")[0],
+        contract: "permanent",
+        salary: "0",
+        workingHours: ["not in", "not in", "not in", "not in", "not in", "not in", "not in"],
+        professionalBody: "",
+        professionalBodyNumber: "",
+        appraisalDate: "",
+        nextAppraisal: "",
+        revalidationInfo: "",
+        dbsCheckExpiry: "",
+        emergencyContactName: "",
+        emergencyContactPhone: "",
+        emergencyContactRelation: "",
+      };
+
+      const staffResponse = await apiRequest("POST", "/api/hr/createstaff", staffData);
+      
+      if (!staffResponse.ok) {
+        throw new Error("Failed to create staff member record");
+      }
+
+      return userData;
     },
     onSuccess: (data, variables) => {
       toast({
         title: "Sign up successful!",
+        description: "Your account and staff profile have been created",
       });
       onRegister(variables.email, variables.firstName, variables.lastName);
     },
@@ -119,6 +183,30 @@ export default function RegisterForm({
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="employeeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700">
+                      Employee ID
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Input
+                          {...field}
+                          placeholder="Enter employee ID"
+                          className="pl-10 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                          data-testid="input-employeeid"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
