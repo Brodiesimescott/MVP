@@ -148,26 +148,29 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     queryKey: ["/api/hr/staff", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/hr/staff?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch");
       return await response.json();
     },
     enabled: !!user?.email,
   });
 
-  const { data: existingRota, isLoading: isRotaLoading } = useQuery<RotaDay | null>({
-    queryKey: ["/api/hr/rota", selectedRotaDay, user?.email],
-    queryFn: async () => {
-      if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(
-        `/api/hr/rota/${selectedRotaDay}?email=${encodeURIComponent(user.email)}`
-      );
-      if (response.status === 404) return null;
-      if (!response.ok) throw new Error("Failed to fetch");
-      return await response.json();
-    },
-    enabled: !!user?.email && !!selectedRotaDay,
-  });
+  const { data: existingRota, isLoading: isRotaLoading } =
+    useQuery<RotaDay | null>({
+      queryKey: ["/api/hr/rota", selectedRotaDay, user?.email],
+      queryFn: async () => {
+        if (!user?.email) throw new Error("Not authenticated");
+        const response = await fetch(
+          `/api/hr/rota/${selectedRotaDay}?email=${encodeURIComponent(user.email)}`,
+        );
+        if (response.status === 404) return null;
+        if (!response.ok) throw new Error("Failed to fetch");
+        return await response.json();
+      },
+      enabled: !!user?.email && !!selectedRotaDay,
+    });
 
   const { toast } = useToast();
 
@@ -329,7 +332,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     }) => {
       const response = await apiRequest(
         "PUT",
-        `/api/hr/staff/${employeeId}`,
+        `/api/hr/staff/${employeeId}?email=${encodeURIComponent(user?.email || "")}`,
         data,
       );
       return response.json();
@@ -390,7 +393,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       assignments: StaffAssignment[];
     }) => {
       if (!user?.email) throw new Error("Not authenticated");
-      
+
       const response = await fetch(
         `/api/hr/rota?email=${encodeURIComponent(user.email)}`,
         {
@@ -453,7 +456,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
 
     updateRotaMutation.mutate({
       employeeId: selectedStaff.employeeId,
-      workingHours: data.workingHours.map(hour => hour ?? "not in"),
+      workingHours: data.workingHours.map((hour) => hour ?? "not in"),
     });
   };
 
@@ -543,7 +546,8 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
 
   const calculateCoverage = (position: string) => {
     const requirement = rotaRequirements.find((r) => r.position === position);
-    if (!requirement) return { am: 0, pm: 0, allDay: 0, amPmEquivalent: 0, effectiveAllDay: 0 };
+    if (!requirement)
+      return { am: 0, pm: 0, allDay: 0, amPmEquivalent: 0, effectiveAllDay: 0 };
 
     const positionStaff =
       filteredStaff?.filter((s) => s.position === position) || [];
@@ -1032,7 +1036,10 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             <DialogTitle className="text-xl font-semibold flex items-center gap-2">
               {existingRota ? "Edit" : "Create"} Rota for {selectedRotaDay}
               {existingRota && (
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+                <Badge
+                  variant="secondary"
+                  className="bg-blue-50 text-blue-700 border-blue-200"
+                >
                   Existing
                 </Badge>
               )}
@@ -1484,9 +1491,13 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
                   disabled={createRotaMutation.isPending}
                   data-testid="button-create-rota"
                 >
-                  {createRotaMutation.isPending 
-                    ? (existingRota ? "Updating..." : "Creating...") 
-                    : (existingRota ? "Update Rota" : "Create Rota")}
+                  {createRotaMutation.isPending
+                    ? existingRota
+                      ? "Updating..."
+                      : "Creating..."
+                    : existingRota
+                      ? "Update Rota"
+                      : "Create Rota"}
                 </Button>
               </div>
             </div>
