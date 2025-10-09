@@ -86,7 +86,7 @@ export default function RegisterForm({
   const { toast } = useToast();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { 
+    defaultValues: {
       employeeId: "",
       firstName: "",
       lastName: "",
@@ -109,7 +109,7 @@ export default function RegisterForm({
       }
 
       const userData = await response.json();
-      
+
       // Then create the staff member record
       const staffData = {
         employeeId: data.employeeId,
@@ -127,7 +127,15 @@ export default function RegisterForm({
         startDate: new Date().toISOString().split("T")[0],
         contract: "permanent",
         salary: "0",
-        workingHours: ["not in", "not in", "not in", "not in", "not in", "not in", "not in"],
+        workingHours: [
+          "not in",
+          "not in",
+          "not in",
+          "not in",
+          "not in",
+          "not in",
+          "not in",
+        ],
         professionalBody: "",
         professionalBodyNumber: "",
         appraisalDate: "",
@@ -139,8 +147,12 @@ export default function RegisterForm({
         emergencyContactRelation: "",
       };
 
-      const staffResponse = await apiRequest("POST", "/api/hr/createstaff", staffData);
-      
+      const staffResponse = await apiRequest(
+        "POST",
+        "/api/hr/createstaff",
+        staffData,
+      );
+
       if (!staffResponse.ok) {
         throw new Error("Failed to create staff member record");
       }
