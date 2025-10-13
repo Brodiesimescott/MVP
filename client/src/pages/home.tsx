@@ -38,10 +38,14 @@ export default function Home() {
       if (!user?.email) {
         throw new Error("No user email");
       }
-      const response = await fetch(`/api/home?email=${encodeURIComponent(user.email)}`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `/api/home?email=${encodeURIComponent(user.email)}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!response.ok) {
+        localStorage.removeItem("hr_user");
         throw new Error("Authentication failed");
       }
       return (await response.json()) as UserData;

@@ -79,11 +79,11 @@ async function getCurrentUser(userEmail: string) {
   if (userStr == null) return null;
   const user = await storage.getUserByEmail(userStr);
   const person = await storage.getPersonByEmail(userStr);
-  
+
   if (!user || !person) {
     return null;
   }
-  
+
   const CurrentUser = {
     id: user.employeeId,
     practiceId: user.practiceId,
@@ -164,12 +164,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //Home api - returns user info if email is provided via query parameter
   app.get("/api/home", async (req, res) => {
     const email = req.query.email as string;
-    
+
     if (!email) {
       res.status(400).json({ message: "Email parameter required" });
       return;
     }
-    
+
     const currentUser = await getCurrentUser(email);
     if (currentUser == null) {
       res.status(401).json({ message: "Invalid user: Please login" });
@@ -187,12 +187,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const salt = makeSalt();
-      
-      // Generate unique employee ID
-      const employeeId = `EMP-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
       const userTemplate: InsertUser = {
-        employeeId: employeeId,
+        employeeId: user.employeeId,
         hashedPassword: dohash(user.password, salt).toString("base64"),
         salt: salt,
         practiceId: user.practiceId,
@@ -202,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        id: employeeId,
+        id: user.employeeId,
       };
       await storage.createPerson(personTemplate);
       await storage.createUser(userTemplate);
@@ -246,19 +243,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get person data for complete user info
       const person = await storage.getPersonByEmail(email);
-      
+
       if (!person) {
         return res.status(400).json({ message: "User profile not found" });
       }
 
-      res.status(200).json({ 
-        message: "Login successful", 
+      res.status(200).json({
+        message: "Login successful",
         email: person.email,
         firstName: person.firstName,
         lastName: person.lastName,
         userId: user.employeeId,
         practiceId: user.practiceId,
-        role: user.role
+        role: user.role,
       });
     } catch (error: any) {
       console.log("Error in login controller", error.message);
@@ -561,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!currentUser) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const updates = insertStaffSchema.partial().parse(req.body);
       const updateName = insertPersonSchema.partial().parse(req.body);
 
@@ -680,7 +677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/hr/policy", async (req, res) => {
+  app.get("/api/hr/policies", async (req, res) => {
     const currentUser = await getCurrentUserFromRequest(req);
     if (!currentUser) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -693,16 +690,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/hr/policy", async (req, res) => {
     try {
-      const currentUser = await getCurrentUser(req.body.creator);
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const policy = {
         ...req.body,
-        practiceId: currentUser!.practiceId,
+        practiceId: currentUser.practiceId,
       };
 
       const evidence = await storage.createPolicy(policy);
       res.json(evidence);
     } catch (error) {
-      res.status(500).json({ message: "Failed to create evidence" });
+      res.status(500).json({ message: "Failed to create policy" });
     }
   });
 
@@ -716,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { day } = req.params;
       const rota = await storage.getRotaByDay(currentUser.practiceId, day);
-      
+
       if (!rota) {
         return res.status(404).json({ message: "Rota not found" });
       }
@@ -743,32 +743,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Map day name to index (Sunday=0, Monday=1, etc.)
       const dayMap: { [key: string]: number } = {
-        "Sunday": 0,
-        "Monday": 1,
-        "Tuesday": 2,
-        "Wednesday": 3,
-        "Thursday": 4,
-        "Friday": 5,
-        "Saturday": 6,
+        Sunday: 0,
+        Monday: 1,
+        Tuesday: 2,
+        Wednesday: 3,
+        Thursday: 4,
+        Friday: 5,
+        Saturday: 6,
       };
 
       const dayIndex = dayMap[rota.day];
 
       // Update workingHours for each assigned staff member
-      if (dayIndex !== undefined && rota.assignments && Array.isArray(rota.assignments)) {
-        for (const assignment of rota.assignments as Array<{employeeId: string; shifts: string[]}>) {
+      if (
+        dayIndex !== undefined &&
+        rota.assignments &&
+        Array.isArray(rota.assignments)
+      ) {
+        for (const assignment of rota.assignments as Array<{
+          employeeId: string;
+          shifts: string[];
+        }>) {
           const staff = await storage.getStaff(assignment.employeeId);
           if (staff) {
             // Get existing workingHours or create default array
-            const workingHours = staff.workingHours || [
-              "not in", "not in", "not in", "not in", "not in", "not in", "not in"
-            ] as ("am" | "pm" | "all day" | "not in")[];
+            const workingHours =
+              staff.workingHours ||
+              ([
+                "not in",
+                "not in",
+                "not in",
+                "not in",
+                "not in",
+                "not in",
+                "not in",
+              ] as ("am" | "pm" | "all day" | "not in")[]);
 
             // Determine the shift value
             let shiftValue: "am" | "pm" | "all day" | "not in" = "not in";
             if (assignment.shifts.includes("all-day")) {
               shiftValue = "all day";
-            } else if (assignment.shifts.includes("am") && assignment.shifts.includes("pm")) {
+            } else if (
+              assignment.shifts.includes("am") &&
+              assignment.shifts.includes("pm")
+            ) {
               shiftValue = "all day";
             } else if (assignment.shifts.includes("am")) {
               shiftValue = "am";
@@ -788,7 +806,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(rota);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid rota data", errors: error.errors });
+        res
+          .status(400)
+          .json({ message: "Invalid rota data", errors: error.errors });
       } else {
         res.status(500).json({ message: "Failed to create rota" });
       }
@@ -865,9 +885,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const users = await storage.getUsersByPractice(currentUser.practiceId);
-      const contactusers = users.filter(
-        (u) => u.employeeId !== currentUser.id,
-      );
+      const contactusers = users.filter((u) => u.employeeId !== currentUser.id);
 
       const contacts = [];
       for (const contactuser of contactusers) {
@@ -1008,10 +1026,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!currentUser) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
-      const newconversation: InsertConversation = insertConversationSchema.parse({
-        ...req.body,
-      });
+
+      const newconversation: InsertConversation =
+        insertConversationSchema.parse({
+          ...req.body,
+        });
 
       await storage.createConversation(newconversation);
       const conversations = await storage.getConversationsByUser(
@@ -1034,10 +1053,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const UserbyPractice = await storage.getUsersByPractice(
         currentUser.practiceId,
       );
-      //fix when current user fix
-      const ids = UserbyPractice.map((user) => user.employeeId).concat(
-        currentUser.id,
-      );
+
+      const ids = UserbyPractice.map((user) => user.employeeId);
+
       const newconversation: InsertConversation =
         insertConversationSchema.parse({
           practiceId: currentUser.practiceId,
