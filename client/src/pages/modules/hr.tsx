@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import LLMGuide from "@/components/llm-guide";
 import StaffManagement from "@/components/staff-management";
 import AppraisalManagement from "@/components/appraisal";
+import PolicyManagement from "@/components/policy";
 import RotaManagement from "@/components/rota";
 import ModuleLogo from "@/components/module-logo";
 import { useState, useMemo } from "react";
@@ -59,7 +60,7 @@ interface HRMetrics {
 
 export default function ChironHR() {
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "staff" | "appraisals" | "rota"
+    "dashboard" | "staff" | "appraisals" | "rota" | "policies"
   >("dashboard");
   var weekday = new Array(7);
   weekday[0] = "Sunday";
@@ -78,7 +79,9 @@ export default function ChironHR() {
     queryKey: ["/api/hr/staff", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/hr/staff?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/hr/staff?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch staff");
       return response.json();
     },
@@ -89,7 +92,9 @@ export default function ChironHR() {
     queryKey: ["/api/hr/metrics", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(`/api/hr/metrics?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/hr/metrics?email=${encodeURIComponent(user.email)}`,
+      );
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
     },
@@ -132,6 +137,10 @@ export default function ChironHR() {
 
   if (currentView === "rota") {
     return <RotaManagement onBack={() => setCurrentView("dashboard")} />;
+  }
+
+  if (currentView === "policies") {
+    return <PolicyManagement onBack={() => setCurrentView("dashboard")} />;
   }
 
   const getStatusBadge = (hours: string) => {
@@ -290,7 +299,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
+                  onClick={() => setCurrentView("policies")}
                 >
                   <BookOpen className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">

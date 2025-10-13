@@ -70,6 +70,19 @@ const formSchema = z
       message: "Enter practice id.",
     }),
     role: z.enum(["staff", "poweruser", "user"]),
+    position: z.enum([
+      "doctor",
+      "nurse",
+      "business",
+      "admin",
+      "reception",
+      "pharmacy",
+      "physio",
+      "health visitor",
+      "dentist",
+      "dental therapist",
+      "hygienist",
+    ]),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -95,6 +108,7 @@ export default function RegisterForm({
       confirmPassword: "",
       practiceId: "",
       role: "user",
+      position: "admin",
     },
   });
 
@@ -398,6 +412,44 @@ export default function RegisterForm({
                         <SelectItem value="staff">Staff</SelectItem>
                         <SelectItem value="poweruser">Power User</SelectItem>
                         <SelectItem value="user">User</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="position"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Position</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a position" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="doctor">doctor</SelectItem>
+                        <SelectItem value="nurse">nurse</SelectItem>
+                        <SelectItem value="business">business</SelectItem>
+                        <SelectItem value="admin">admin</SelectItem>
+                        <SelectItem value="reception">reception</SelectItem>
+                        <SelectItem value="pharmacy">pharmacy</SelectItem>
+                        <SelectItem value="physio">physio</SelectItem>
+                        <SelectItem value="health visitor">
+                          health visitor
+                        </SelectItem>
+                        <SelectItem value="dentist">dentist</SelectItem>
+                        <SelectItem value="dental therapist">
+                          dental therapist
+                        </SelectItem>
+                        <SelectItem value="hygienist">hygienist</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
