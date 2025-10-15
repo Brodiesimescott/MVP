@@ -56,10 +56,7 @@ interface PolicyManagementProps {
 
 export default function PolicyManagement({ onBack }: PolicyManagementProps) {
   const { user, logout } = useAuth();
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
   const [search, setSearch] = useState<String | null>(null);
-  const [department, setDepartment] = useState<String | null>(null);
   const { toast } = useToast();
 
   const {
@@ -188,7 +185,9 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
       </header>
 
       <Card className="p-6">
-        <h3 className="font-semibold text-slate-900 mb-4">Upload Policy Document</h3>
+        <h3 className="font-semibold text-slate-900 mb-4">
+          Upload Policy Document
+        </h3>
         <div className="flex space-x-2">
           <div>
             <FileUploader
@@ -216,19 +215,6 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
                     data-testid="input-search-policies"
                   />
                 </div>
-                <Select>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="All Departments" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
-                    <SelectItem value="clinical">Clinical</SelectItem>
-                    <SelectItem value="administration">
-                      Administration
-                    </SelectItem>
-                    <SelectItem value="management">Management</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </Card>
 
@@ -239,46 +225,74 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
               </div>
             ) : !policies || policies.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-clinical-gray mb-4">No policies found. Upload your first policy document above.</p>
+                <p className="text-clinical-gray mb-4">
+                  No policies found. Upload your first policy document above.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {policies &&
-                  policies.map((policy, index) => (
-                    <Card data-testid="card-uploaded-files">
-                      <CardHeader>
-                        <CardTitle>Policy Evidence</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div
-                            key={policy.fileName}
-                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                            data-testid={`uploaded-file-${index}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm font-medium">
-                                {policy.fileName}
-                              </span>
-                              {policy.description && (
-                                <span className="text-xs text-gray-500 italic">
-                                  - {policy.description}
+                {policies.map((policy, index) => {
+                  if (
+                    search == null ||
+                    policy.fileName
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    policy.description
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    search == ""
+                  ) {
+                    return (
+                      <Card data-testid="card-uploaded-files">
+                        <CardHeader>
+                          <CardTitle>Policy Evidence</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div
+                              key={policy.fileName}
+                              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                              data-testid={`uploaded-file-${index}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-gray-500" />
+                                <span className="text-sm font-medium">
+                                  {policy.fileName}
                                 </span>
-                              )}
+                                {policy.description && (
+                                  <span className="text-xs text-gray-500 italic">
+                                    - {policy.description}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {policy.createdAt
+                                  ? new Date(
+                                      policy.createdAt,
+                                    ).toLocaleDateString()
+                                  : "Recently uploaded"}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (user?.email) {
+                                    const url = `${policy.path}?email=${encodeURIComponent(user.email)}`;
+                                    window.open(url, "_blank");
+                                  }
+                                }}
+                                className="h-8 w-8 p-0"
+                                data-testid={`button-view-file-${index}`}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
                             </div>
-                            <span className="text-xs text-gray-500">
-                              {policy.createdAt
-                                ? new Date(
-                                    policy.createdAt,
-                                  ).toLocaleDateString()
-                                : "Recently uploaded"}
-                            </span>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                })}
               </div>
             )}
           </div>
