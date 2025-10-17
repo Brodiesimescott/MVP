@@ -971,17 +971,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newconversations: InsertConversation[] = [
         {
           practiceId: "practice1",
-          participantIds: [newuser0.employeeId, "user1"],
+          participantIds: [newuser0.employeeId, currentUser.id],
           title: "Sister Jane Smith",
         },
         {
           practiceId: "practice1",
-          participantIds: [newuser1.employeeId, "user1"],
+          participantIds: [newuser1.employeeId, currentUser.id],
           title: "Mark Brown",
         },
         {
           practiceId: "practice1",
-          participantIds: [newuser2.employeeId, "user1"],
+          participantIds: [newuser2.employeeId, currentUser.id],
           title: "Team Chat",
         },
       ];
