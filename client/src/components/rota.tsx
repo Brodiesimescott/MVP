@@ -298,30 +298,6 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       })) || [],
   };
 
-  const createStaffMutation = useMutation({
-    mutationFn: async (data: StaffFormData) => {
-      const response = await apiRequest("POST", "/api/hr/staff", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/metrics"] });
-      toast({
-        title: "Success",
-        description: "Staff member added successfully",
-      });
-      setShowEditDialog(false);
-      form.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to add staff member",
-        variant: "destructive",
-      });
-    },
-  });
-
   const updateStaffMutation = useMutation({
     mutationFn: async ({
       employeeId,
@@ -458,6 +434,13 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       employeeId: selectedStaff.employeeId,
       workingHours: data.workingHours.map((hour) => hour ?? "not in"),
     });
+    const assignment = getStaffAssignment(selectedStaff.employeeId);
+    // Check if already has this shift
+    if (assignment?.shifts.includes()) return false;
+
+    // Check if already has all-day (can't add am/pm)
+    if (assignment?.shifts.includes("all-day") && shift !== "all-day")
+      return false;
   };
 
   const handleEditRota = (staffMember: StaffData) => {
