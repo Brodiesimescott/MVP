@@ -4,7 +4,6 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import {
-  User,
   insertStaffSchema,
   insertMessageSchema,
   insertTransactionSchema,
@@ -14,22 +13,14 @@ import {
   InsertUser,
   InsertPerson,
   insertPersonSchema,
-  insertUserSchema,
-  Conversation,
   InsertConversation,
-  conversations,
-  people,
   insertRotaSchema,
 } from "@shared/schema";
-import { generateToken } from "@/lib/utils";
 import { z } from "zod";
 import { generateHealthcareResponse } from "./ai-service";
-import { title } from "process";
-import { log } from "./vite";
 import { db, verifyConnection } from "@shared/index";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { Cookie } from "lucide-react";
 
 // AI Safety Net - Mock implementation for MVP
 async function analyzeMessageForPII(
@@ -66,13 +57,6 @@ async function analyzeMessageForPII(
 
   return { safe: true };
 }
-
-// Mock current user for MVP - in production this would come from session
-/**
- * user = storage.getUser(token.id)
- */
-
-const ACTIVE_USER = "active_user";
 
 async function getCurrentUser(userEmail: string) {
   var userStr = userEmail;
