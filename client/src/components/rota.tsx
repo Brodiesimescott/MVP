@@ -339,9 +339,13 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       employeeId: string;
       workingHours: (string | "not in")[];
     }) => {
-      const response = await apiRequest("PUT", `/api/hr/staff/${employeeId}`, {
-        workingHours,
-      });
+      const response = await apiRequest(
+        "PUT",
+        `/api/hr/staff/${employeeId}?email=${encodeURIComponent(user?.email || "")}`,
+        {
+          workingHours,
+        },
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -434,13 +438,8 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       employeeId: selectedStaff.employeeId,
       workingHours: data.workingHours.map((hour) => hour ?? "not in"),
     });
-    const assignment = getStaffAssignment(selectedStaff.employeeId);
-    // Check if already has this shift
-    if (assignment?.shifts.includes()) return false;
-
-    // Check if already has all-day (can't add am/pm)
-    if (assignment?.shifts.includes("all-day") && shift !== "all-day")
-      return false;
+    
+    
   };
 
   const handleEditRota = (staffMember: StaffData) => {

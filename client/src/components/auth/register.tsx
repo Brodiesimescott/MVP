@@ -410,10 +410,8 @@ export default function RegisterForm({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="staff">Staff</SelectItem>
-                        <SelectItem value="poweruser">
-                          Practice Owner
-                        </SelectItem>
-                        <SelectItem value="user">Admin</SelectItem>
+                        <SelectItem value="poweruser">Power User</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
