@@ -459,20 +459,20 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       // If the shift changed for this day
       if (oldShift !== newShift) {
         const dayName = weekday[dayIndex];
-        
+
         try {
           // Fetch existing rota for this day
           const response = await fetch(
             `/api/hr/rota/${dayName}?email=${encodeURIComponent(user.email)}`,
           );
-          
+
           if (response.ok) {
-            const existingRota = await response.json() as RotaDay;
+            const existingRota = (await response.json()) as RotaDay;
             let updatedAssignments = [...(existingRota.assignments || [])];
 
             // Find existing assignment for this staff member
             const existingIndex = updatedAssignments.findIndex(
-              (a) => a.employeeId === selectedStaff.employeeId
+              (a) => a.employeeId === selectedStaff.employeeId,
             );
 
             if (newShift === "not in") {
@@ -482,8 +482,11 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
               }
             } else {
               // Convert shift format
-              const shiftFormat: ("am" | "pm" | "all-day")[] = newShift === "all day" ? ["all-day"] : [newShift as "am" | "pm"];
-              
+              const shiftFormat: ("am" | "pm" | "all-day")[] =
+                newShift === "all day"
+                  ? ["all-day"]
+                  : [newShift as "am" | "pm"];
+
               if (existingIndex !== -1) {
                 // Update existing assignment
                 updatedAssignments[existingIndex] = {
@@ -503,7 +506,7 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
             await apiRequest(
               "PUT",
               `/api/hr/rota/${dayName}?email=${encodeURIComponent(user.email)}`,
-              { assignments: updatedAssignments }
+              { assignments: updatedAssignments },
             );
           }
         } catch (error) {
