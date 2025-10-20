@@ -104,6 +104,7 @@ export interface IStorage {
   getRotasByPractice(practiceId: string): Promise<Rota[]>;
   getRotaByDay(practiceId: string, day: string): Promise<Rota | undefined>;
   createRota(rota: InsertRota): Promise<Rota>;
+  updateRota(id: number, rota: Partial<InsertRota>): Promise<Rota | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -644,6 +645,20 @@ export class MemStorage implements IStorage {
     };
     this.rotas.set(id, rota);
     return rota;
+  }
+
+  async updateRota(id: number, updates: Partial<InsertRota>): Promise<Rota | undefined> {
+    const existing = this.rotas.get(id);
+    if (!existing) {
+      return undefined;
+    }
+
+    const updated: Rota = {
+      ...existing,
+      ...updates,
+    };
+    this.rotas.set(id, updated);
+    return updated;
   }
 }
 
