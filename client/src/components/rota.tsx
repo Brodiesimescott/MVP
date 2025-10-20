@@ -433,11 +433,24 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       });
       return;
     }
+
+    data.workingHours.map((hour, index) => {
+      if (hour != selectedStaff.workingHours[index]) {
+        setSelectedRotaDay(weekday[index]);
+        if (existingRota?.assignments.some(a => a.employeeId == selectedStaff.employeeId)){
+          createRotaMutation.mutate({
+            
+          })
+        }
+      }
+    })
     
     updateRotaMutation.mutate({
       employeeId: selectedStaff.employeeId,
       workingHours: data.workingHours.map((hour) => hour ?? "not in"),
     });
+    
+    
   };
 
   const handleEditRota = (staffMember: StaffData) => {
