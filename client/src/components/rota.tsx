@@ -433,13 +433,11 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       });
       return;
     }
-
+    
     updateRotaMutation.mutate({
       employeeId: selectedStaff.employeeId,
       workingHours: data.workingHours.map((hour) => hour ?? "not in"),
     });
-    
-    
   };
 
   const handleEditRota = (staffMember: StaffData) => {
