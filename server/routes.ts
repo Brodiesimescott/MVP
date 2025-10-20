@@ -799,6 +799,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/hr/rota/:day", async (req, res) => {
+    try {
+      const currentUser = await getCurrentUserFromRequest(req);
+      if (!currentUser) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { day } = req.params;
+      const updates = req.body;
+
+      const updatedRota = await storage.updateRota(currentUser.practiceId, day, updates);
+
+      if (!updatedRota) {
+        return res.status(404).json({ message: "Rota not found" });
+      }
+
+      res.json(updatedRota);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update rota" });
+    }
+  });
+
   // CQC endpoints
   app.get("/api/cqc/dashboard", async (req, res) => {
     const currentUser = await getCurrentUserFromRequest(req);

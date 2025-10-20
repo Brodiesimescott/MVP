@@ -424,8 +424,8 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
     });
   };
 
-  const onRotaSubmit = (data: RotaFormData) => {
-    if (!selectedStaff?.employeeId) {
+  const onRotaSubmit = async (data: RotaFormData) => {
+    if (!selectedStaff?.employeeId || !user?.email) {
       toast({
         title: "Error",
         description: "No staff member selected",
@@ -434,13 +434,86 @@ export default function RotaManagement({ onBack }: RotaManagementProps) {
       return;
     }
 
-    
+    const oldWorkingHours = selectedStaff.workingHours || [
+      "not in",
+      "not in",
+      "not in",
+      "not in",
+      "not in",
+      "not in",
+      "not in",
+    ];
+    const newWorkingHours = data.workingHours.map((hour) => hour ?? "not in");
+
+    // Update staff member's working hours first
     updateRotaMutation.mutate({
       employeeId: selectedStaff.employeeId,
-      workingHours: data.workingHours.map((hour) => hour ?? "not in"),
+      workingHours: newWorkingHours,
     });
-    
-    
+
+    // Update rotas for changed days
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+      const oldShift = oldWorkingHours[dayIndex];
+      const newShift = newWorkingHours[dayIndex];
+
+      // If the shift changed for this day
+      if (oldShift !== newShift) {
+        const dayName = weekday[dayIndex];
+        
+        try {
+          // Fetch existing rota for this day
+          const response = await fetch(
+            `/api/hr/rota/${dayName}?email=${encodeURIComponent(user.email)}`,
+          );
+          
+          if (response.ok) {
+            const existingRota = await response.json() as RotaDay;
+            let updatedAssignments = [...(existingRota.assignments || [])];
+
+            // Find existing assignment for this staff member
+            const existingIndex = updatedAssignments.findIndex(
+              (a) => a.employeeId === selectedStaff.employeeId
+            );
+
+            if (newShift === "not in") {
+              // Remove staff from rota if they're now "not in"
+              if (existingIndex !== -1) {
+                updatedAssignments.splice(existingIndex, 1);
+              }
+            } else {
+              // Convert shift format
+              const shiftFormat: ("am" | "pm" | "all-day")[] = newShift === "all day" ? ["all-day"] : [newShift as "am" | "pm"];
+              
+              if (existingIndex !== -1) {
+                // Update existing assignment
+                updatedAssignments[existingIndex] = {
+                  ...updatedAssignments[existingIndex],
+                  shifts: shiftFormat,
+                };
+              } else {
+                // Add new assignment
+                updatedAssignments.push({
+                  employeeId: selectedStaff.employeeId,
+                  shifts: shiftFormat,
+                });
+              }
+            }
+
+            // Update the rota with new assignments
+            await apiRequest(
+              "PUT",
+              `/api/hr/rota/${dayName}?email=${encodeURIComponent(user.email)}`,
+              { assignments: updatedAssignments }
+            );
+          }
+        } catch (error) {
+          console.error(`Failed to update rota for ${dayName}:`, error);
+        }
+      }
+    }
+
+    // Invalidate queries to refresh the UI
+    queryClient.invalidateQueries({ queryKey: ["/api/hr/rota"] });
   };
 
   const handleEditRota = (staffMember: StaffData) => {
