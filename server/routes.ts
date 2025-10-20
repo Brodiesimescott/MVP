@@ -557,6 +557,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
+      // Save old working hours for comparison
+      const oldWorkingHours = existingStaff.workingHours;
+
       const updatedStaff = await storage.updateStaff(req.params.id, updates);
       const updatedPerson = await storage.updatePerson(
         req.params.id,
@@ -566,6 +569,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!updatedStaff || !updatedPerson) {
         res.status(404).json({ message: "Failed to update staff member" });
         return;
+      }
+
+      // Check if working hours changed and update rotas accordingly
+      if (updates.workingHours) {
+        const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const newWorkingHours = updates.workingHours;
+        
+        // If oldWorkingHours is null, treat all days as "not in"
+        const safeOldWorkingHours = oldWorkingHours || ["not in", "not in", "not in", "not in", "not in", "not in", "not in"];
+
+        // Compare old vs new working hours for each day
+        for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+          const oldShift = safeOldWorkingHours[dayIndex];
+          const newShift = newWorkingHours[dayIndex];
+
+          // If the shift changed for this day
+          if (oldShift !== newShift) {
+            const dayName = weekdays[dayIndex];
+            const existingRota = await storage.getRotaByDay(currentUser.practiceId, dayName);
+
+            if (existingRota) {
+              // Defensive check: ensure assignments is an array
+              const currentAssignments = Array.isArray(existingRota.assignments) 
+                ? existingRota.assignments as any[] 
+                : [];
+              let updatedAssignments = [...currentAssignments];
+
+              // Find existing assignment for this staff member
+              const assignmentIndex = updatedAssignments.findIndex(
+                (a: any) => a.employeeId === req.params.id
+              );
+
+              // If new shift is "not in", remove the staff member from assignments
+              if (newShift === "not in") {
+                if (assignmentIndex !== -1) {
+                  updatedAssignments.splice(assignmentIndex, 1);
+                }
+              } else {
+                // Convert shift to array format expected by rotas
+                let shifts: string[] = [];
+                if (newShift === "all day") {
+                  shifts = ["all-day"];
+                } else if (newShift === "am") {
+                  shifts = ["am"];
+                } else if (newShift === "pm") {
+                  shifts = ["pm"];
+                }
+
+                // If staff member already exists in rota, update their shift
+                if (assignmentIndex !== -1) {
+                  updatedAssignments[assignmentIndex] = {
+                    ...updatedAssignments[assignmentIndex],
+                    shifts,
+                  };
+                } else {
+                  // Add new assignment
+                  updatedAssignments.push({
+                    employeeId: req.params.id,
+                    name: `${updatedPerson.firstName} ${updatedPerson.lastName}`,
+                    position: updatedStaff.position,
+                    shifts,
+                  });
+                }
+              }
+
+              // Update the rota with new assignments
+              await storage.updateRota(existingRota.id, {
+                assignments: updatedAssignments,
+              });
+            }
+          }
+        }
       }
 
       const employee = {
