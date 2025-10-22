@@ -174,7 +174,7 @@ export const appraisalEvidence = pgTable("appraisal_evidence", {
 });
 
 // Policy table
-export const policy = pgTable("policy", {
+export const policies = pgTable("policies", {
   practiceId: text("practice_id")
     .references(() => practices.email, { onDelete: "no action" })
     .notNull(),
@@ -357,7 +357,7 @@ export const insertAppraisalEvidenceSchema = createInsertSchema(
   createdAt: true,
 });
 
-export const insertPolicySchema = createInsertSchema(policy).omit({
+export const insertPolicySchema = createInsertSchema(policies).omit({
   createdAt: true,
 });
 
@@ -411,7 +411,7 @@ export type InsertAppraisalEvidence = z.infer<
   typeof insertAppraisalEvidenceSchema
 >;
 
-export type Policy = typeof policy.$inferSelect;
+export type Policy = typeof policies.$inferSelect;
 export type InsertPolicy = z.infer<typeof insertPolicySchema>;
 
 export type Rota = typeof rotas.$inferSelect;
