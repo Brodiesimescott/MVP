@@ -2,19 +2,34 @@ import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
-  varchar,
   timestamp,
   decimal,
   integer,
   boolean,
   jsonb,
   pgEnum,
+  primaryKey,
+  date,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
+//staff is doctors nurses and janitors etc user is admin staff and poweruser practice manager
 export const userRoleEnum = pgEnum("user_role", ["staff", "poweruser", "user"]);
+export const jobEnum = pgEnum("job", [
+  "doctor",
+  "nurse",
+  "business",
+  "admin",
+  "reception",
+  "pharmacy",
+  "physio",
+  "health visitor",
+  "dentist",
+  "dental therapist",
+  "hygienist",
+]);
 export const moduleStatusEnum = pgEnum("module_status", [
   "good",
   "attention",
@@ -31,66 +46,86 @@ export const reviewStatusEnum = pgEnum("review_status", [
   "needs_review",
   "non_compliant",
 ]);
-export const transactionCategoryEnum = pgEnum("transaction_category", [
-  "income",
-  "expense",
+export const shiftEnum = pgEnum("shift_pattern", [
+  "all day",
+  "am",
+  "pm",
+  "not in",
 ]);
+export const transactionCategoryEnum = pgEnum("in_out", ["income", "expense"]);
 
 // Users table
 export const users = pgTable("users", {
-  id: varchar("id")
+  employeeId: text("employee_id")
     .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
+    .references(() => people.id, { onDelete: "no action" })
+    .notNull(),
   hashedPassword: text("hashed_password").notNull(),
   salt: text("salt").notNull(),
-  practiceId: varchar("practice_id").notNull(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
   role: userRoleEnum("role").notNull().default("user"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+//People table
+export const people = pgTable("users", {
+  id: text("id").primaryKey(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  email: text("email").notNull().unique(),
 });
 
 // Practices table
 export const practices = pgTable("practices", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   address: text("address"),
   phone: text("phone"),
-  email: text("email"),
+  email: text("email").primaryKey(),
   cqcRegistrationNumber: text("cqc_registration_number"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const shifts = pgTable("shifts", {
+  email: text("email")
+    .primaryKey()
+    .references(() => practices.email, { onDelete: "no action" }),
+  mon: shiftEnum("shift_pattern"),
+  tue: shiftEnum("shift_pattern"),
+  wed: shiftEnum("shift_pattern"),
+  thu: shiftEnum("shift_pattern"),
+  fri: shiftEnum("shift_pattern"),
+});
+
 // Staff table
 export const staff = pgTable("staff", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
-  employeeId: text("employee_id").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  employeeId: text("employee_id")
+    .references(() => people.id, { onDelete: "no action" })
+    .notNull()
+    .primaryKey(),
   title: text("title"),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
-  dateOfBirth: text("date_of_birth"),
+  dateOfBirth: date("date_of_birth"),
   niNumber: text("ni_number"),
-  position: text("position").notNull(),
+  position: jobEnum("position").notNull(),
   department: text("department").notNull(),
-  startDate: text("start_date").notNull(),
-  contractType: staffContractTypeEnum("contract_type").notNull(),
+  startDate: date("start_date").notNull(),
+  contract: staffContractTypeEnum("contract").notNull(),
   salary: decimal("salary", { precision: 10, scale: 2 }),
-  workingHours: text("working_hours"),
+  workingHours: shiftEnum("working_hours").array(7),
   annualLeave: integer("annual_leave").default(28),
   studyLeave: integer("study_leave").default(5),
   otherLeave: integer("other_leave").default(0),
   professionalBody: text("professional_body"),
   professionalBodyNumber: text("professional_body_number"),
-  appraisalDate: text("appraisal_date"),
+  appraisalDate: date("appraisal_date"),
+  nextAppraisal: date("appraisal_next"),
   revalidationInfo: text("revalidation_info"),
   dbsCheckExpiry: text("dbs_check_expiry"),
   emergencyContactName: text("emergency_contact_name"),
@@ -102,10 +137,7 @@ export const staff = pgTable("staff", {
 
 // CQC Standards table
 export const cqcStandards = pgTable("cqc_standards", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  regulationId: text("regulation_id").notNull().unique(),
+  regulationId: text("regulation_id").primaryKey().notNull(),
   title: text("title").notNull(),
   summary: text("summary"),
   keyQuestion: text("key_question").notNull(),
@@ -116,29 +148,48 @@ export const cqcStandards = pgTable("cqc_standards", {
 
 // Practice Evidence table
 export const practiceEvidence = pgTable("practice_evidence", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
-  fileName: text("file_name").notNull(),
-  fileData: text("file_data").notNull(),
-  fileSize: integer("file_size").notNull(),
-  mimeType: text("mime_type").notNull(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  fileName: text("file_name").notNull().primaryKey(),
   description: text("description"),
   uploadDate: timestamp("upload_date").defaultNow(),
-  reviewStatus: reviewStatusEnum("review_status")
-    .notNull()
-    .default("needs_review"),
+  reviewStatus: reviewStatusEnum("status").notNull().default("needs_review"),
   standardIds: text("standard_ids").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Appraisal Evidence table
+export const appraisalEvidence = pgTable("appraisal_evidence", {
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  fileName: text("file_name").notNull().primaryKey(),
+  path: text("file_path").notNull(),
+  description: text("description"),
+  employeeId: text("employee_id")
+    .references(() => people.id, { onDelete: "no action" })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Policy table
+export const policies = pgTable("policies", {
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  fileName: text("file_name").notNull().primaryKey(),
+  path: text("file_path").notNull(),
+  description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Conversations table
 export const conversations = pgTable("conversations", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
+  id: integer("conversation_id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
   participantIds: text("participant_ids").array().notNull(),
   title: text("title"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -147,11 +198,11 @@ export const conversations = pgTable("conversations", {
 
 // Messages table
 export const messages = pgTable("messages", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  conversationId: varchar("conversation_id").notNull(),
-  senderId: varchar("sender_id").notNull(),
+  id: integer("message_id").primaryKey().generatedAlwaysAsIdentity(),
+  conversationId: integer("conversation_id")
+    .references(() => conversations.id, { onDelete: "no action" })
+    .notNull(),
+  senderId: text("sender_id").notNull(),
   content: text("content").notNull(),
   blocked: boolean("blocked").default(false),
   blockReason: text("block_reason"),
@@ -160,25 +211,25 @@ export const messages = pgTable("messages", {
 
 // Transactions table
 export const transactions = pgTable("transactions", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
+  id: integer("transaction_id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   category: transactionCategoryEnum("category").notNull(),
   subcategory: text("subcategory"),
-  date: text("date").notNull(),
+  date: date("date").notNull(),
   bankReference: text("bank_reference"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Invoices table
 export const invoices = pgTable("invoices", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
   invoiceNumber: text("invoice_number").notNull(),
   clientName: text("client_name").notNull(),
   clientEmail: text("client_email"),
@@ -187,17 +238,17 @@ export const invoices = pgTable("invoices", {
   vatAmount: decimal("vat_amount", { precision: 10, scale: 2 }),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: text("status").default("draft"),
-  dueDate: text("due_date"),
-  paidDate: text("paid_date"),
+  dueDate: date("due_date"),
+  paidDate: date("paid_date"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Purchases table
 export const purchases = pgTable("purchases", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
   description: text("description").notNull(),
   supplier: text("supplier").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
@@ -205,18 +256,18 @@ export const purchases = pgTable("purchases", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   category: text("category").notNull(),
   receiptUrl: text("receipt_url"),
-  date: text("date").notNull(),
+  date: date("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // VAT Returns table
 export const vatReturns = pgTable("vat_returns", {
-  id: varchar("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  practiceId: varchar("practice_id").notNull(),
-  periodStart: text("period_start").notNull(),
-  periodEnd: text("period_end").notNull(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
   vatDue: decimal("vat_due", { precision: 10, scale: 2 }).notNull(),
   vatReclaimed: decimal("vat_reclaimed", { precision: 10, scale: 2 }).notNull(),
   netVat: decimal("net_vat", { precision: 10, scale: 2 }).notNull(),
@@ -225,19 +276,43 @@ export const vatReturns = pgTable("vat_returns", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+//relational tables
+export const userPersonRelation = pgTable("user_person_relation", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.employeeId, { onDelete: "cascade" })
+    .notNull(),
+  personId: text("person_id")
+    .references(() => people.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+// Rotas table
+export const rotas = pgTable("rotas", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  practiceId: text("practice_id")
+    .references(() => practices.email, { onDelete: "no action" })
+    .notNull(),
+  day: text("day").notNull(),
+  requirements: jsonb("requirements").notNull(),
+  assignments: jsonb("assignments").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
   createdAt: true,
 });
 
-export const insertStaffSchema = createInsertSchema(staff).omit({
-  id: true,
+export const insertPersonSchema = createInsertSchema(people);
+
+export const insertStaffSchema = createInsertSchema(staff, {
+  employeeId: z.string().min(1, "Id is required"),
+}).omit({
   createdAt: true,
 });
 
 export const insertCqcStandardSchema = createInsertSchema(cqcStandards).omit({
-  id: true,
   createdAt: true,
   lastCheckedForUpdate: true,
 });
@@ -245,39 +320,48 @@ export const insertCqcStandardSchema = createInsertSchema(cqcStandards).omit({
 export const insertPracticeEvidenceSchema = createInsertSchema(
   practiceEvidence,
 ).omit({
-  id: true,
   createdAt: true,
   uploadDate: true,
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({
-  id: true,
   createdAt: true,
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
-  id: true,
   createdAt: true,
 });
 
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({
-  id: true,
   createdAt: true,
 });
 
 export const insertPurchaseSchema = createInsertSchema(purchases).omit({
-  id: true,
   createdAt: true,
 });
 
 export const insertVatReturnSchema = createInsertSchema(vatReturns).omit({
-  id: true,
+  createdAt: true,
+});
+
+export const insertShiftSchema = createInsertSchema(shifts);
+
+export const insertAppraisalEvidenceSchema = createInsertSchema(
+  appraisalEvidence,
+).omit({
+  createdAt: true,
+});
+
+export const insertPolicySchema = createInsertSchema(policies).omit({
+  createdAt: true,
+});
+
+export const insertRotaSchema = createInsertSchema(rotas).omit({
   createdAt: true,
 });
 
@@ -315,3 +399,20 @@ export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
 
 export type VatReturn = typeof vatReturns.$inferSelect;
 export type InsertVatReturn = z.infer<typeof insertVatReturnSchema>;
+
+export type Person = typeof people.$inferSelect;
+export type InsertPerson = z.infer<typeof insertPersonSchema>;
+
+export type Shift = typeof shifts.$inferSelect;
+export type InsertShift = z.infer<typeof insertShiftSchema>;
+
+export type AppraisalEvidence = typeof appraisalEvidence.$inferSelect;
+export type InsertAppraisalEvidence = z.infer<
+  typeof insertAppraisalEvidenceSchema
+>;
+
+export type Policy = typeof policies.$inferSelect;
+export type InsertPolicy = z.infer<typeof insertPolicySchema>;
+
+export type Rota = typeof rotas.$inferSelect;
+export type InsertRota = z.infer<typeof insertRotaSchema>;
