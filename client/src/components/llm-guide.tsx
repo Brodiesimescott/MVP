@@ -21,12 +21,12 @@ interface ChatMessage {
   timestamp: string;
 }
 
-export default function LLMGuide({ 
-  title, 
-  subtitle, 
-  initialMessage, 
+export default function LLMGuide({
+  title,
+  subtitle,
+  initialMessage,
   placeholder = "Ask anything...",
-  className = ""
+  className = "",
 }: LLMGuideProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -42,22 +42,22 @@ export default function LLMGuide({
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to get AI response');
+        throw new Error(errorData.error || "Failed to get AI response");
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -67,21 +67,23 @@ export default function LLMGuide({
         content: data.response,
         timestamp: data.timestamp || new Date().toISOString(),
       };
-      setMessages(prev => [...prev, aiMessage]);
+
+      setMessages((prev) => [...prev, aiMessage]);
     },
     onError: (error) => {
       toast({
         title: "AI Chat Error",
         description: error.message || "Failed to get AI response",
-        variant: "destructive"
+
+        variant: "destructive",
       });
       console.error("AI Chat Error:", error);
-    }
+    },
   });
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!inputMessage.trim() || chatMutation.isPending) return;
 
     // Add user message immediately
@@ -92,7 +94,7 @@ export default function LLMGuide({
       timestamp: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
     // Send to AI
@@ -100,9 +102,9 @@ export default function LLMGuide({
   };
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(timestamp).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -117,34 +119,48 @@ export default function LLMGuide({
           <p className="text-xs text-clinical-gray">{subtitle}</p>
         </div>
       </div>
-      
-      <div className="space-y-3 mb-4 max-h-64 overflow-y-auto" data-testid="chat-messages">
+
+      <div
+        className="space-y-3 mb-4 max-h-64 overflow-y-auto"
+        data-testid="chat-messages"
+      >
         {messages.map((message) => (
           <div key={message.id} className="flex">
-            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center mr-2 ${
-              message.role === 'assistant' ? 'bg-chiron-blue' : 'bg-clinical-gray'
-            }`}>
-              {message.role === 'assistant' ? (
+            <div
+              className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center mr-2 ${
+                message.role === "assistant"
+                  ? "bg-chiron-blue"
+                  : "bg-clinical-gray"
+              }`}
+            >
+              {message.role === "assistant" ? (
                 <Bot className="w-3 h-3 text-white" />
               ) : (
                 <User className="w-3 h-3 text-white" />
               )}
             </div>
-            <div className={`rounded-lg p-3 text-sm max-w-xs ${
-              message.role === 'assistant' 
-                ? 'bg-slate-50 text-slate-900' 
-                : 'bg-chiron-blue text-white ml-auto'
-            }`}>
+
+            <div
+              className={`rounded-lg p-3 text-sm max-w-xs ${
+                message.role === "assistant"
+                  ? "bg-slate-50 text-slate-900"
+                  : "bg-chiron-blue text-white ml-auto"
+              }`}
+            >
               <p className="whitespace-pre-wrap">{message.content}</p>
-              <p className={`text-xs mt-1 ${
-                message.role === 'assistant' ? 'text-clinical-gray' : 'text-blue-200'
-              }`}>
+              <p
+                className={`text-xs mt-1 ${
+                  message.role === "assistant"
+                    ? "text-clinical-gray"
+                    : "text-blue-200"
+                }`}
+              >
                 {formatTime(message.timestamp)}
               </p>
             </div>
           </div>
         ))}
-        
+
         {chatMutation.isPending && (
           <div className="flex">
             <div className="w-6 h-6 bg-chiron-blue rounded-full flex-shrink-0 flex items-center justify-center mr-2">
@@ -155,22 +171,23 @@ export default function LLMGuide({
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
-      
+
       <form onSubmit={handleSendMessage} className="flex space-x-2">
-        <Input 
+        <Input
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          placeholder={placeholder} 
+          placeholder={placeholder}
           className="flex-1 text-sm"
           disabled={chatMutation.isPending}
           data-testid="input-ai-chat"
         />
-        <Button 
+
+        <Button
           type="submit"
-          size="sm" 
+          size="sm"
           className="bg-chiron-blue hover:bg-blue-800"
           disabled={chatMutation.isPending || !inputMessage.trim()}
           data-testid="button-send-ai-message"

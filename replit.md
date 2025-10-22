@@ -50,6 +50,25 @@ The system is designed with UK healthcare regulations in mind, including integra
 - Open Banking integration for automated financial data import
 - Jurisdictional tax calculation rules engine
 
+## HR & Rota Management Features
+
+### Automatic Rota Synchronization
+The platform implements intelligent rota synchronization that automatically updates rota assignments when staff working hours are changed:
+- When a staff member's working hours are edited via the "Edit Rota" button, the system compares old vs new schedules
+- For each day where working hours changed, the system checks for existing rota entries
+- Automatic updates:
+  - **Remove** staff from rota assignments when changed to "not in"
+  - **Add** staff to rota assignments when changed to am/pm/all day with correct shift
+  - **Update** existing rota assignments if shift type changed
+- All updates maintain data consistency across staff records and daily rotas
+- Query cache invalidation ensures UI reflects changes immediately
+
+### Staff Management
+- Automatic staff profile creation during user registration
+- Employee ID tracking for all staff members
+- File upload functionality for appraisals, certificates, and compliance documentation
+- Integration with Replit's object storage for secure, practice-segregated file storage
+
 # External Dependencies
 
 ## Database Services

@@ -11,6 +11,7 @@ import { useLocation } from "wouter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/components/auth/authProvider";
 
 const userSchema = z.object({
   id: z.string(),
@@ -25,21 +26,32 @@ type UserData = z.infer<typeof userSchema>;
 
 export default function Home() {
   const [, setLocation] = useLocation();
-  
+  const { user, logout } = useAuth();
+
   const {
-    data: user,
+    data: userData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["/api/home"],
+    queryKey: ["/api/home", user?.email],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/home");
+      if (!user?.email) {
+        throw new Error("No user email");
+      }
+      const response = await fetch(
+        `/api/home?email=${encodeURIComponent(user.email)}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!response.ok) {
+        localStorage.removeItem("hr_user");
         throw new Error("Authentication failed");
       }
       return (await response.json()) as UserData;
     },
     retry: false,
+    enabled: !!user?.email,
   });
 
   if (isLoading) {
@@ -50,8 +62,8 @@ export default function Home() {
     );
   }
 
-  if (error || !user) {
-    setLocation("/login");
+  if (error || !userData) {
+    //setLocation("/login");
     return null;
   }
 
@@ -84,7 +96,7 @@ export default function Home() {
                 <User className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-slate-700">
-                {user?.firstName} {user?.lastName}
+                {userData?.firstName} {userData?.lastName}
               </span>
             </div>
           </div>
@@ -109,7 +121,7 @@ export default function Home() {
 
           {/* Chiron AI Assistant */}
           <div className="lg:col-span-2">
-            <LLMGuide 
+            <LLMGuide
               title="Chiron AI Assistant"
               subtitle="Always here to help"
               initialMessage="Good morning! Your CQC compliance score is at 98%. Would you like me to review the remaining items?"
@@ -119,6 +131,7 @@ export default function Home() {
           </div>
         </div>
       </main>
+
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 px-6 py-6 mt-auto">
         <div className="max-w-7xl mx-auto text-center">

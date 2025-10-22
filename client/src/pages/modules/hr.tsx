@@ -11,13 +11,45 @@ import {
   Clipboard,
   TrendingUp,
 } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import LLMGuide from "@/components/llm-guide";
 import StaffManagement from "@/components/staff-management";
+import AppraisalManagement from "@/components/appraisal";
+import PolicyManagement from "@/components/policy";
+import RotaManagement from "@/components/rota";
 import ModuleLogo from "@/components/module-logo";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { z } from "zod";
+import { insertStaffSchema, staff } from "@shared/schema";
+import { createInsertSchema } from "drizzle-zod";
+import { useAuth } from "@/components/auth/authProvider";
+import { useMutation } from "@tanstack/react-query";
+
+const staffSchema = createInsertSchema(staff).extend({
+  firstName: z.string(),
+  lastName: z.string(),
+});
+
+type StaffData = z.infer<typeof staffSchema>;
 
 interface HRMetrics {
   totalStaff: number;
@@ -27,17 +59,110 @@ interface HRMetrics {
 }
 
 export default function ChironHR() {
-  const [currentView, setCurrentView] = useState<"dashboard" | "staff">(
-    "dashboard",
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "staff" | "appraisals" | "rota" | "policies"
+  >("dashboard");
+  var weekday = new Array(7);
+  weekday[0] = "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
+  const [selectedDay, setSelectedDay] = useState<string>(
+    weekday[new Date().getDay()],
   );
+  const { user, logout } = useAuth();
+
+  const { data: staff, isLoading } = useQuery<StaffData[]>({
+    queryKey: ["/api/hr/staff", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/hr/staff?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch staff");
+      return response.json();
+    },
+    enabled: !!user?.email,
+  });
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<HRMetrics>({
-    queryKey: ["/api/hr/metrics"],
+    queryKey: ["/api/hr/metrics", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/hr/metrics?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch metrics");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
+
+  // Get staff working on selected day
+  const dailySchedule = useMemo(() => {
+    if (!staff) return [];
+
+    const dayIndex = weekday.indexOf(selectedDay);
+    if (dayIndex === -1) return [];
+
+    return staff
+      .filter((staffMember) => {
+        const workingHours = staffMember.workingHours?.[dayIndex];
+        return workingHours && workingHours !== "not in";
+      })
+      .map((staffMember) => ({
+        ...staffMember,
+        workingHours: staffMember.workingHours?.[dayIndex] || "not in",
+      }))
+      .sort((a, b) => {
+        // Sort by working hours: all day first, then am, then pm
+        const order = { "all day": 0, am: 1, pm: 2 };
+        return (
+          (order[a.workingHours as keyof typeof order] || 3) -
+          (order[b.workingHours as keyof typeof order] || 3)
+        );
+      });
+  }, [staff, selectedDay]);
 
   if (currentView === "staff") {
     return <StaffManagement onBack={() => setCurrentView("dashboard")} />;
   }
+
+  if (currentView === "appraisals") {
+    return <AppraisalManagement onBack={() => setCurrentView("dashboard")} />;
+  }
+
+  if (currentView === "rota") {
+    return <RotaManagement onBack={() => setCurrentView("dashboard")} />;
+  }
+
+  if (currentView === "policies") {
+    return <PolicyManagement onBack={() => setCurrentView("dashboard")} />;
+  }
+
+  const getStatusBadge = (hours: string) => {
+    if (hours === "not in") {
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-red-50 text-red-700 border-red-200"
+        >
+          Not In
+        </Badge>
+      );
+    }
+    return (
+      <Badge
+        variant="secondary"
+        className="bg-green-50 text-green-700 border-green-200"
+      >
+        {hours}
+      </Badge>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -83,7 +208,7 @@ export default function ChironHR() {
                 <p className="text-2xl font-bold text-slate-900">
                   {metricsLoading ? "..." : metrics?.totalStaff}
                 </p>
-                <p className="text-sm text-medical-green">+2 this month</p>
+                <p className="text-sm text-medical-green"></p>
               </Card>
 
               <Card className="p-6">
@@ -96,7 +221,13 @@ export default function ChironHR() {
                 <p className="text-2xl font-bold text-slate-900">
                   {metricsLoading ? "..." : metrics?.onDuty}
                 </p>
-                <p className="text-sm text-clinical-gray">75% capacity</p>
+                <p className="text-sm text-clinical-gray">
+                  {metricsLoading
+                    ? "..."
+                    : ((metrics?.onDuty || 0) / (metrics?.totalStaff || 1)) *
+                      100}
+                  {"% of capacity"}
+                </p>
               </Card>
 
               <Card className="p-6">
@@ -109,7 +240,7 @@ export default function ChironHR() {
                 <p className="text-2xl font-bold text-slate-900">
                   {metricsLoading ? "..." : metrics?.pendingReviews}
                 </p>
-                <p className="text-sm text-amber-600">Due this week</p>
+                <p className="text-sm text-amber-600">Due this month</p>
               </Card>
 
               <Card className="p-6">
@@ -146,7 +277,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
+                  onClick={() => setCurrentView("rota")}
                 >
                   <Calendar className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">
@@ -157,7 +288,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
+                  onClick={() => setCurrentView("appraisals")}
                 >
                   <FileText className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">
@@ -168,7 +299,7 @@ export default function ChironHR() {
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  disabled
+                  onClick={() => setCurrentView("policies")}
                 >
                   <BookOpen className="w-8 h-8 text-chiron-blue" />
                   <span className="text-sm font-medium text-slate-700">
@@ -178,71 +309,114 @@ export default function ChironHR() {
               </div>
             </Card>
 
+            {/* Define an array of colors for staff members */}
+
             {/* Today's Rota */}
-            <Card className="p-6">
+            <Card className="p-6" id="Rota-Section">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Today's Rota
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-chiron-blue rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium text-sm">DW</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        Dr. Sarah Wilson
-                      </p>
-                      <p className="text-sm text-clinical-gray">
-                        General Practitioner
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      08:00 - 18:00
-                    </p>
-                    <p className="text-xs text-medical-green">On duty</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-medical-green rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium text-sm">SJ</span>
+              <div>
+                {/* Daily Schedule Table */}
+                <div className="mt-8">
+                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-slate-900">
+                          Daily Schedule
+                        </h2>
+                        <Select
+                          value={selectedDay}
+                          onValueChange={setSelectedDay}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Select day" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {weekday.map((day) => (
+                              <SelectItem key={day} value={day}>
+                                {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        Sister Jane Smith
-                      </p>
-                      <p className="text-sm text-clinical-gray">
-                        Practice Nurse
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      09:00 - 17:00
-                    </p>
-                    <p className="text-xs text-medical-green">On duty</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-clinical-gray rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium text-sm">MB</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">Mark Brown</p>
-                      <p className="text-sm text-clinical-gray">Receptionist</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
-                      08:30 - 16:30
-                    </p>
-                    <p className="text-xs text-amber-600">Break 12:00</p>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Staff Member
+                          </TableHead>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Position
+                          </TableHead>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Department
+                          </TableHead>
+                          <TableHead className="px-6 py-4 text-sm font-semibold text-slate-900 bg-slate-50">
+                            Working Hours
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {dailySchedule.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={4}
+                              className="text-center py-12 text-slate-500"
+                            >
+                              <div className="flex flex-col items-center space-y-3">
+                                <Users className="w-12 h-12 text-slate-300" />
+                                <div>
+                                  <p className="text-lg font-medium">
+                                    No staff scheduled
+                                  </p>
+                                  <p className="text-sm">
+                                    No staff members are working on{" "}
+                                    {selectedDay}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          dailySchedule.map((staffMember) => (
+                            <TableRow
+                              key={staffMember.employeeId}
+                              className="border-b hover:bg-slate-50/50 transition-colors"
+                            >
+                              <TableCell className="px-6 py-4">
+                                <div className="font-medium text-slate-900">
+                                  {staffMember.firstName} {staffMember.lastName}
+                                </div>
+                                <div className="text-sm text-slate-500">
+                                  {staffMember.employeeId}
+                                </div>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <Badge
+                                  variant="outline"
+                                  className="capitalize bg-blue-50 text-blue-700 border-blue-200"
+                                >
+                                  {staffMember.position}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                <span className="text-slate-700">
+                                  {staffMember.department || "Not specified"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="px-6 py-4">
+                                {getStatusBadge(staffMember.workingHours)}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               </div>

@@ -31,16 +31,33 @@ import { Textarea } from "@/components/ui/textarea";
 import LLMGuide from "@/components/llm-guide";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertStaffSchema } from "@shared/schema";
+import { insertStaffSchema, staff } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import type { Staff } from "@shared/schema";
+import { createInsertSchema } from "drizzle-zod";
+import { useAuth } from "@/components/auth/authProvider";
 
-const staffFormSchema = insertStaffSchema.extend({
-  practiceId: z.string().optional(),
+const staffSchema = createInsertSchema(staff).extend({
+  firstName: z.string(),
+  lastName: z.string(),
 });
+
+type StaffData = z.infer<typeof staffSchema>;
+
+const staffFormSchema = insertStaffSchema
+  .extend({
+    creator: z.string(),
+    practiceId: z.string().optional(),
+    // Person fields from insertPersonSchema
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    // Use contract field directly from schema instead of contractType
+  })
+  .omit({
+    // Remove fields that will be handled separately
+  });
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
 
@@ -49,13 +66,24 @@ interface StaffManagementProps {
 }
 
 export default function StaffManagement({ onBack }: StaffManagementProps) {
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const { user, logout } = useAuth();
+  const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "view" | "edit">("list");
+  const [search, setSearch] = useState<String | null>(null);
   const { toast } = useToast();
 
-  const { data: staff, isLoading } = useQuery<Staff[]>({
-    queryKey: ["/api/hr/staff"],
+  const { data: staff, isLoading } = useQuery<StaffData[]>({
+    queryKey: ["/api/hr/staff", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/hr/staff?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch");
+      return await response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const form = useForm<StaffFormData>({
@@ -70,26 +98,32 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
       address: "",
       dateOfBirth: "",
       niNumber: "",
-      position: "",
+      position: "admin",
       department: "",
       startDate: "",
-      contractType: "permanent",
+      contract: "permanent", // Use contract instead of contractType
       salary: "0",
-      workingHours: "",
+      workingHours: undefined,
       professionalBody: "",
       professionalBodyNumber: "",
       appraisalDate: "",
+      nextAppraisal: "",
       revalidationInfo: "",
       dbsCheckExpiry: "",
       emergencyContactName: "",
       emergencyContactPhone: "",
       emergencyContactRelation: "",
+      creator: user?.email,
     },
   });
 
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.currentTarget.value);
+  };
+
   const createStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {
-      const response = await apiRequest("POST", "/api/hr/staff", data);
+      const response = await apiRequest("POST", "/api/hr/createstaff", data);
       return response.json();
     },
     onSuccess: () => {
@@ -113,13 +147,17 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const updateStaffMutation = useMutation({
     mutationFn: async ({
-      id,
+      employeeId,
       data,
     }: {
-      id: string;
+      employeeId: string;
       data: Partial<StaffFormData>;
     }) => {
-      const response = await apiRequest("PUT", `/api/hr/staff/${id}`, data);
+      const response = await apiRequest(
+        "PUT",
+        `/api/hr/staff/${employeeId}?email=${encodeURIComponent(user?.email || "")}`,
+        data,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -140,8 +178,8 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
   });
 
   const deleteStaffMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/hr/staff/${id}`);
+    mutationFn: async (employeeId: string) => {
+      await apiRequest("DELETE", `/api/hr/staff/${employeeId}`, user?.email);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hr/staff"] });
@@ -164,18 +202,21 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
 
   const onSubmit = (data: StaffFormData) => {
     if (viewMode === "edit" && selectedStaff) {
-      updateStaffMutation.mutate({ id: selectedStaff.id, data });
+      updateStaffMutation.mutate({
+        employeeId: selectedStaff.employeeId,
+        data,
+      });
     } else {
       createStaffMutation.mutate(data);
     }
   };
 
-  const handleViewStaff = (staffMember: Staff) => {
+  const handleViewStaff = (staffMember: StaffData) => {
     setSelectedStaff(staffMember);
     setViewMode("view");
   };
 
-  const handleEditStaff = (staffMember: Staff) => {
+  const handleEditStaff = (staffMember: StaffData) => {
     setSelectedStaff(staffMember);
     setViewMode("edit");
     // Populate form with staff data
@@ -211,7 +252,9 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => deleteStaffMutation.mutate(selectedStaff.id)}
+                onClick={() =>
+                  deleteStaffMutation.mutate(selectedStaff.employeeId)
+                }
                 disabled={deleteStaffMutation.isPending}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -298,7 +341,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">Contract Type:</span>
                       <Badge variant="secondary">
-                        {selectedStaff.contractType}
+                        {selectedStaff.contract}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -335,10 +378,18 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-clinical-gray">
+                        Last Appraisal:
+                      </span>
+                      <span className="text-slate-900">
+                        {selectedStaff.appraisalDate || "Needed"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-clinical-gray">
                         Next Appraisal:
                       </span>
                       <span className="text-slate-900">
-                        {selectedStaff.appraisalDate || "Not scheduled"}
+                        {selectedStaff.nextAppraisal || "Now"}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -451,6 +502,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                               <Input
                                 placeholder="Dr., Mr., Ms., etc."
                                 {...field}
+                                value={field.value || ""}
                               />
                             </FormControl>
                             <FormMessage />
@@ -494,10 +546,42 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                         name="position"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Position *</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
+                            <FormLabel>Position</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="doctor">Doctor</SelectItem>
+                                <SelectItem value="nurse">Nurse</SelectItem>
+                                <SelectItem value="business">
+                                  Business
+                                </SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="reception">
+                                  Reception
+                                </SelectItem>
+                                <SelectItem value="pharmacy">
+                                  Pharmacy
+                                </SelectItem>
+                                <SelectItem value="physio">Physio</SelectItem>
+                                <SelectItem value="health visitor">
+                                  Health Visitor
+                                </SelectItem>
+                                <SelectItem value="dentist">Dentist</SelectItem>
+                                <SelectItem value="dental therapist">
+                                  Dental therapist
+                                </SelectItem>
+                                <SelectItem value="hygienist">
+                                  Hygienist
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -525,7 +609,11 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input type="email" {...field} />
+                              <Input
+                                type="email"
+                                {...field}
+                                value={field.value || ""}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -538,7 +626,177 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           <FormItem>
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Address</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="dateOfBirth"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Date Of Birth</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="dbsCheckExpiry"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>DBS Check Expiry Date</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                {...field}
+                                value={field.value || "Now"}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Start Date</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="niNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Ni Number</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="salary"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Salary</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="professionalBody"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Professional Body</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="professionalBodyNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Professional Body Number</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="emergencyContactName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Emergency Contact Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="emergencyContactPhone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Emergency Contact Phone</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="emergencyContactRelation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Emergency Contact Relation</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -640,6 +898,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                             <Input
                               placeholder="Dr., Mr., Ms., etc."
                               {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -683,10 +942,38 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                       name="position"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Position *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                          <FormLabel>Position</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a role" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="doctor">Doctor</SelectItem>
+                              <SelectItem value="nurse">Nurse</SelectItem>
+                              <SelectItem value="business">Business</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="reception">
+                                Reception
+                              </SelectItem>
+                              <SelectItem value="pharmacy">Pharmacy</SelectItem>
+                              <SelectItem value="physio">Physio</SelectItem>
+                              <SelectItem value="health visitor">
+                                Health Visitor
+                              </SelectItem>
+                              <SelectItem value="dentist">Dentist</SelectItem>
+                              <SelectItem value="dental therapist">
+                                Dental therapist
+                              </SelectItem>
+                              <SelectItem value="hygienist">
+                                hygienist
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -699,6 +986,209 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                           <FormLabel>Department *</FormLabel>
                           <FormControl>
                             <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Address</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="dateOfBirth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date Of Birth</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="dbsCheckExpiry"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>DBS Check Expiry Date</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              value={field.value || "Now"}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Date</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="niNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ni Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="salary"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Salary</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="professionalBody"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Professional Body</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="professionalBodyNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Professional Body Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Emergency Contact Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Emergency Contact Phone</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="emergencyContactRelation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Emergency Contact Relation</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -741,6 +1231,7 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
                   <Input
                     placeholder="Search staff members..."
                     className="pl-10"
+                    onChange={onChange}
                   />
                 </div>
                 <Select>
@@ -779,72 +1270,89 @@ export default function StaffManagement({ onBack }: StaffManagementProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {staff.map((staffMember) => (
-                  <Card key={staffMember.id} className="p-6">
-                    <CardContent className="p-0">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">
-                            {staffMember.firstName[0]}
-                            {staffMember.lastName[0]}
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-slate-900">
-                            {staffMember.title} {staffMember.firstName}{" "}
-                            {staffMember.lastName}
-                          </h3>
-                          <p className="text-sm text-clinical-gray">
-                            {staffMember.position}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Employee ID:
-                          </span>
-                          <span className="text-slate-900">
-                            {staffMember.employeeId}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">
-                            Department:
-                          </span>
-                          <span className="text-slate-900">
-                            {staffMember.department}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-clinical-gray">Status:</span>
-                          <Badge className="bg-medical-green text-white">
-                            {staffMember.status || "Active"}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleViewStaff(staffMember)}
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-chiron-blue hover:bg-blue-800"
-                          onClick={() => handleEditStaff(staffMember)}
-                        >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {staff.map((staffMember) => {
+                  if (
+                    search == null ||
+                    staffMember.firstName
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    search == "" ||
+                    staffMember.lastName
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    staffMember.employeeId
+                      .toLowerCase()
+                      .includes(search.toLowerCase())
+                  ) {
+                    return (
+                      <Card key={staffMember.employeeId} className="p-6">
+                        <CardContent className="p-0">
+                          <div className="flex items-center space-x-4 mb-4">
+                            <div className="w-12 h-12 bg-chiron-blue rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold">
+                                {staffMember.firstName[0]}
+                                {staffMember.lastName[0]}
+                              </span>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-slate-900">
+                                {staffMember.firstName} {staffMember.lastName}
+                              </h3>
+                              <p className="text-sm text-clinical-gray">
+                                {staffMember.position}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-clinical-gray">
+                                Employee ID:
+                              </span>
+                              <span className="text-slate-900">
+                                {staffMember.employeeId}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-clinical-gray">
+                                Department:
+                              </span>
+                              <span className="text-slate-900">
+                                {staffMember.department}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-clinical-gray">
+                                Status:
+                              </span>
+                              <Badge className="bg-medical-green text-white">
+                                {staffMember.status || "Active"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleViewStaff(staffMember)}
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-chiron-blue hover:bg-blue-800"
+                              onClick={() => handleEditStaff(staffMember)}
+                            >
+                              <Edit className="w-3 h-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                })}
               </div>
             )}
           </div>

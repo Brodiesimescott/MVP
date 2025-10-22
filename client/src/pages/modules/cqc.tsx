@@ -22,6 +22,7 @@ import LLMGuide from "@/components/llm-guide";
 import ModuleLogo from "@/components/module-logo";
 import FileUploadModal from "@/components/FileUploadModal";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth/authProvider";
 
 interface CQCDashboardMetrics {
   complianceScore: number;
@@ -61,29 +62,61 @@ export default function ChironCQC() {
   const { toast } = useToast();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const { user } = useAuth();
 
   const { data: metrics, isLoading: metricsLoading } =
     useQuery<CQCDashboardMetrics>({
-      queryKey: ["/api/cqc/dashboard"],
+      queryKey: ["/api/cqc/dashboard", user?.email],
+      queryFn: async () => {
+        if (!user?.email) throw new Error("Not authenticated");
+        const response = await fetch(
+          `/api/cqc/dashboard?email=${encodeURIComponent(user.email)}`,
+        );
+        if (!response.ok) throw new Error("Failed to fetch dashboard");
+        return response.json();
+      },
+      enabled: !!user?.email,
     });
 
   const { data: standards, isLoading: standardsLoading } = useQuery<
     CQCStandard[]
   >({
-    queryKey: ["/api/cqc/standards"],
+    queryKey: ["/api/cqc/standards", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/cqc/standards?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch standards");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const { data: activities, isLoading: activitiesLoading } = useQuery<
     CQCActivity[]
   >({
-    queryKey: ["/api/cqc/activity"],
+    queryKey: ["/api/cqc/activity", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/cqc/activity?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch activity");
+      return response.json();
+    },
+    enabled: !!user?.email,
   });
-  
+
   const generateReportMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/cqc/generate-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...evidenceData,
+          email: user?.email,
+        }),
       });
       if (!response.ok) {
         const error = await response.json();
@@ -269,7 +302,9 @@ export default function ChironCQC() {
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
                   data-testid="button-generate-report"
                   onClick={handleGenerateReport}
-                  disabled={isGeneratingReport || generateReportMutation.isPending}
+                  disabled={
+                    isGeneratingReport || generateReportMutation.isPending
+                  }
                 >
                   {isGeneratingReport || generateReportMutation.isPending ? (
                     <>
@@ -323,7 +358,11 @@ export default function ChironCQC() {
                   CQC Standards
                 </h3>
                 <Link href="/modules/cqc/standards">
-                  <Button variant="outline" size="sm" data-testid="button-view-all-standards">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="button-view-all-standards"
+                  >
                     View All
                   </Button>
                 </Link>
@@ -390,35 +429,37 @@ export default function ChironCQC() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-semibold text-slate-900 mb-1">
-                            {activity.fileName || 'Unknown File'}
+                            {activity.fileName || "Unknown File"}
                           </h4>
                           <p className="text-xs text-clinical-gray mb-2">
                             {activity.description}
                           </p>
                           <div className="flex items-center space-x-4 text-xs text-clinical-gray">
                             <span>
-                              {activity.fileSize 
-                                ? `${(activity.fileSize / 1024).toFixed(1)} KB` 
-                                : 'Unknown size'
-                              }
+                              {activity.fileSize
+                                ? `${(activity.fileSize / 1024).toFixed(1)} KB`
+                                : "Unknown size"}
                             </span>
                             <span className="capitalize">
-                              {activity.mimeType?.split('/')[1] || 'Unknown type'}
+                              {activity.mimeType?.split("/")[1] ||
+                                "Unknown type"}
                             </span>
                             <span>
-                              {new Date(activity.timestamp).toLocaleDateString('en-GB')}
+                              {new Date(activity.timestamp).toLocaleDateString(
+                                "en-GB",
+                              )}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {activity.reviewStatus === 'compliant' && (
+                        {activity.reviewStatus === "compliant" && (
                           <CheckCircle className="w-4 h-4 text-medical-green" />
                         )}
-                        {activity.reviewStatus === 'needs_review' && (
+                        {activity.reviewStatus === "needs_review" && (
                           <Clock className="w-4 h-4 text-chiron-orange" />
                         )}
-                        {activity.reviewStatus === 'non_compliant' && (
+                        {activity.reviewStatus === "non_compliant" && (
                           <AlertCircle className="w-4 h-4 text-alert-red" />
                         )}
                       </div>
@@ -440,7 +481,7 @@ export default function ChironCQC() {
           </div>
         </div>
       </main>
-      
+
       <FileUploadModal
         open={showUploadModal}
         onOpenChange={setShowUploadModal}
