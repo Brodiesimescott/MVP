@@ -1,4 +1,18 @@
 import {
+  users,
+  people,
+  staff,
+  appraisalEvidence,
+  policies,
+  cqcStandards,
+  practiceEvidence,
+  messages,
+  conversations,
+  transactions,
+  invoices,
+  purchases,
+  vatReturns,
+  rotas,
   type User,
   type InsertUser,
   type Staff,
@@ -30,6 +44,7 @@ import {
   type InsertRota,
 } from "@shared/schema";
 import { db } from "@shared/index";
+import { eq, and, asc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -104,7 +119,11 @@ export interface IStorage {
   getRotasByPractice(practiceId: string): Promise<Rota[]>;
   getRotaByDay(practiceId: string, day: string): Promise<Rota | undefined>;
   createRota(rota: InsertRota): Promise<Rota>;
-  updateRota(practiceId: string, day: string, rota: Partial<InsertRota>): Promise<Rota | undefined>;
+  updateRota(
+    practiceId: string,
+    day: string,
+    rota: Partial<InsertRota>,
+  ): Promise<Rota | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -192,6 +211,8 @@ export class MemStorage implements IStorage {
 
   // User methods
   async getUser(id: string): Promise<User | undefined> {
+    /* const user = await db.select().from(users).where(eq(users.employeeId, id));
+    return user[0];*/
     return this.users.get(id);
   }
 
@@ -199,6 +220,18 @@ export class MemStorage implements IStorage {
     // Note: Users table doesn't have email directly - email is stored in people/staff tables
     // This would require joining with people table in a real database implementation
     // For in-memory storage, we'll need to look up via staff records that have email
+
+    /* const personWithEmaildb = await db
+      .select({ id: people.id })
+      .from(people)
+      .where(eq(people.email, email));
+    if (personWithEmaildb) {
+      const dbuser = await db
+        .select()
+        .from(users)
+        .where(eq(users.employeeId, personWithEmaildb[0].id));
+      return dbuser[0];
+    }*/
     const personWithEmail = Array.from(this.people.values()).find(
       (person) => person.email === email,
     );
@@ -222,12 +255,19 @@ export class MemStorage implements IStorage {
 
   //Person methods
   async getPerson(id: string): Promise<Person | undefined> {
+    /* const person = await db.select().from(people).where(eq(people.id, id));
+    return person[0];*/
     return this.people.get(id);
   }
 
   async getPersonByEmail(email: string): Promise<Person | undefined> {
+    /*const person = await db
+    .select()
+    .from(people)
+    .where(eq(people.email, email));
+    return person[0];*/
     return Array.from(this.people.values()).find(
-      (person) => person.email === email
+      (person) => person.email === email,
     );
   }
 
@@ -244,6 +284,17 @@ export class MemStorage implements IStorage {
     id: string,
     updates: Partial<InsertPerson>,
   ): Promise<Person | undefined> {
+    /*const dbexisting = await db.select().from(people).where(eq(people.id, id));
+    if (!dbexisting) return undefined;
+
+    const dbupdated: Person = { ...dbexisting[0], ...updates };
+
+    await db
+      .update(people)
+      .set(dbupdated)
+      .where(eq(users.employeeId, id));
+    return dbupdated*/
+
     const existing = this.people.get(id);
     if (!existing) return undefined;
 
@@ -254,12 +305,19 @@ export class MemStorage implements IStorage {
 
   // Staff methods
   async getStaffByPractice(practiceId: string): Promise<Staff[]> {
+    /*return await db
+      .select()
+      .from(staff)
+      .where(eq(staff.practiceId, practiceId));*/
+
     return Array.from(this.staff.values()).filter(
       (s) => s.practiceId === practiceId,
     );
   }
 
   async getStaff(id: string): Promise<Staff | undefined> {
+    /* const staffById = await db.select().from(staff).where(eq(staff.employeeId, id));
+    return staffById[0];*/
     return this.staff.get(id);
   }
 
@@ -299,6 +357,14 @@ export class MemStorage implements IStorage {
     id: string,
     updates: Partial<InsertStaff>,
   ): Promise<Staff | undefined> {
+    /*const dbexisting = await db.select().from(staff).where(eq(staff.id, id));
+    if (!dbexisting) return undefined;
+
+    const dbupdated: Staff = { ...dbexisting[0], ...updates };
+
+    await db.update(staff).set(dbupdated).where(eq(users.employeeId, id));
+    return dbupdated;*/
+
     const existing = this.staff.get(id);
     if (!existing) return undefined;
 
@@ -308,6 +374,7 @@ export class MemStorage implements IStorage {
   }
 
   async deleteStaff(id: string): Promise<boolean> {
+    //return await db.delete(staff).where(eq(staff.employeeId, id));
     return this.staff.delete(id);
   }
 
@@ -315,6 +382,10 @@ export class MemStorage implements IStorage {
   async getAppraisalsByPractice(
     practiceId: string,
   ): Promise<AppraisalEvidence[]> {
+    /*return await db
+      .select()
+      .from(appraisalEvidence)
+      .where(eq(appraisalEvidence.practiceId, practiceId));*/
     return Array.from(this.appraisals.values()).filter(
       (appraisal) => appraisal.practiceId === practiceId,
     );
@@ -337,6 +408,10 @@ export class MemStorage implements IStorage {
 
   //policy methods
   async getPoliciesByPractice(practiceId: string): Promise<Policy[]> {
+    /*return await db
+    .select()
+    .from(policy)
+    .where(eq(policy.practiceId, practiceId));*/
     return Array.from(this.policies.values()).filter(
       (policy) => policy.practiceId === practiceId,
     );
@@ -351,12 +426,13 @@ export class MemStorage implements IStorage {
     };
     this.policies.set(policy.fileName, policy);
     // Note: Uncomment the line below when using actual database
-    // await db.insert(appraisalEvidence).values(appraisal);
+    // await db.insert(policies).values(policy);
     return policy;
   }
 
   // CQC methods
   async getCqcStandards(): Promise<CqcStandard[]> {
+    //await db.select().from(cqcStandards);
     return Array.from(this.cqcStandards.values());
   }
 
@@ -377,6 +453,10 @@ export class MemStorage implements IStorage {
   }
 
   async getPracticeEvidence(practiceId: string): Promise<PracticeEvidence[]> {
+    /*return await db
+    .select()
+    .from(practiceEvidence)
+    .where(eq(practiceEvidence.practiceId, practiceId));*/
     return Array.from(this.practiceEvidence.values()).filter(
       (e) => e.practiceId === practiceId,
     );
@@ -401,6 +481,10 @@ export class MemStorage implements IStorage {
 
   // Messaging methods
   async getUsersByPractice(practiceId: string): Promise<User[]> {
+    /*return await db
+    .select()
+    .from(users)
+    .where(eq(users.practiceId, practiceId));*/
     return Array.from(this.users.values()).filter(
       (u) => u.practiceId === practiceId,
     );
@@ -410,6 +494,10 @@ export class MemStorage implements IStorage {
     userId: string,
     practiceId: string,
   ): Promise<Conversation[]> {
+    /*return await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.practiceId, practiceId));*/
     return Array.from(this.conversations.values()).filter(
       (c) => c.practiceId === practiceId && c.participantIds.includes(userId),
     );
@@ -419,6 +507,15 @@ export class MemStorage implements IStorage {
     id: number,
     practiceId: string,
   ): Promise<Conversation | undefined> {
+    /*const dbconversation = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(eq(conversations.id, id), eq(conversations.practiceId, practiceId)),
+      );
+    if (!dbconversation) return undefined;
+    return dbconversation[0];*/
+
     const conversation = this.conversations.get(id.toString());
     if (!conversation || conversation.practiceId !== practiceId)
       return undefined;
@@ -443,6 +540,11 @@ export class MemStorage implements IStorage {
   }
 
   async getMessagesByConversation(conversationId: number): Promise<Message[]> {
+    /*return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(asc(messages.createdAt));*/
     return Array.from(this.messages.values())
       .filter((m) => m.conversationId === conversationId)
       .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime());
@@ -465,6 +567,10 @@ export class MemStorage implements IStorage {
 
   // Financial methods
   async getTransactionsByPractice(practiceId: string): Promise<Transaction[]> {
+    /*return await db
+    .select()
+    .from(transactions)
+    .where(eq(transactions.practiceId, practiceId));*/
     return Array.from(this.transactions.values()).filter(
       (t) => t.practiceId === practiceId,
     );
@@ -488,6 +594,10 @@ export class MemStorage implements IStorage {
   }
 
   async getInvoicesByPractice(practiceId: string): Promise<Invoice[]> {
+    /*return await db
+    .select()
+    .from(invoices)
+    .where(eq(invoices.practiceId, practiceId));*/
     return Array.from(this.invoices.values()).filter(
       (i) => i.practiceId === practiceId,
     );
@@ -515,6 +625,14 @@ export class MemStorage implements IStorage {
     id: string,
     updates: Partial<InsertInvoice>,
   ): Promise<Invoice | undefined> {
+    /*const dbexisting = await db.select().from(invoices).where(eq(invoices.id, Number(id)));
+    if (!dbexisting) return undefined;
+
+    const dbupdated: Invoice = { ...dbexisting[0], ...updates };
+
+    await db.update(invoices).set(dbupdated).where(eq(invoices.id, Number(id)));
+    return dbupdated;*/
+
     const existing = this.invoices.get(id);
     if (!existing) return undefined;
 
@@ -524,6 +642,10 @@ export class MemStorage implements IStorage {
   }
 
   async getPurchasesByPractice(practiceId: string): Promise<Purchase[]> {
+    /*return await db
+    .select()
+    .from(purchases)
+    .where(eq(purchases.practiceId, practiceId));*/
     return Array.from(this.purchases.values()).filter(
       (p) => p.practiceId === practiceId,
     );
@@ -545,6 +667,10 @@ export class MemStorage implements IStorage {
   }
 
   async getVatReturnsByPractice(practiceId: string): Promise<VatReturn[]> {
+    /*return await db
+    .select()
+    .from(vatReturns)
+    .where(eq(vatReturns.practiceId, practiceId));*/
     return Array.from(this.vatReturns.values()).filter(
       (v) => v.practiceId === practiceId,
     );
@@ -622,14 +748,25 @@ export class MemStorage implements IStorage {
 
   // Rota methods
   async getRotasByPractice(practiceId: string): Promise<Rota[]> {
+    /*return await db
+    .select()
+    .from(vatReturns)
+    .where(eq(vatReturns.practiceId, practiceId));*/
     return Array.from(this.rotas.values()).filter(
-      (rota) => rota.practiceId === practiceId
+      (rota) => rota.practiceId === practiceId,
     );
   }
 
-  async getRotaByDay(practiceId: string, day: string): Promise<Rota | undefined> {
+  async getRotaByDay(
+    practiceId: string,
+    day: string,
+  ): Promise<Rota | undefined> {
+    /*return await db
+    .select()
+    .from(rotas)
+    .where(eq(rotas.practiceId, practiceId));*/
     return Array.from(this.rotas.values()).find(
-      (rota) => rota.practiceId === practiceId && rota.day === day
+      (rota) => rota.practiceId === practiceId && rota.day === day,
     );
   }
 
@@ -644,10 +781,26 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.rotas.set(id, rota);
+    // await db.insert(rotas).values(rota);
     return rota;
   }
 
-  async updateRota(practiceId: string, day: string, updates: Partial<InsertRota>): Promise<Rota | undefined> {
+  async updateRota(
+    practiceId: string,
+    day: string,
+    updates: Partial<InsertRota>,
+  ): Promise<Rota | undefined> {
+    /*const dbexisting = await db.select().from(rotas).where(and(eq(rotas.practiceId, practiceId), eq(rotas.day, day)));
+    if (!dbexisting) return undefined;
+
+    const dbupdated: Rota = { ...dbexisting[0], ...updates, practiceId: dbexisting[0].practiceId,
+      day: dbexisting[0].day,
+      id: dbexisting[0].id,
+      createdAt: dbexisting[0].createdAt, };
+
+    await db.update(rotas).set(dbupdated).where(and(eq(rotas.practiceId, practiceId), eq(rotas.day, day)));
+    return dbupdated;*/
+
     const existingRota = await this.getRotaByDay(practiceId, day);
     if (!existingRota) {
       return undefined;
