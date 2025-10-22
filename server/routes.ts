@@ -463,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Analyze files with AI to extract CQC compliance insights
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
       
       const analysisPrompt = `
 Analyze these CQC compliance documents and provide scores (0-100) for each of the 5 key questions:
