@@ -64,6 +64,7 @@ export default function ChironCQC() {
         if (!user?.email) throw new Error("Not authenticated");
         const response = await fetch(
           `/api/cqc/dashboard?email=${encodeURIComponent(user.email)}`,
+          { credentials: "include" }
         );
         if (!response.ok) throw new Error("Failed to fetch dashboard");
         return response.json();
@@ -79,6 +80,7 @@ export default function ChironCQC() {
       if (!user?.email) throw new Error("Not authenticated");
       const response = await fetch(
         `/api/cqc/standards?email=${encodeURIComponent(user.email)}`,
+        { credentials: "include" }
       );
       if (!response.ok) throw new Error("Failed to fetch standards");
       return response.json();
@@ -94,6 +96,7 @@ export default function ChironCQC() {
       if (!user?.email) throw new Error("Not authenticated");
       const response = await fetch(
         `/api/hr/cqcevidence?email=${encodeURIComponent(user.email)}`,
+        { credentials: "include" }
       );
       if (!response.ok) throw new Error("Failed to fetch");
       return await response.json();
@@ -103,12 +106,14 @@ export default function ChironCQC() {
 
   const generateReportMutation = useMutation({
     mutationFn: async (message: string) => {
+      if (!user?.email) throw new Error("Not authenticated");
       const response = await fetch("/api/cqc/generate-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           message,
+          email: user.email,
         }),
       });
       if (!response.ok) {
