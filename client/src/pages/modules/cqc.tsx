@@ -13,6 +13,7 @@ import {
   Clock,
   File,
   Download,
+  Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,11 @@ import { Progress } from "@/components/ui/progress";
 import LLMGuide from "@/components/llm-guide";
 import ModuleLogo from "@/components/module-logo";
 import FileUploadModal from "@/components/FileUploadModal";
+import { FileUploader } from "@/components/FileUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth/authProvider";
+import { PracticeEvidence } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
 
 interface CQCDashboardMetrics {
   complianceScore: number;
@@ -45,17 +49,6 @@ interface CQCStandard {
   summary: string;
   keyQuestion: string;
   sourceUrl: string;
-}
-
-interface CQCActivity {
-  id: string;
-  type: string;
-  fileName?: string;
-  description: string;
-  fileSize?: number;
-  mimeType?: string;
-  reviewStatus?: string;
-  timestamp: string;
 }
 
 export default function ChironCQC() {
@@ -93,29 +86,29 @@ export default function ChironCQC() {
     enabled: !!user?.email,
   });
 
-  const { data: activities, isLoading: activitiesLoading } = useQuery<
-    CQCActivity[]
+  const { data: cqcevidence, isLoading: iscqcevidenceLoading } = useQuery<
+    PracticeEvidence[]
   >({
-    queryKey: ["/api/cqc/activity", user?.email],
+    queryKey: ["/api/hr/cqcevidence", user?.email],
     queryFn: async () => {
       if (!user?.email) throw new Error("Not authenticated");
       const response = await fetch(
-        `/api/cqc/activity?email=${encodeURIComponent(user.email)}`,
+        `/api/hr/cqcevidence?email=${encodeURIComponent(user.email)}`,
       );
-      if (!response.ok) throw new Error("Failed to fetch activity");
-      return response.json();
+      if (!response.ok) throw new Error("Failed to fetch");
+      return await response.json();
     },
     enabled: !!user?.email,
   });
 
   const generateReportMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (message: string) => {
       const response = await fetch("/api/cqc/generate-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          ...evidenceData,
-          email: user?.email,
+          message,
         }),
       });
       if (!response.ok) {
@@ -145,7 +138,7 @@ export default function ChironCQC() {
 
   const handleGenerateReport = () => {
     setIsGeneratingReport(true);
-    generateReportMutation.mutate();
+    generateReportMutation.mutate("");
   };
 
   const getQuestionColor = (score: number) => {
@@ -158,6 +151,48 @@ export default function ChironCQC() {
     if (score >= 95) return "bg-green-50 border-green-200";
     if (score >= 85) return "bg-amber-50 border-amber-200";
     return "bg-red-50 border-red-200";
+  };
+
+  const uploadEvidenceMutation = useMutation({
+    mutationFn: async (evidenceData: {
+      fileName: string;
+      path: string;
+      description?: string;
+    }) => {
+      const response = await apiRequest(
+        "POST",
+        `/api/cqc/evidence?email=${encodeURIComponent(user?.email || "")}`,
+        evidenceData,
+      );
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cqc/evidencelist"] });
+      toast({
+        title: "Success",
+        description: "Evidence uploaded successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload evidence",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleUploadComplete = (filePath: string) => {
+    const fileName = prompt("Enter evidence name:");
+    const description = prompt("Enter evidence description:");
+
+    const evidenceData = {
+      fileName: fileName || `Evidence_${new Date().toLocaleString()}`,
+      path: filePath,
+      description:
+        description || `evidence of  - ${new Date().toLocaleString()}`,
+    };
+    uploadEvidenceMutation.mutate(evidenceData);
   };
 
   return (
@@ -285,7 +320,7 @@ export default function ChironCQC() {
                 Quick Actions
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button
+                {/*<Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
                   onClick={() => setShowUploadModal(true)}
@@ -296,7 +331,13 @@ export default function ChironCQC() {
                     Upload Evidence
                   </span>
                 </Button>
-
+                */}
+                <FileUploader
+                  onUploadComplete={handleUploadComplete}
+                  maxFileSize={25}
+                  acceptedTypes=".pdf, .doc, .docx, .jpg, .jpeg, .png, .xls, .xlsx"
+                  disabled={uploadEvidenceMutation.isPending}
+                />
                 <Button
                   variant="outline"
                   className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
@@ -322,7 +363,6 @@ export default function ChironCQC() {
                     </>
                   )}
                 </Button>
-
                 <Link href="/modules/cqc/standards">
                   <Button
                     variant="outline"
@@ -335,7 +375,6 @@ export default function ChironCQC() {
                     </span>
                   </Button>
                 </Link>
-
                 <Link href="/modules/cqc/standards">
                   <Button
                     variant="outline"
@@ -406,67 +445,77 @@ export default function ChironCQC() {
               </div>
             </Card>
 
-            {/* Recent Activity */}
+            {/* Recent Activity needs replaced*/}
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Uploaded Files
+                Uploaded Evidence
               </h3>
-              <div className="space-y-3">
-                {activitiesLoading ? (
-                  <div className="text-center py-4">
-                    <p className="text-clinical-gray">Loading activities...</p>
-                  </div>
-                ) : (
-                  activities?.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-start justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
-                      data-testid={`uploaded-file-${activity.id}`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className="w-10 h-10 bg-chiron-blue bg-opacity-10 rounded-lg flex items-center justify-center">
-                          <File className="w-5 h-5 text-chiron-blue" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-semibold text-slate-900 mb-1">
-                            {activity.fileName || "Unknown File"}
-                          </h4>
-                          <p className="text-xs text-clinical-gray mb-2">
-                            {activity.description}
-                          </p>
-                          <div className="flex items-center space-x-4 text-xs text-clinical-gray">
-                            <span>
-                              {activity.fileSize
-                                ? `${(activity.fileSize / 1024).toFixed(1)} KB`
-                                : "Unknown size"}
-                            </span>
-                            <span className="capitalize">
-                              {activity.mimeType?.split("/")[1] ||
-                                "Unknown type"}
-                            </span>
-                            <span>
-                              {new Date(activity.timestamp).toLocaleDateString(
-                                "en-GB",
+              {iscqcevidenceLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-clinical-gray">Loading Evidence...</p>
+                </div>
+              ) : !cqcevidence || cqcevidence.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-clinical-gray mb-4">No evidence found</p>
+                </div>
+              ) : (
+                <Card data-testid="card-uploaded-files">
+                  <CardHeader>
+                    <CardTitle>CQC Evidence</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {cqcevidence
+                        .filter(
+                          (practiceevidence) =>
+                            practiceevidence.practiceId === user?.practiceId,
+                        )
+                        .map((evidence, index) => (
+                          <div
+                            key={evidence.fileName}
+                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            data-testid={`uploaded-file-${index}`}
+                          >
+                            <div className="flex items-center gap-2 flex-1">
+                              <FileText className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm font-medium">
+                                {evidence.fileName}
+                              </span>
+                              {evidence.description && (
+                                <span className="text-xs text-gray-500 italic">
+                                  - {evidence.description}
+                                </span>
                               )}
-                            </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-500">
+                                {evidence.createdAt
+                                  ? new Date(
+                                      evidence.createdAt,
+                                    ).toLocaleDateString()
+                                  : "Recently uploaded"}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (user?.email) {
+                                    const url = `${evidence.path}?email=${encodeURIComponent(user.email)}`;
+                                    window.open(url, "_blank");
+                                  }
+                                }}
+                                className="h-8 w-8 p-0"
+                                data-testid={`button-view-file-${index}`}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {activity.reviewStatus === "compliant" && (
-                          <CheckCircle className="w-4 h-4 text-medical-green" />
-                        )}
-                        {activity.reviewStatus === "needs_review" && (
-                          <Clock className="w-4 h-4 text-chiron-orange" />
-                        )}
-                        {activity.reviewStatus === "non_compliant" && (
-                          <AlertCircle className="w-4 h-4 text-alert-red" />
-                        )}
-                      </div>
+                        ))}
                     </div>
-                  ))
-                )}
-              </div>
+                  </CardContent>
+                </Card>
+              )}
             </Card>
           </div>
 
@@ -481,12 +530,6 @@ export default function ChironCQC() {
           </div>
         </div>
       </main>
-
-      <FileUploadModal
-        open={showUploadModal}
-        onOpenChange={setShowUploadModal}
-        title="Upload CQC Evidence"
-      />
     </div>
   );
 }
