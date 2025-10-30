@@ -919,24 +919,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({ message: "No uploaded files found to analyze" });
       }
 
+      // Download and read file contents from object storage
+      const objectStorageService = new ObjectStorageService();
+      const filesWithContent = await Promise.all(
+        evidence.map(async (file) => {
+          try {
+            const objectFile = await objectStorageService.getObjectEntityFile(
+              file.path,
+            );
+            const [fileContent] = await objectFile.download();
+            const contentText = fileContent.toString("utf-8");
+            
+            return {
+              fileName: file.fileName,
+              description: file.description,
+              uploadDate: file.uploadDate,
+              content: contentText.substring(0, 10000), // Limit to first 10k chars to avoid token limits
+            };
+          } catch (error) {
+            console.error(`Error reading file ${file.fileName}:`, error);
+            return {
+              fileName: file.fileName,
+              description: file.description,
+              uploadDate: file.uploadDate,
+              content: "[File content could not be read]",
+            };
+          }
+        }),
+      );
+
       // Analyze files with AI to extract CQC compliance insights
       const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
 
       const analysisPrompt = `
 Analyze these CQC compliance documents and provide scores (0-100) for each of the 5 key questions:
 
-Uploaded Files:
-${evidence
+Uploaded Files and Their Contents:
+${filesWithContent
   .map(
     (file) => `
-- File: ${file.fileName}
-- Description: ${file.description || "No description"}
-- Upload Date: ${file.uploadDate}
+--- File: ${file.fileName} ---
+Description: ${file.description || "No description"}
+Upload Date: ${file.uploadDate}
+
+File Content:
+${file.content}
+
+---
 `,
   )
-  .join("")}
+  .join("\n")}
 
-Based on the file names, descriptions, and context, provide realistic CQC compliance scores for:
+Based on the actual file contents above, provide realistic CQC compliance scores for:
 1. Safe - How well does this evidence demonstrate patient safety measures?
 2. Effective - How well does this evidence show effective care and treatment?
 3. Caring - How well does this evidence demonstrate compassionate care?
