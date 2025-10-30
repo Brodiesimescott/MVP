@@ -894,40 +894,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/cqc/activity", async (req, res) => {
-    try {
-      const currentUser = await getCurrentUserFromRequest(req);
-      if (!currentUser) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-      const evidence = await storage.getPracticeEvidence(
-        currentUser.practiceId,
-      );
-
-      // Transform evidence into activity format, sorted by upload date
-      const activities = evidence
-        .sort(
-          (a, b) =>
-            new Date(b.uploadDate!).getTime() -
-            new Date(a.uploadDate!).getTime(),
-        )
-        .slice(0, 10) // Show only the 10 most recent files
-        .map((file) => ({
-          id: file.id,
-          type: "file_upload",
-          fileName: file.fileName,
-          description: file.description || `Uploaded ${file.fileName}`,
-          fileSize: file.fileSize,
-          mimeType: file.mimeType,
-          reviewStatus: file.reviewStatus,
-          timestamp: file.uploadDate?.toISOString() || new Date().toISOString(),
-        }));
-
-      res.json(activities);
-    } catch (error) {
-      console.error("Error fetching activity:", error);
-      res.status(500).json({ message: "Failed to fetch activity" });
+  app.get("/api/hr/cqcevidence", async (req, res) => {
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
+    const evidence = await storage.getPracticeEvidence(currentUser.practiceId);
+    res.json(evidence);
   });
 
   app.post("/api/cqc/generate-report", async (req, res) => {
@@ -959,7 +932,6 @@ ${evidence
 - File: ${file.fileName}
 - Description: ${file.description || "No description"}
 - Upload Date: ${file.uploadDate}
-- File Size: ${file.fileSize} bytes
 `,
   )
   .join("")}

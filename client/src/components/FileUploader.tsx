@@ -18,9 +18,9 @@ interface FileUploaderProps {
 export function FileUploader({
   onUploadComplete,
   maxFileSize = 10,
-  acceptedTypes = ".pdf,.doc,.docx,.jpg,.jpeg,.png",
+  acceptedTypes = ".pdf, .doc, .docx, .jpg, .jpeg, .png",
   className = "",
-  disabled = false
+  disabled = false,
 }: FileUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -54,7 +54,11 @@ export function FileUploader({
       setProgress(10);
 
       // Get upload URL from backend
-      const uploadResponse = await apiRequest("POST", "/api/objects/upload", {});
+      const uploadResponse = await apiRequest(
+        "POST",
+        "/api/objects/upload",
+        {},
+      );
 
       const uploadData = await uploadResponse.json();
       const { uploadURL } = uploadData;
@@ -119,17 +123,20 @@ export function FileUploader({
 
   return (
     <div className={`space-y-4 ${className}`} data-testid="file-uploader">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50">
         <Button
+          className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || uploading}
           variant="outline"
           data-testid="button-select-file"
         >
-          <Upload className="w-4 h-4 mr-2" />
-          Select File
+          <Upload className="w-8 h-8 text-chiron-blue" />
+          <span className="text-sm font-medium text-slate-700">
+            Upload Evidence
+          </span>
         </Button>
-        
+
         <Input
           ref={fileInputRef}
           type="file"
@@ -151,7 +158,10 @@ export function FileUploader({
       </div>
 
       {selectedFile && (
-        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md" data-testid="selected-file-display">
+        <div
+          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md"
+          data-testid="selected-file-display"
+        >
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-gray-500" />
             <span className="text-sm font-medium">{selectedFile.name}</span>

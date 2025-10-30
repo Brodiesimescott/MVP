@@ -26,7 +26,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     if (showRegister) {
       return (
         <RegisterForm
-          onRegister={(email, firstName, lastName) => login(email, firstName, lastName)}
+          onRegister={(email, firstName, lastName, practiceId) => login(email, firstName, lastName, practiceId)}
           onSwitchToLogin={() => setShowRegister(false)}
         />
       );
