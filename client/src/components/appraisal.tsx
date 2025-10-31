@@ -51,7 +51,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { createInsertSchema } from "drizzle-zod";
-import { FileUploader } from "@/components/FileUploader";
+import { UploadAppraisalDialog } from "@/components/upload-appraisal-dialog";
 import { useAuth } from "@/components/auth/authProvider";
 
 const staffSchema = createInsertSchema(staff).extend({
@@ -184,100 +184,9 @@ export default function AppraisalManagement({
     },
   });
 
-  const uploadAppraisalMutation = useMutation({
-    mutationFn: async (evidenceData: {
-      fileName: string;
-      path: string;
-      description?: string;
-      employeeId: string;
-    }) => {
-      const response = await apiRequest(
-        "POST",
-        `/api/hr/appraisal?email=${encodeURIComponent(user?.email || "")}`,
-        evidenceData,
-      );
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/appraisals"] });
-      toast({
-        title: "Success",
-        description: "Appraisal evidence uploaded successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to upload evidence",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleViewStaff = (staffMember: StaffData) => {
     setSelectedStaff(staffMember);
     setViewMode("view");
-  };
-
-  const handleUploadComplete = (filePath: string) => {
-    const fileName = prompt("Enter evidence name:");
-    const description = prompt("Enter evidence description:");
-    if (!selectedStaff) {
-      return;
-    }
-
-    var validDate = false;
-    var nextDate: string | null = null;
-
-    while (validDate === false) {
-      nextDate = prompt("Enter date to next appraisal(dd/mm/yyyy):");
-      if (nextDate !== null) {
-        var t = nextDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-        if (t !== null) {
-          var d = +t[1],
-            m = +t[2],
-            y = +t[3];
-
-          var date = new Date(y, m - 1, d);
-
-          validDate = date.getFullYear() === y && date.getMonth() === m - 1;
-        }
-      } else {
-        validDate = true;
-      }
-    }
-
-    var next = new Date();
-
-    if (nextDate) {
-      // First, split the string to extract the parts
-      let dateParts: string[] = nextDate.split("/");
-
-      // Create a new Date object using the parts (note: month is 0-indexed in JavaScript Dates)
-      next = new Date(+dateParts[2], +dateParts[1] - 1, +dateParts[0]);
-    } else {
-      next.setFullYear(next.getFullYear() + 1);
-    }
-
-    const evidenceData = {
-      fileName: fileName || `Appraisal_${new Date().toLocaleString()}`,
-      path: filePath,
-      description:
-        description ||
-        `Appraisal of ${selectedStaff.firstName} ${selectedStaff.lastName} - ${new Date().toLocaleString()}`,
-      employeeId: selectedStaff.employeeId,
-    };
-
-    uploadAppraisalMutation.mutate(evidenceData);
-    updateStaffMutation.mutate({
-      employeeId: selectedStaff.employeeId,
-
-      data: {
-        ...selectedStaff,
-        appraisalDate: new Date().toISOString().split("T")[0],
-        nextAppraisal: next.toISOString().split("T")[0],
-      },
-    });
   };
 
   if (viewMode === "view" && selectedStaff) {
@@ -501,14 +410,12 @@ export default function AppraisalManagement({
                     Add Appraisal
                   </h3>
                   <div className="flex space-x-2">
-                    <div>
-                      <FileUploader
-                        onUploadComplete={handleUploadComplete}
-                        maxFileSize={25}
-                        acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
-                        disabled={uploadAppraisalMutation.isPending}
-                      />
-                    </div>
+                    <UploadAppraisalDialog
+                      employeeId={selectedStaff.employeeId}
+                      employeeName={`${selectedStaff.firstName} ${selectedStaff.lastName}`}
+                      maxFileSize={25}
+                      acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                    />
                   </div>
                 </Card>
 
