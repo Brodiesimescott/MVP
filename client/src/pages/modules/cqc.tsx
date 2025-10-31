@@ -21,8 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import LLMGuide from "@/components/llm-guide";
 import ModuleLogo from "@/components/module-logo";
-import FileUploadModal from "@/components/FileUploadModal";
-import { FileUploader } from "@/components/FileUploader";
+import { UploadEvidenceDialog } from "@/components/upload-evidence-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth/authProvider";
 import { PracticeEvidence } from "@shared/schema";
@@ -53,7 +52,6 @@ interface CQCStandard {
 
 export default function ChironCQC() {
   const { toast } = useToast();
-  const [showUploadModal, setShowUploadModal] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const { user } = useAuth();
 
@@ -159,83 +157,6 @@ export default function ChironCQC() {
     return "bg-red-50 border-red-200";
   };
 
-  const uploadEvidenceMutation = useMutation({
-    mutationFn: async (evidenceData: {
-      fileName: string;
-      path: string;
-      description?: string;
-      createdAt: Date;
-    }) => {
-      const response = await apiRequest(
-        "POST",
-        `/api/cqc/evidence?email=${encodeURIComponent(user?.email || "")}`,
-        evidenceData,
-      );
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cqc/evidencelist"] });
-      toast({
-        title: "Success",
-        description: "Evidence uploaded successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to upload evidence",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleUploadComplete = (filePath: string) => {
-    const fileName = prompt("Enter evidence name:");
-    const description = prompt("Enter evidence description:");
-
-    var validDate = false;
-    var created: string | null = null;
-
-    while (validDate === false) {
-      created = prompt(
-        "When was this evidence created, enter in format dd/mm/yyyy:",
-      );
-      if (created !== null) {
-        var t = created.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-        if (t !== null) {
-          var d = +t[1],
-            m = +t[2],
-            y = +t[3];
-
-          var date = new Date(y, m - 1, d);
-
-          validDate = date.getFullYear() === y && date.getMonth() === m - 1;
-        }
-      } else {
-        validDate = true;
-      }
-    }
-
-    var createdAt = new Date();
-
-    if (created !== null) {
-      // First, split the string to extract the parts
-      let dateParts: string[] = created.split("/");
-
-      // Create a new Date object using the parts (note: month is 0-indexed in JavaScript Dates)
-      createdAt = new Date(+dateParts[2], +dateParts[1] - 1, +dateParts[0]);
-    } else {
-      createdAt.setFullYear(createdAt.getFullYear() + 1);
-    }
-    const evidenceData = {
-      fileName: fileName || `Evidence_${new Date().toLocaleString()}`,
-      path: filePath,
-      description:
-        description || `evidence of  - ${new Date().toLocaleString()}`,
-      createdAt: createdAt,
-    };
-    uploadEvidenceMutation.mutate(evidenceData);
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -362,23 +283,9 @@ export default function ChironCQC() {
                 Quick Actions
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {/*<Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto space-y-2 hover:bg-slate-50"
-                  onClick={() => setShowUploadModal(true)}
-                  data-testid="button-upload-evidence"
-                >
-                  <Upload className="w-8 h-8 text-chiron-blue" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Upload Evidence
-                  </span>
-                </Button>
-                */}
-                <FileUploader
-                  onUploadComplete={handleUploadComplete}
+                <UploadEvidenceDialog
                   maxFileSize={25}
                   acceptedTypes=".pdf, .doc, .docx, .jpg, .jpeg, .png, .xls, .xlsx"
-                  disabled={uploadEvidenceMutation.isPending}
                 />
                 <Button
                   variant="outline"
