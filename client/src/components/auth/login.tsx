@@ -91,7 +91,7 @@ export default function LoginForm({
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-yellow-200 rounded-lg flex items-center justify-center">
+          <div className="rounded-lg flex items-center justify-center">
             <ChironLogo />
           </div>
           <CardTitle className="text-2xl font-bold text-slate-900">
@@ -172,7 +172,7 @@ export default function LoginForm({
                 onClick={onSwitchToRegister}
                 className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
               >
-                Create one here
+                Create Account
               </button>
             </p>
           </div>

@@ -164,6 +164,7 @@ export default function ChironCQC() {
       fileName: string;
       path: string;
       description?: string;
+      createdAt: Date;
     }) => {
       const response = await apiRequest(
         "POST",
