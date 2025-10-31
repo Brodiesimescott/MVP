@@ -147,7 +147,6 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
   const handleUploadComplete = (filePath: string) => {
     const fileName = prompt("Enter evidence name:");
     const description = prompt("Enter evidence description:");
-    const months = prompt("Enter month to next appraisal:");
 
     const evidenceData = {
       fileName: fileName || `Policy_${new Date().toLocaleString()}`,
@@ -157,8 +156,6 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
         `policy of ${user?.firstName} ${user?.lastName} - ${new Date().toLocaleString()}`,
       practiceId: userData.practiceId,
     };
-    var next = new Date();
-    next.setMonth(next.getMonth() + parseInt(months || "12"));
     uploadPolicyMutation.mutate(evidenceData);
   };
 
