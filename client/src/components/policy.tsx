@@ -55,6 +55,19 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
     enabled: !!user?.email,
   });
 
+  const { data: policies, isLoading: isPoliciesLoading } = useQuery<Policy[]>({
+    queryKey: ["/api/hr/policies", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/hr/policies?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch");
+      return await response.json();
+    },
+    enabled: !!user?.email && !!userData,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -67,19 +80,6 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
     //setLocation("/login");
     return null;
   }
-
-  const { data: policies, isLoading: isPoliciesLoading } = useQuery<Policy[]>({
-    queryKey: ["/api/hr/policies", user?.email],
-    queryFn: async () => {
-      if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch(
-        `/api/hr/policies?email=${encodeURIComponent(user.email)}`,
-      );
-      if (!response.ok) throw new Error("Failed to fetch");
-      return await response.json();
-    },
-    enabled: !!user?.email,
-  });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.currentTarget.value);
