@@ -125,6 +125,7 @@ export default function ChironCQC() {
     onSuccess: (data) => {
       // Invalidate dashboard query to refresh with new scores
       queryClient.invalidateQueries({ queryKey: ["/api/cqc/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/cqcevidence"] });
       toast({
         title: "Report Generated Successfully",
         description: `Analyzed ${data.filesAnalyzed} files and updated compliance scores`,

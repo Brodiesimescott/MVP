@@ -69,7 +69,7 @@ const formSchema = z
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(8, "Please confirm your password"),
     practiceId: z.string().min(1, {
       message: "Enter practice id.",
@@ -468,7 +468,7 @@ export default function RegisterForm({
               />
 
               <Button type="submit" disabled={signUpMutation.isPending}>
-                {signUpMutation.isPending ? "Signing up..." : "Signed up"}
+                {signUpMutation.isPending ? "Signing up..." : "Sign up"}
               </Button>
             </form>
           </Form>
