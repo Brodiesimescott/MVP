@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import ModulesGrid from "@/components/modules-grid";
 import LLMGuide from "@/components/llm-guide";
 import ChironLogo from "@/lib/logo";
-import { Bot, Send, User } from "lucide-react";
+import { Bot, Send, User, LogOut } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { z } from "zod";
@@ -99,6 +99,19 @@ export default function Home() {
                 {userData?.firstName} {userData?.lastName}
               </span>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                logout();
+                setLocation("/login");
+              }}
+              className="flex items-center space-x-2"
+              data-testid="button-logout"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Log Out</span>
+            </Button>
           </div>
         </div>
       </header>
