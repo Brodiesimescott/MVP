@@ -32,7 +32,12 @@ import { insertStaffSchema, staff } from "@shared/schema";
 type FormData = z.infer<typeof formSchema>;
 
 interface RegisterFormProps {
-  onRegister: (email: string, firstName?: string, lastName?: string) => void;
+  onRegister: (
+    email: string,
+    firstName?: string,
+    lastName?: string,
+    practiceId?: string,
+  ) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -178,7 +183,12 @@ export default function RegisterForm({
         title: "Sign up successful!",
         description: "Your account and staff profile have been created",
       });
-      onRegister(variables.email, variables.firstName, variables.lastName);
+      onRegister(
+        variables.email,
+        variables.firstName,
+        variables.lastName,
+        variables.practiceId,
+      );
     },
     onError: (error: any) => {
       toast({

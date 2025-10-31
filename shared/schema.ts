@@ -152,6 +152,7 @@ export const practiceEvidence = pgTable("practice_evidence", {
     .references(() => practices.email, { onDelete: "no action" })
     .notNull(),
   fileName: text("file_name").notNull().primaryKey(),
+  path: text("file_path").notNull(),
   description: text("description"),
   uploadDate: timestamp("upload_date").defaultNow(),
   reviewStatus: reviewStatusEnum("status").notNull().default("needs_review"),
@@ -320,7 +321,6 @@ export const insertCqcStandardSchema = createInsertSchema(cqcStandards).omit({
 export const insertPracticeEvidenceSchema = createInsertSchema(
   practiceEvidence,
 ).omit({
-  createdAt: true,
   uploadDate: true,
 });
 

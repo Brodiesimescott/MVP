@@ -4,12 +4,18 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
+  practiceId?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, firstName?: string, lastName?: string) => void;
+  login: (
+    email: string,
+    firstName?: string,
+    lastName?: string,
+    practiceId?: string,
+  ) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -45,8 +51,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, firstName?: string, lastName?: string) => {
-    const userData = { email, firstName, lastName };
+  const login = (
+    email: string,
+    firstName?: string,
+    lastName?: string,
+    practiceId?: string,
+  ) => {
+    const userData = { email, firstName, lastName, practiceId };
     setUser(userData);
     localStorage.setItem("hr_user", JSON.stringify(userData));
   };
