@@ -321,7 +321,6 @@ export const insertCqcStandardSchema = createInsertSchema(cqcStandards).omit({
 export const insertPracticeEvidenceSchema = createInsertSchema(
   practiceEvidence,
 ).omit({
-  createdAt: true,
   uploadDate: true,
 });
 

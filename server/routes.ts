@@ -15,10 +15,12 @@ import {
   insertPersonSchema,
   InsertConversation,
   insertRotaSchema,
+  reviewStatusEnum,
 } from "@shared/schema";
 import { z } from "zod";
 import { generateHealthcareResponse } from "./ai-service";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import * as fs from "fs";
 
 // Initialize Google AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
@@ -929,7 +931,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
             const [fileContent] = await objectFile.download();
             const contentText = fileContent.toString("utf-8");
-            
+
             return {
               fileName: file.fileName,
               description: file.description,
@@ -1027,6 +1029,22 @@ Provide realistic scores based on the evidence provided. If evidence strongly su
         await storage.updatePracticeComplianceScores(
           currentUser.practiceId,
           scores,
+        );
+
+        // Store the generated report as evidence
+        const date = new Date().toISOString();
+        await storage.createPracticeEvidence({
+          practiceId: currentUser.practiceId,
+          fileName: "CQC Compliance Report",
+          description: `AI-generated CQC compliance report based on uploaded evidence`,
+          path: `/reports/cqc-compliance-report_${date}`,
+          reviewStatus: "needs_review",
+          createdAt: new Date(),
+        });
+        // need to convert cleanedResponse string to file ;
+        fs.writeFileSync(
+          `./reports/cqc-compliance-report_${date}`,
+          cleanedResponse,
         );
 
         // Return the analyzed scores
