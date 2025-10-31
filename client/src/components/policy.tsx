@@ -1,43 +1,14 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import {
-  ArrowLeft,
-  Plus,
-  Search,
-  Eye,
-  Edit,
-  Trash2,
-  Upload,
-  FileText,
-} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Search, Eye, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import LLMGuide from "@/components/llm-guide";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  insertStaffSchema,
-  staff,
-  AppraisalEvidence,
-  Policy,
-  insertAppraisalEvidenceSchema,
-} from "@shared/schema";
+import { Policy } from "@shared/schema";
 import { z } from "zod";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { createInsertSchema } from "drizzle-zod";
-import { FileUploader } from "@/components/FileUploader";
 import { useAuth } from "@/components/auth/authProvider";
+import { UploadPolicyDialog } from "@/components/upload-policy-dialog";
 
 const userSchema = z.object({
   id: z.string(),
@@ -55,9 +26,8 @@ interface PolicyManagementProps {
 }
 
 export default function PolicyManagement({ onBack }: PolicyManagementProps) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [search, setSearch] = useState<String | null>(null);
-  const { toast } = useToast();
 
   const {
     data: userData,
@@ -115,49 +85,6 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
     setSearch(e.currentTarget.value);
   };
 
-  const uploadPolicyMutation = useMutation({
-    mutationFn: async (evidenceData: {
-      fileName: string;
-      path: string;
-      description?: string;
-      practiceId: string;
-    }) => {
-      const response = await apiRequest("POST", "/api/hr/policy", {
-        ...evidenceData,
-        email: user?.email,
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hr/policies"] });
-      toast({
-        title: "Success",
-        description: "Policy uploaded successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to upload policy",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleUploadComplete = (filePath: string) => {
-    const fileName = prompt("Enter evidence name:");
-    const description = prompt("Enter evidence description:");
-
-    const evidenceData = {
-      fileName: fileName || `Policy_${new Date().toLocaleString()}`,
-      path: filePath,
-      description:
-        description ||
-        `policy of ${user?.firstName} ${user?.lastName} - ${new Date().toLocaleString()}`,
-      practiceId: userData.practiceId,
-    };
-    uploadPolicyMutation.mutate(evidenceData);
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -186,14 +113,11 @@ export default function PolicyManagement({ onBack }: PolicyManagementProps) {
           Upload Policy Document
         </h3>
         <div className="flex space-x-2">
-          <div>
-            <FileUploader
-              onUploadComplete={handleUploadComplete}
-              maxFileSize={25}
-              acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
-              disabled={uploadPolicyMutation.isPending}
-            />
-          </div>
+          <UploadPolicyDialog
+            practiceId={userData.practiceId}
+            maxFileSize={25}
+            acceptedTypes=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+          />
         </div>
       </Card>
 
