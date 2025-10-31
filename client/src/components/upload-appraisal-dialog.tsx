@@ -50,7 +50,7 @@ export function UploadAppraisalDialog({
     mutationFn: async (evidenceData: {
       fileName: string;
       path: string;
-      description?: string;
+      description: string;
       employeeId: string;
     }) => {
       const response = await apiRequest(
@@ -202,7 +202,8 @@ export function UploadAppraisalDialog({
       const evidenceData = {
         fileName: fileName.trim(),
         path: aclData.objectPath,
-        description: description.trim() || `Appraisal of ${employeeName}`,
+        description:
+          description.trim() || `Appraisal of ${employeeName} on ${new Date()}`,
         employeeId: employeeId,
       };
 

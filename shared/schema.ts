@@ -52,6 +52,29 @@ export const shiftEnum = pgEnum("shift_pattern", [
   "pm",
   "not in",
 ]);
+export const evidenceEnum = pgEnum("evidence_type", [
+  "Training",
+  "PAT_Testing",
+  "Equipment_Calibration",
+  "Health_and_Safety",
+  "Risk_Assessment",
+  "infection_control",
+  "Disability_Access",
+  "Cleanliness",
+  "Business_Continuity",
+  "Prescribing",
+  "Fire_safety",
+]);
+export const policyEnum = pgEnum("policy_type", [
+  "safeguarding",
+  "complaints",
+  "chaperoning",
+  "medicine_management",
+  "repeat_prescribing",
+  "locum",
+  "induction",
+  "fire_safety",
+]);
 export const transactionCategoryEnum = pgEnum("in_out", ["income", "expense"]);
 
 // Users table
@@ -154,6 +177,7 @@ export const practiceEvidence = pgTable("practice_evidence", {
   fileName: text("file_name").notNull().primaryKey(),
   path: text("file_path").notNull(),
   description: text("description"),
+  evidenceType: evidenceEnum("evidence_type").notNull(),
   uploadDate: timestamp("upload_date").defaultNow(),
   reviewStatus: reviewStatusEnum("status").notNull().default("needs_review"),
   standardIds: text("standard_ids").array(),
@@ -182,6 +206,7 @@ export const policies = pgTable("policies", {
   fileName: text("file_name").notNull().primaryKey(),
   path: text("file_path").notNull(),
   description: text("description"),
+  policyType: policyEnum("policy_type").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

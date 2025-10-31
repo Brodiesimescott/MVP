@@ -1,7 +1,9 @@
 import {
   users,
   people,
+  practices,
   staff,
+  shifts,
   appraisalEvidence,
   policies,
   cqcStandards,
@@ -42,6 +44,8 @@ import {
   type InsertPolicy,
   type Rota,
   type InsertRota,
+  type Shift,
+  type InsertShift,
 } from "@shared/schema";
 import { db } from "@shared/index";
 import { eq, and, asc } from "drizzle-orm";
@@ -52,7 +56,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
-  //Person methods
+  // Person methods
   getPerson(id: string): Promise<Person | undefined>;
   getPersonByEmail(email: string): Promise<Person | undefined>;
   createPerson(person: InsertPerson): Promise<Person>;
@@ -60,6 +64,10 @@ export interface IStorage {
     id: string,
     person: Partial<InsertPerson>,
   ): Promise<Person | undefined>;
+
+  // Practice methods
+  getPractice(email: string): Promise<Practice | undefined>;
+  createPractice(practice: Practice): Promise<Practice>;
 
   // Staff methods
   getStaffByPractice(practiceId: string): Promise<Staff[]>;
@@ -70,6 +78,14 @@ export interface IStorage {
     staff: Partial<InsertStaff>,
   ): Promise<Staff | undefined>;
   deleteStaff(id: string): Promise<boolean>;
+
+  // Shift methods
+  getShift(email: string): Promise<Shift | undefined>;
+  createShift(shift: InsertShift): Promise<Shift>;
+  updateShift(
+    email: string,
+    shift: Partial<InsertShift>,
+  ): Promise<Shift | undefined>;
 
   getAppraisalsByPractice(practiceId: string): Promise<AppraisalEvidence[]>;
   createAppraisal(
@@ -148,6 +164,7 @@ export class MemStorage implements IStorage {
   private people: Map<string, Person>;
   private practices: Map<string, Practice>;
   private staff: Map<string, Staff>;
+  private shifts: Map<string, Shift>;
   private appraisals: Map<string, AppraisalEvidence>;
   private policies: Map<string, Policy>;
   private cqcStandards: Map<string, CqcStandard>;
@@ -176,6 +193,7 @@ export class MemStorage implements IStorage {
     this.people = new Map();
     this.practices = new Map();
     this.staff = new Map();
+    this.shifts = new Map();
     this.appraisals = new Map();
     this.policies = new Map();
     this.cqcStandards = new Map();
@@ -328,6 +346,46 @@ export class MemStorage implements IStorage {
 
     const updated: Person = { ...existing, ...updates };
     this.people.set(id, updated);
+    return updated;
+  }
+
+  // Practice methods
+  async getPractice(email: string): Promise<Practice | undefined> {
+    return this.practices.get(email);
+  }
+
+  async createPractice(practice: Practice): Promise<Practice> {
+    this.practices.set(practice.email, practice);
+    return practice;
+  }
+
+  // Shift methods
+  async getShift(email: string): Promise<Shift | undefined> {
+    return this.shifts.get(email);
+  }
+
+  async createShift(insertShift: InsertShift): Promise<Shift> {
+    const shift: Shift = {
+      ...insertShift,
+      mon: insertShift.mon ?? null,
+      tue: insertShift.tue ?? null,
+      wed: insertShift.wed ?? null,
+      thu: insertShift.thu ?? null,
+      fri: insertShift.fri ?? null,
+    };
+    this.shifts.set(shift.email, shift);
+    return shift;
+  }
+
+  async updateShift(
+    email: string,
+    updates: Partial<InsertShift>,
+  ): Promise<Shift | undefined> {
+    const existing = this.shifts.get(email);
+    if (!existing) return undefined;
+
+    const updated: Shift = { ...existing, ...updates };
+    this.shifts.set(email, updated);
     return updated;
   }
 
