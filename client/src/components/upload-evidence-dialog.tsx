@@ -12,6 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, X } from "lucide-react";
@@ -26,6 +33,20 @@ interface UploadEvidenceDialogProps {
   onUploadSuccess?: () => void;
 }
 
+// Evidence type options from schema
+const EVIDENCE_TYPES = [
+  { value: "Training", label: "Training" },
+  { value: "PAT_Testing", label: "PAT Testing" },
+  { value: "Equipment_Calibration", label: "Equipment Calibration" },
+  { value: "Health_and_Safety", label: "Health and Safety" },
+  { value: "Risk_Assessment", label: "Risk Assessment" },
+  { value: "infection_control", label: "Infection Control" },
+  { value: "Disability_Access", label: "Disability Access" },
+  { value: "Cleanliness", label: "Cleanliness" },
+  { value: "Business_Continuity", label: "Business Continuity" },
+  { value: "Prescribing", label: "Prescribing" },
+];
+
 export function UploadEvidenceDialog({
   maxFileSize = 25,
   acceptedTypes = ".pdf, .doc, .docx, .jpg, .jpeg, .png, .xls, .xlsx",
@@ -37,6 +58,7 @@ export function UploadEvidenceDialog({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const [description, setDescription] = useState("");
+  const [evidenceType, setEvidenceType] = useState("");
   const [createdAt, setCreatedAt] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -47,6 +69,7 @@ export function UploadEvidenceDialog({
       fileName: string;
       path: string;
       description: string;
+      evidenceType: string;
       createdAt: Date;
     }) => {
       const response = await apiRequest(
@@ -81,6 +104,7 @@ export function UploadEvidenceDialog({
     setSelectedFile(null);
     setFileName("");
     setDescription("");
+    setEvidenceType("");
     setCreatedAt("");
     setProgress(0);
     if (fileInputRef.current) {
@@ -123,6 +147,15 @@ export function UploadEvidenceDialog({
       toast({
         title: "Missing file name",
         description: "Please enter a file name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!evidenceType) {
+      toast({
+        title: "Missing evidence type",
+        description: "Please select an evidence type",
         variant: "destructive",
       });
       return;
@@ -184,6 +217,7 @@ export function UploadEvidenceDialog({
         fileName: fileName.trim(),
         path: aclData.objectPath,
         description: description.trim(),
+        evidenceType: evidenceType,
         createdAt: new Date(createdAt),
       };
 
@@ -295,6 +329,27 @@ export function UploadEvidenceDialog({
                 required
                 data-testid="input-fileName"
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="evidenceType">Evidence Type *</Label>
+              <Select
+                value={evidenceType}
+                onValueChange={setEvidenceType}
+                disabled={uploading}
+                required
+              >
+                <SelectTrigger data-testid="select-evidenceType">
+                  <SelectValue placeholder="Select evidence type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVIDENCE_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid gap-2">
