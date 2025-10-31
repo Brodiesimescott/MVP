@@ -40,13 +40,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Check for existing session on app load
-    const savedUser = localStorage.getItem("hr_user");
-    if (savedUser) {
-      try {
+    try {
+      const savedUser = localStorage.getItem("hr_user");
+      if (savedUser) {
         setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem("hr_user");
       }
+    } catch (error) {
+      console.warn("localStorage access failed:", error);
     }
     setIsLoading(false);
   }, []);
@@ -59,12 +59,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   ) => {
     const userData = { email, firstName, lastName, practiceId };
     setUser(userData);
-    localStorage.setItem("hr_user", JSON.stringify(userData));
+    try {
+      localStorage.setItem("hr_user", JSON.stringify(userData));
+    } catch (error) {
+      console.warn("localStorage access failed:", error);
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("hr_user");
+    try {
+      localStorage.removeItem("hr_user");
+    } catch (error) {
+      console.warn("localStorage access failed:", error);
+    }
   };
 
   const value = {
