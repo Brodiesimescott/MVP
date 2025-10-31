@@ -46,7 +46,7 @@ export function UploadEvidenceDialog({
     mutationFn: async (evidenceData: {
       fileName: string;
       path: string;
-      description?: string;
+      description: string;
       createdAt: Date;
     }) => {
       const response = await apiRequest(
@@ -227,7 +227,8 @@ export function UploadEvidenceDialog({
           <DialogHeader>
             <DialogTitle>Upload Evidence</DialogTitle>
             <DialogDescription>
-              Upload a file and provide details about the evidence for CQC compliance.
+              Upload a file and provide details about the evidence for CQC
+              compliance.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -289,7 +290,7 @@ export function UploadEvidenceDialog({
                 id="fileName"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
-                placeholder="Enter a descriptive name"
+                placeholder="Enter a name"
                 disabled={uploading}
                 required
                 data-testid="input-fileName"
@@ -302,7 +303,7 @@ export function UploadEvidenceDialog({
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe this evidence (optional)"
+                placeholder="Describe this evidence"
                 disabled={uploading}
                 rows={3}
                 data-testid="input-description"
