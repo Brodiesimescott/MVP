@@ -192,11 +192,46 @@ export default function ChironCQC() {
     const fileName = prompt("Enter evidence name:");
     const description = prompt("Enter evidence description:");
 
+    var validDate = false;
+    var created: string | null = null;
+
+    while (validDate === false) {
+      created = prompt(
+        "When was this evidence created, enter in format dd/mm/yyyy:",
+      );
+      if (created !== null) {
+        var t = created.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (t !== null) {
+          var d = +t[1],
+            m = +t[2],
+            y = +t[3];
+
+          var date = new Date(y, m - 1, d);
+
+          validDate = date.getFullYear() === y && date.getMonth() === m - 1;
+        }
+      } else {
+        validDate = true;
+      }
+    }
+
+    var createdAt = new Date();
+
+    if (created !== null) {
+      // First, split the string to extract the parts
+      let dateParts: string[] = created.split("/");
+
+      // Create a new Date object using the parts (note: month is 0-indexed in JavaScript Dates)
+      createdAt = new Date(+dateParts[2], +dateParts[1] - 1, +dateParts[0]);
+    } else {
+      createdAt.setFullYear(createdAt.getFullYear() + 1);
+    }
     const evidenceData = {
       fileName: fileName || `Evidence_${new Date().toLocaleString()}`,
       path: filePath,
       description:
         description || `evidence of  - ${new Date().toLocaleString()}`,
+      createdAt: createdAt,
     };
     uploadEvidenceMutation.mutate(evidenceData);
   };
