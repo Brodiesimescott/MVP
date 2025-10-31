@@ -33,7 +33,12 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 interface LoginFormProps {
-  onLogin: (email: string, firstName?: string, lastName?: string) => void;
+  onLogin: (
+    email: string,
+    firstName?: string,
+    lastName?: string,
+    practiceId?: string,
+  ) => void;
   onSwitchToRegister: () => void;
 }
 
@@ -67,7 +72,7 @@ export default function LoginForm({
       toast({
         title: "Login successful!",
       });
-      onLogin(data.email, data.firstName, data.lastName);
+      onLogin(data.email, data.firstName, data.lastName, data.practiceId);
     },
     onError: (error: any) => {
       toast({

@@ -86,8 +86,23 @@ export interface IStorage {
   createPracticeEvidence(
     evidence: InsertPracticeEvidence,
   ): Promise<PracticeEvidence>;
-  updatePracticeComplianceScores(practiceId: string, scores: { Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number }): Promise<void>;
-  getPracticeComplianceScores(practiceId: string): Promise<{ Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number } | null>;
+  updatePracticeComplianceScores(
+    practiceId: string,
+    scores: {
+      Safe: number;
+      Effective: number;
+      Caring: number;
+      Responsive: number;
+      WellLed: number;
+    },
+  ): Promise<void>;
+  getPracticeComplianceScores(practiceId: string): Promise<{
+    Safe: number;
+    Effective: number;
+    Caring: number;
+    Responsive: number;
+    WellLed: number;
+  } | null>;
 
   // Messaging methods
   getUsersByPractice(practiceId: string): Promise<User[]>;
@@ -137,7 +152,16 @@ export class MemStorage implements IStorage {
   private policies: Map<string, Policy>;
   private cqcStandards: Map<string, CqcStandard>;
   private practiceEvidence: Map<string, PracticeEvidence>;
-  private practiceComplianceScores: Map<string, { Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number }>;
+  private practiceComplianceScores: Map<
+    string,
+    {
+      Safe: number;
+      Effective: number;
+      Caring: number;
+      Responsive: number;
+      WellLed: number;
+    }
+  >;
   private conversations: Map<string, Conversation>;
   private messages: Map<string, Message>;
   private transactions: Map<string, Transaction>;
@@ -189,8 +213,6 @@ export class MemStorage implements IStorage {
         keyQuestion: "Well-led",
         sourceUrl:
           "https://www.cqc.org.uk/guidance-regulation/providers/regulations-service-providers-and-managers/health-social-care-act/regulation-17",
-        
-
       },
       {
         regulationId: "REG9",
@@ -477,7 +499,7 @@ export class MemStorage implements IStorage {
       reviewStatus: insertEvidence.reviewStatus ?? "needs_review",
       standardIds: insertEvidence.standardIds ?? null,
       uploadDate: new Date(),
-      createdAt: new Date(),
+      createdAt: insertEvidence.createdAt ?? new Date(),
     };
     this.practiceEvidence.set(evidence.fileName, evidence);
     // Note: Uncomment the line below when using actual database
@@ -486,15 +508,25 @@ export class MemStorage implements IStorage {
   }
 
   async updatePracticeComplianceScores(
-    practiceId: string, 
-    scores: { Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number }
+    practiceId: string,
+    scores: {
+      Safe: number;
+      Effective: number;
+      Caring: number;
+      Responsive: number;
+      WellLed: number;
+    },
   ): Promise<void> {
     this.practiceComplianceScores.set(practiceId, scores);
   }
 
-  async getPracticeComplianceScores(
-    practiceId: string
-  ): Promise<{ Safe: number; Effective: number; Caring: number; Responsive: number; WellLed: number } | null> {
+  async getPracticeComplianceScores(practiceId: string): Promise<{
+    Safe: number;
+    Effective: number;
+    Caring: number;
+    Responsive: number;
+    WellLed: number;
+  } | null> {
     return this.practiceComplianceScores.get(practiceId) || null;
   }
 

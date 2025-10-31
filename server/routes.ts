@@ -15,10 +15,12 @@ import {
   insertPersonSchema,
   InsertConversation,
   insertRotaSchema,
+  reviewStatusEnum,
 } from "@shared/schema";
 import { z } from "zod";
 import { generateHealthcareResponse } from "./ai-service";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import * as fs from "fs";
 
 // Initialize Google AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
@@ -894,40 +896,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/cqc/activity", async (req, res) => {
-    try {
-      const currentUser = await getCurrentUserFromRequest(req);
-      if (!currentUser) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-      const evidence = await storage.getPracticeEvidence(
-        currentUser.practiceId,
-      );
-
-      // Transform evidence into activity format, sorted by upload date
-      const activities = evidence
-        .sort(
-          (a, b) =>
-            new Date(b.uploadDate!).getTime() -
-            new Date(a.uploadDate!).getTime(),
-        )
-        .slice(0, 10) // Show only the 10 most recent files
-        .map((file) => ({
-          id: file.id,
-          type: "file_upload",
-          fileName: file.fileName,
-          description: file.description || `Uploaded ${file.fileName}`,
-          fileSize: file.fileSize,
-          mimeType: file.mimeType,
-          reviewStatus: file.reviewStatus,
-          timestamp: file.uploadDate?.toISOString() || new Date().toISOString(),
-        }));
-
-      res.json(activities);
-    } catch (error) {
-      console.error("Error fetching activity:", error);
-      res.status(500).json({ message: "Failed to fetch activity" });
+  app.get("/api/hr/cqcevidence", async (req, res) => {
+    const currentUser = await getCurrentUserFromRequest(req);
+    if (!currentUser) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
+    const evidence = await storage.getPracticeEvidence(currentUser.practiceId);
+    res.json(evidence);
   });
 
   app.post("/api/cqc/generate-report", async (req, res) => {
@@ -946,25 +921,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({ message: "No uploaded files found to analyze" });
       }
 
+      // Download and read file contents from object storage
+      const objectStorageService = new ObjectStorageService();
+      const filesWithContent = await Promise.all(
+        evidence.map(async (file) => {
+          try {
+            const objectFile = await objectStorageService.getObjectEntityFile(
+              file.path,
+            );
+            const [fileContent] = await objectFile.download();
+            const contentText = fileContent.toString("utf-8");
+
+            return {
+              fileName: file.fileName,
+              description: file.description,
+              uploadDate: file.uploadDate,
+              content: contentText.substring(0, 10000), // Limit to first 10k chars to avoid token limits
+            };
+          } catch (error) {
+            console.error(`Error reading file ${file.fileName}:`, error);
+            return {
+              fileName: file.fileName,
+              description: file.description,
+              uploadDate: file.uploadDate,
+              content: "[File content could not be read]",
+            };
+          }
+        }),
+      );
+
       // Analyze files with AI to extract CQC compliance insights
       const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
 
       const analysisPrompt = `
 Analyze these CQC compliance documents and provide scores (0-100) for each of the 5 key questions:
 
-Uploaded Files:
-${evidence
+Uploaded Files and Their Contents:
+${filesWithContent
   .map(
     (file) => `
-- File: ${file.fileName}
-- Description: ${file.description || "No description"}
-- Upload Date: ${file.uploadDate}
-- File Size: ${file.fileSize} bytes
+--- File: ${file.fileName} ---
+Description: ${file.description || "No description"}
+Upload Date: ${file.uploadDate}
+
+File Content:
+${file.content}
+
+---
 `,
   )
-  .join("")}
+  .join("\n")}
 
-Based on the file names, descriptions, and context, provide realistic CQC compliance scores for:
+Based on the actual file contents above, provide realistic CQC compliance scores for:
 1. Safe - How well does this evidence demonstrate patient safety measures?
 2. Effective - How well does this evidence show effective care and treatment?
 3. Caring - How well does this evidence demonstrate compassionate care?
@@ -1021,6 +1029,22 @@ Provide realistic scores based on the evidence provided. If evidence strongly su
         await storage.updatePracticeComplianceScores(
           currentUser.practiceId,
           scores,
+        );
+
+        // Store the generated report as evidence
+        const date = new Date().toISOString();
+        await storage.createPracticeEvidence({
+          practiceId: currentUser.practiceId,
+          fileName: "CQC Compliance Report",
+          description: `AI-generated CQC compliance report based on uploaded evidence`,
+          path: `/reports/cqc-compliance-report_${date}`,
+          reviewStatus: "needs_review",
+          createdAt: new Date(),
+        });
+        // need to convert cleanedResponse string to file ;
+        fs.writeFileSync(
+          `./reports/cqc-compliance-report_${date}`,
+          cleanedResponse,
         );
 
         // Return the analyzed scores

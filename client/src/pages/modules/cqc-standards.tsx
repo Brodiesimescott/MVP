@@ -8,12 +8,16 @@ import {
   CheckCircle,
   AlertTriangle,
   Clock,
-  Book
+  Book,
+  Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ModuleLogo from "@/components/module-logo";
+
+import { useAuth } from "@/components/auth/authProvider";
+import { PracticeEvidence } from "@shared/schema";
 
 interface CQCStandard {
   id: string;
@@ -28,8 +32,24 @@ interface CQCStandard {
 }
 
 export default function CQCStandards() {
+  const { user, logout } = useAuth();
   const { data: standards, isLoading } = useQuery<CQCStandard[]>({
     queryKey: ["/api/cqc/standards"],
+  });
+
+  const { data: cqcevidence, isLoading: iscqcevidenceLoading } = useQuery<
+    PracticeEvidence[]
+  >({
+    queryKey: ["/api/hr/cqcevidence", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("Not authenticated");
+      const response = await fetch(
+        `/api/hr/cqcevidence?email=${encodeURIComponent(user.email)}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch");
+      return await response.json();
+    },
+    enabled: !!user?.email,
   });
 
   const getStatusIcon = (status: string) => {
@@ -48,7 +68,11 @@ export default function CQCStandards() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "compliant":
-        return <Badge className="bg-green-50 text-medical-green border-green-200">Compliant</Badge>;
+        return (
+          <Badge className="bg-green-50 text-medical-green border-green-200">
+            Compliant
+          </Badge>
+        );
       case "needs-attention":
         return <Badge variant="destructive">Needs Attention</Badge>;
       case "pending-review":
@@ -91,14 +115,14 @@ export default function CQCStandards() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-
         {/* Standards Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {standards?.filter(s => s.status === "compliant").length || 0}
+                  {standards?.filter((s) => s.status === "compliant").length ||
+                    0}
                 </p>
                 <p className="text-sm text-medical-green">Compliant</p>
               </div>
@@ -110,7 +134,8 @@ export default function CQCStandards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {standards?.filter(s => s.status === "needs-attention").length || 0}
+                  {standards?.filter((s) => s.status === "needs-attention")
+                    .length || 0}
                 </p>
                 <p className="text-sm text-chiron-orange">Needs Attention</p>
               </div>
@@ -122,7 +147,8 @@ export default function CQCStandards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {standards?.filter(s => s.status === "pending-review").length || 0}
+                  {standards?.filter((s) => s.status === "pending-review")
+                    .length || 0}
                 </p>
                 <p className="text-sm text-clinical-gray">Pending Review</p>
               </div>
@@ -148,7 +174,11 @@ export default function CQCStandards() {
           <CardHeader className="px-0 pt-0">
             <CardTitle className="flex items-center justify-between">
               <span>CQC Standards & Regulations</span>
-              <Button variant="outline" size="sm" data-testid="button-refresh-standards">
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="button-refresh-standards"
+              >
                 <Clock className="w-4 h-4 mr-2" />
                 Last Updated: Today
               </Button>
@@ -177,7 +207,9 @@ export default function CQCStandards() {
                             {standard.regulationId}
                           </Badge>
                           <Badge variant="secondary" className="text-slate-600">
-                            {standard.keyQuestion === "WellLed" ? "Well-led" : standard.keyQuestion}
+                            {standard.keyQuestion === "WellLed"
+                              ? "Well-led"
+                              : standard.keyQuestion}
                           </Badge>
                           {getStatusBadge(standard.status)}
                         </div>
@@ -188,7 +220,12 @@ export default function CQCStandards() {
                           {standard.summary}
                         </p>
                         <div className="flex items-center text-sm text-clinical-gray space-x-6">
-                          <span>Last reviewed: {new Date(standard.lastReviewed).toLocaleDateString('en-GB')}</span>
+                          <span>
+                            Last reviewed:{" "}
+                            {new Date(standard.lastReviewed).toLocaleDateString(
+                              "en-GB",
+                            )}
+                          </span>
                           <span>Evidence files: {standard.evidenceCount}</span>
                         </div>
                       </div>
@@ -197,7 +234,9 @@ export default function CQCStandards() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(standard.sourceUrl, '_blank')}
+                          onClick={() =>
+                            window.open(standard.sourceUrl, "_blank")
+                          }
                           data-testid={`button-view-standard-${standard.id}`}
                         >
                           <ExternalLink className="w-4 h-4 mr-2" />
@@ -211,12 +250,82 @@ export default function CQCStandards() {
             ) : (
               <div className="text-center py-12">
                 <FileText className="w-12 h-12 text-clinical-gray mx-auto mb-4" />
-                <p className="text-clinical-gray">
-                  No CQC standards found
-                </p>
+                <p className="text-clinical-gray">No CQC standards found</p>
               </div>
             )}
           </CardContent>
+        </Card>
+
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">
+            Uploaded Evidence
+          </h3>
+          {iscqcevidenceLoading ? (
+            <div className="text-center py-8">
+              <p className="text-clinical-gray">Loading Evidence...</p>
+            </div>
+          ) : !cqcevidence || cqcevidence.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-clinical-gray mb-4">No evidence found</p>
+            </div>
+          ) : (
+            <Card data-testid="card-uploaded-files">
+              <CardHeader>
+                <CardTitle>CQC Evidence</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {cqcevidence
+                    .filter(
+                      (practiceevidence) =>
+                        practiceevidence.practiceId === user?.practiceId,
+                    )
+                    .map((evidence, index) => (
+                      <div
+                        key={evidence.fileName}
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        data-testid={`uploaded-file-${index}`}
+                      >
+                        <div className="flex items-center gap-2 flex-1">
+                          <FileText className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm font-medium">
+                            {evidence.fileName}
+                          </span>
+                          {evidence.description && (
+                            <span className="text-xs text-gray-500 italic">
+                              - {evidence.description}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500">
+                            {evidence.createdAt
+                              ? new Date(
+                                  evidence.createdAt,
+                                ).toLocaleDateString()
+                              : "Recently uploaded"}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (user?.email) {
+                                const url = `${evidence.path}?email=${encodeURIComponent(user.email)}`;
+                                window.open(url, "_blank");
+                              }
+                            }}
+                            className="h-8 w-8 p-0"
+                            data-testid={`button-view-file-${index}`}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </Card>
       </main>
     </div>
