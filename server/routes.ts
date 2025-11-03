@@ -1031,22 +1031,37 @@ Provide realistic scores based on the evidence provided. If evidence strongly su
           scores,
         );
 
-        // Store the generated report as evidence
+        // Upload the generated report to object storage
         const date = new Date().toISOString();
+        const reportFileName = `cqc-compliance-report_${date}.json`;
+        const reportContent = JSON.stringify(scores, null, 2);
+        
+        // Upload report to object storage
+        const reportBuffer = Buffer.from(reportContent, 'utf-8');
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        
+        // Upload the file content
+        await fetch(uploadURL, {
+          method: 'PUT',
+          body: reportBuffer,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        // Get the object path for the uploaded report
+        const objectPath = uploadURL.split('?')[0].replace(/^.*\/objects/, '/objects');
+        
+        // Store the generated report as evidence
         await storage.createPracticeEvidence({
           practiceId: currentUser.practiceId,
           fileName: "CQC Compliance Report",
           description: `AI-generated CQC compliance report based on uploaded evidence`,
-          path: `/reports/cqc-compliance-report_${date}`,
-          evidenceType: "Mock_CQC_report",
+          path: objectPath,
+          evidenceType: "CQC_Compliance_Report",
           reviewStatus: "needs_review",
           createdAt: new Date(),
         });
-        // need to convert cleanedResponse string to file ;
-        fs.writeFileSync(
-          `./reports/cqc-compliance-report_${date}`,
-          cleanedResponse,
-        );
 
         // Return the analyzed scores
         res.json({
