@@ -1038,6 +1038,7 @@ Provide realistic scores based on the evidence provided. If evidence strongly su
           fileName: "CQC Compliance Report",
           description: `AI-generated CQC compliance report based on uploaded evidence`,
           path: `/reports/cqc-compliance-report_${date}`,
+          evidenceType: "Mock_CQC_report",
           reviewStatus: "needs_review",
           createdAt: new Date(),
         });

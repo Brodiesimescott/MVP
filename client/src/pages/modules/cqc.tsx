@@ -126,7 +126,7 @@ export default function ChironCQC() {
       queryClient.invalidateQueries({ queryKey: ["/api/hr/cqcevidence"] });
       toast({
         title: "Report Generated Successfully",
-        description: `Analyzed ${data.filesAnalyzed} files and updated compliance scores`,
+        description: `Analyzed ${data.filesAnalyzed} files and updated CQC Compliance Scores`,
       });
       setIsGeneratingReport(false);
     },

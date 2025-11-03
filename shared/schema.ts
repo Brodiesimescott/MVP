@@ -64,6 +64,7 @@ export const evidenceEnum = pgEnum("evidence_type", [
   "Business_Continuity",
   "Prescribing",
   "Fire_safety",
+  "Mock_CQC_report",
 ]);
 export const policyEnum = pgEnum("policy_type", [
   "safeguarding",
