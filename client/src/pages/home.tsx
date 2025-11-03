@@ -137,7 +137,7 @@ export default function Home() {
             <LLMGuide
               title="Chiron AI Assistant"
               subtitle="Always here to help"
-              initialMessage="Good morning! Your CQC compliance score is at 98%. Would you like me to review the remaining items?"
+              initialMessage="Good day! Would you like me to review your CQC Compliance Score?"
               placeholder="Ask anything..."
               className="h-[605px]"
             />
