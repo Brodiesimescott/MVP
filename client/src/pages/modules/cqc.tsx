@@ -105,15 +105,15 @@ export default function ChironCQC() {
   const generateReportMutation = useMutation({
     mutationFn: async (message: string) => {
       if (!user?.email) throw new Error("Not authenticated");
-      const response = await fetch("/api/cqc/generate-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          message,
-          email: user.email,
-        }),
-      });
+      const response = await fetch(
+        `/api/cqc/generate-report?email=${encodeURIComponent(user.email)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ message }),
+        },
+      );
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to generate report");
