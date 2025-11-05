@@ -35,16 +35,19 @@ interface UploadEvidenceDialogProps {
 
 // Evidence type options from schema
 const EVIDENCE_TYPES = [
-  { value: "Training", label: "Training" },
+  { value: "Training", label: "Training Matrix and Schedule" },
   { value: "PAT_Testing", label: "PAT Testing" },
-  { value: "Equipment_Calibration", label: "Equipment Calibration" },
+  { value: "Equipment_Calibration", label: "Equipment Calibration Report" },
   { value: "Health_and_Safety", label: "Health and Safety" },
   { value: "Risk_Assessment", label: "Risk Assessment" },
-  { value: "infection_control", label: "Infection Control" },
-  { value: "Disability_Access", label: "Disability Access" },
-  { value: "Cleanliness", label: "Cleanliness" },
-  { value: "Business_Continuity", label: "Business Continuity" },
+  { value: "Infection_Control", label: "Infection Control Audit" },
+  { value: "Disability_Access", label: "Disability Access Audit" },
+  { value: "Cleanliness", label: "Cleanliness Audit" },
+  { value: "Business_Continuity", label: "Business Continuity Plan" },
   { value: "Prescribing", label: "Prescribing" },
+  { value: "Fire_Safety", label: "Fire Safety Report" },
+  { value: "Palliative_Care", label: "Palliative Care Register" },
+  { value: "CQC_Compliance_Report", label: "CQC Compliance Report" },
 ];
 
 export function UploadEvidenceDialog({
