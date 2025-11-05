@@ -36,14 +36,14 @@ interface UploadPolicyDialogProps {
 
 // Policy type options from schema
 const POLICY_TYPES = [
-  { value: "safeguarding", label: "Safeguarding" },
-  { value: "complaints", label: "Complaints" },
-  { value: "chaperoning", label: "Chaperoning" },
-  { value: "medicine_management", label: "Medicine Management" },
-  { value: "repeat_prescribing", label: "Repeat Prescribing" },
-  { value: "locum", label: "Locum" },
-  { value: "induction", label: "Induction" },
-  { value: "fire_safety", label: "Fire Safety" },
+  { value: "Safeguarding", label: "Safeguarding Policy" },
+  { value: "Complaints", label: "Complaints Policy" },
+  { value: "Chaperoning", label: "Chaperoning Policy" },
+  { value: "Medicine_Management", label: "Medicine Management Policy" },
+  { value: "Repeat_Prescribing", label: "Repeat Prescribing Policy" },
+  { value: "Locum", label: "Locum Policy" },
+  { value: "Induction", label: "Induction Policy" },
+  { value: "Human_Resources", label: "Human Resources Policy" },
 ];
 
 export function UploadPolicyDialog({
