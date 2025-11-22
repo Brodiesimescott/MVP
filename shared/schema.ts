@@ -95,7 +95,7 @@ export const users = pgTable("users", {
 });
 
 //People table
-export const people = pgTable("users", {
+export const people = pgTable("people", {
   id: text("id").primaryKey(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
