@@ -4,3 +4,8 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# GCP Service Account credentials - NEVER commit these
+**/thinking-window-*.json
+attached_assets/*service_account*.json
+*.credentials.json
